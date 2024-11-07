@@ -1,0 +1,79 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+use work.itc.all;
+use work.itc_lcd.all;
+
+entity lcd_p is
+	port (
+		clk   : in std_logic;
+		rst_n : in std_logic;
+		--seg
+		seg_led, seg_com : out u8r_t;
+		--sw
+		sw : in u8r_t;
+		--key
+		key_row : in u4r_t;
+		key_col : out u4r_t;
+		--lcd
+		lcd_sclk, lcd_mosi, lcd_ss_n, lcd_dc, lcd_bl, lcd_rst_n : out std_logic;
+		--tts
+		tts_scl, tts_sda : inout std_logic;
+		tts_mo           : in unsigned(2 downto 0);
+		tts_rst_n        : out std_logic;
+		-- mot
+		mot_ch  : out u2r_t;
+		mot_ena : out std_logic
+	);
+end lcd_p;
+
+architecture arch of lcd_p is
+	signal x, l_x, l_x_m1, l_x_m2 : integer range -127 to 128;
+	signal y, l_y, l_y_m1, l_y_m2 : integer range -159 to 160;
+	signal col_setup : std_logic; -- set success
+	signal col_mod, col_mod_m, col_mod_m_lcd : integer range 0 to 2; -- 0 = green, 1 = red, 2 = blue
+	signal pic_col : l_px_t; -- can set pic color
+	signal font_start, font_busy : std_logic;
+	signal text_data : string(1 to 12);
+	signal bg_color, pic_data_o : l_px_t;
+	signal lcd_clear : std_logic;
+	signal lcd_con : std_logic;
+	signal pic_addr_tri, l_addr, shape_1_addr, shape_2_addr : l_addr_t;
+	signal tri_data, shape_1_data, shape_2_data : l_px_t;
+	signal tri_data_o, shape_1_data_o, shape_2_data_o : std_logic_vector(23 downto 0);
+	signal lcd_count : integer range 0 to 4;
+	signal text_color : l_px_arr_t(1 to 12);
+	signal draw_done : std_logic;
+	signal flash_mod, flash : std_logic;
+	signal test_speed : integer range 1 to 3;
+	signal move_pixel : integer range 0 to 50;
+	signal moving : integer range 0 to 50;
+begin
+	lcd_clear<=lcd_clear;
+	lcd_mix_inst : entity work.lcd_mix(arch)
+	port map(
+		clk              => clk,
+		rst_n            => rst_n,
+		x                => x,
+		y                => y,
+		font_start       => font_start,
+		font_busy        => font_busy,
+		text_size        => 1,
+		text_data        => text_data,
+		text_count       => open,
+		addr             => l_addr,
+		text_color       => green,
+		bg_color         => white,
+		text_color_array => text_color,
+		clear            => lcd_clear,
+		lcd_sclk         => lcd_sclk,
+		lcd_mosi         => lcd_mosi,
+		lcd_ss_n         => lcd_ss_n,
+		lcd_dc           => lcd_dc,
+		lcd_bl           => lcd_bl,
+		lcd_rst_n        => lcd_rst_n,
+		con              => lcd_con,
+		pic_data         => pic_data_o
+	);
+end arch;

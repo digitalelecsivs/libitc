@@ -1,0 +1,23 @@
+# Quartus
+db/
+incremental_db/
+output_files/
+simulation/
+greybox_tmp/
+*.cmp
+*.qsf
+*.qws
+*.alc
+*.qdf
+
+# Python
+/.venv/
+__pycache__/
+
+# Preprocessed (pp.py)
+dist/
+
+# Images
+*.jpg
+!/tests/lcd/res/**/*.jpg
+!/src/**/*.jpg

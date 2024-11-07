@@ -1,0 +1,133 @@
+{
+	"[vhdl]": {
+		"editor.fontLigatures": false,
+		"editor.insertSpaces": false,
+		"editor.formatOnType": true,
+		"editor.defaultFormatter": "Vinrobot.vhdl-formatter"
+	},
+
+	// File explorer
+	"files.exclude": {
+		"db/": true,
+		"incremental_db/": true,
+		"simulation/": true
+	},
+
+	// VHDL formatter
+	"vhdl.formatter.align.function": true,
+	"vhdl.formatter.align.generic": true,
+	"vhdl.formatter.align.port": true,
+	"vhdl.formatter.align.procedure": true,
+	"vhdl.formatter.case.keyword": "LowerCase",
+	"vhdl.formatter.case.typename": "LowerCase",
+	"vhdl.formatter.newline.generic": "NoNewLine",
+	"vhdl.formatter.newline.port": "NoNewLine",
+	"vhdl.formatter.newline.else": "None",
+	"vhdl.formatter.insertFinalNewline": true,
+
+	// Modern VHDL
+	"editor.formatOnType": true,
+	"vhdl.suggestLibraryCase": "lower",
+	"vhdl.enableStutterComments": true,
+	"vhdl.enableStutterDelimiters": true,
+	"vhdl.enableStutterBrackets": true,
+
+	// Markdown
+	"[markdown]": {
+		"editor.defaultFormatter": "yzhang.markdown-all-in-one"
+	},
+	"markdownlint.config": {
+		"MD041": false, // first-line-h1
+		"MD024": false, // no-duplicate-heading
+		"MD033": false // no-inline-html
+	},
+
+	// JSON
+	"[jsonc]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"prettier.useTabs": true,
+
+	// spell checker
+	"cSpell.words": [
+		"abcdefgp",
+		"altera",
+		"bruh",
+		"caset",
+		"combinational",
+		"conv",
+		"coord",
+		"cpha",
+		"cpol",
+		"curr",
+		"datasheet",
+		"dbnce",
+		"debouncer",
+		"decrs",
+		"disp",
+		"dispon",
+		"downto",
+		"eewiki",
+		"eval",
+		"framebuffer",
+		"frmctr",
+		"gamctrn",
+		"gamctrp",
+		"genmif",
+		"getdata",
+		"getrgb",
+		"gmctrn",
+		"gmctrp",
+		"gruvbox",
+		"hexlify",
+		"incrs",
+		"inout",
+		"integ",
+		"lcd",
+		"LEDs",
+		"libitc",
+		"madctl",
+		"mosi",
+		"piccheck",
+		"POSIX",
+		"pwctr",
+		"pyperclip",
+		"quartus",
+		"ramwr",
+		"raset",
+		"rdaddress",
+		"sclk",
+		"slpout",
+		"testbench",
+		"uart",
+		"vhdl",
+		"vhdltool",
+		"vmctr",
+		"wraddress"
+	],
+	"cSpell.ignoreRegExpList": [
+		".*'.*" // VHDL attributes, e.g. "key_row'range"
+	],
+
+	// Python
+	"[python]": {
+		"editor.defaultFormatter": "ms-python.black-formatter",
+		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": true
+		}
+	},
+	"isort.args": ["--profile", "black"],
+	"terminal.integrated.defaultProfile.windows": "Git Bash",
+	"terminal.integrated.env.linux": {
+		"PATH": "${workspaceFolder}/tools/bin:${env:PATH}"
+	},
+	"terminal.integrated.env.windows": {
+		"PATH": "${workspaceFolder}/tools/bin;${env:PATH}"
+	},
+
+	// Templates
+	"files.associations": {
+		"*.template.*": "mako"
+	}
+}

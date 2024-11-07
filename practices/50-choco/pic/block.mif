@@ -1,0 +1,12 @@
+WIDTH=24;
+DEPTH=4;
+
+ADDRESS_RADIX=UNS;
+DATA_RADIX=HEX;
+
+CONTENT BEGIN
+  0: 0;
+  1: 0;
+  2: 0;
+  3: 0;
+END;
