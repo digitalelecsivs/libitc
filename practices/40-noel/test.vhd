@@ -15,7 +15,7 @@ begin
 	begin
 		if aaa = '1' then
 			aaa <= '0';
-			
+
 		end if;
 	end process;
 end arch;
