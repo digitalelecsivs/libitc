@@ -1,6 +1,7 @@
 # libitc
 
 VHDL library for 108th to 112nd ITC hardware.
+*SIVS*
 
 ## Supported hardwares
 
