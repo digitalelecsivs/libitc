@@ -1,7 +1,6 @@
 # libitc
 
 VHDL library for 108th to 112nd ITC hardware.
-### *SIVS* ###
 
 ## Supported hardwares
 
@@ -59,3 +58,5 @@ Under `tools/` there are scripts that help with the writing of the code.
 ### VHDL 語言伺服器
 
 使用 [VHDL Tool](https://www.vhdltool.com/) 可以擁有自動完成、跳至定義等實用功能，加快開發速度。安裝完成後請到 [IEEE](https://standards.ieee.org/downloads/) 下載 VHDL 標準函式庫 (IEEE 1076™) 的定義，放在 `vhdltool-config.yaml` 指定的路徑。
+
+### *SIVS*
