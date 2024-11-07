@@ -1,6 +1,6 @@
 # libitc
 
-VHDL library for 108th, 109th and 110th ITC hardware.
+VHDL library for 108th to 112nd ITC hardware.
 
 ## Supported hardwares
 
