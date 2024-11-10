@@ -99,9 +99,9 @@ architecture arch of test113_2 is
 	signal egg : integer;
 	signal fodder_number : integer := 0;
 	signal digit : std_logic := '0';
-	type sell_coord is array(0 to 3) of integer range 0 to 7;
-	signal sell_x : sell_coord := (6, 0, 0, 0);
-	signal sell_y : sell_coord := (1, 0, 0, 0);
+	type sell_coord is array(0 to 2) of integer range 0 to 7;
+	signal sell_x : sell_coord := (6, 0, 0);
+	signal sell_y : sell_coord := (1, 0, 0);
 	signal buy_x, buy_y : integer range 0 to 7;
 	signal buy_enable : unsigned(0 to 3) := "1111";
 	signal lcd_count : integer range 0 to 3;
@@ -109,13 +109,16 @@ architecture arch of test113_2 is
 	signal reset_count : integer range 0 to 2;
 	type pro_state is (green, red, check, green_flash, orange_flash, red_flash);
 	type sel_state is (green, red, sell);
+	type buy_state is (red, play, random);
 	signal provide_state : pro_state;
 	signal sell_state : sel_state;
 	signal password : string(1 to 6);
 	signal count : integer range 0 to 50;
 	signal pass : u8_arr_t(0 to 5);--rx's data
 	signal pass_str : string(1 to 6);--software pass
-
+	signal random : integer range 0 to 8;
+	constant random_x : sell_coord := (1, 5, 6);
+	constant random_y : sell_coord := (1, 5, 6);
 begin
 	dot_inst : entity work.dot(arch)
 		generic map(
@@ -141,10 +144,10 @@ begin
 			uart_tx => uart_tx, --腳位
 			tx_ena  => tx_ena,  --enable '1' 動作
 			tx_busy => tx_busy, --tx資料傳送時tx_busy='1'
-			tx_data => tx_data, --硬體要傳送的資料 
+			tx_data => tx_data, --硬體要傳送的資料
 			rx_busy => rx_busy, --rx資料傳送時rx_busy='1'
 			rx_err  => rx_err,  --檢測錯誤
-			rx_data => rx_data  --由軟體接收到的資料 
+			rx_data => rx_data  --由軟體接收到的資料
 		);
 	seg_inst : entity work.seg(arch)
 		port map(
@@ -154,7 +157,7 @@ begin
 			seg_com => seg_com,  --共同腳位
 			data    => seg_data, --七段資料 輸入要顯示字元即可,遮末則輸入空白
 			dot     => dot       --小數點 1 亮
-			--輸入資料ex: b"01000000" = x"70"  
+			--輸入資料ex: b"01000000" = x"70"
 			--seg_deg 度C
 		);
 	key_inst : entity work.key(arch)
@@ -573,102 +576,67 @@ begin
 					end case;
 
 				when selling =>
-					led_r <= '0';
-					led_g <= '1';
-					led_y <= '0';
-					lcd_clear <= '0';
-					if rx_done = '1' and to_integer(rx_data) /= 13 then
-						price <= to_integer(rx_data);
-					end if;
-					if pressed = '1' and key = 14 then
-						money <= money + egg * price;
-						egg <= 0;
-						price <= 0;
-						state <= waiting;
-					end if;
-					case lcd_count is
-						when 0 =>
-							lcd_clear <= '0';
-							text_data <= " FEED" & to_string(fodder, 999, 10, 4) & "   ";
-							font_start <= '1';
-							x <= 10;
-							y <= 40;
-							if draw_done = '1' then
-								font_start <= '0';
-								lcd_count <= 1;
-							end if;
-						when 1 =>
-							lcd_clear <= '0';
-							text_data <= " MONEY" & to_string(money, 9999, 10, 4) & "  ";
-							font_start <= '1';
-							x <= 10;
-							y <= 80;
-							if draw_done = '1' then
-								font_start <= '0';
-								lcd_count <= 2;
-							end if;
-						when 2 =>
-							lcd_clear <= '0';
-							text_data <= " EGG" & to_string(egg, 999, 10, 3) & "     ";
-							font_start <= '1';
-							x <= 10;
-							y <= 120;
-							if draw_done = '1' then
-								font_start <= '0';
-								lcd_count <= 3;
-							end if;
-						when 3 =>
-
-							lcd_clear <= '0';
-							text_data <= " FUNC:HOLD" & "  ";
-							font_start <= '1';
-							x <= 10;
-							y <= 40;
-							if draw_done = '1' then
-								font_start <= '0';
-								lcd_count <= 0;
-							end if;
-					end case;
-
 				when buying =>
-					led_r <= '0';
-					led_g <= '0';
-					led_y <= '1';
-					seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
-					data_g <= (others => x"00");
-					data_r <= (others => x"00");
-					data_g(buy_y)(buy_x) <= '1';
-					data_g(sell_y(0))(sell_x(0)) <= buy_enable(0);
-					data_r(sell_y(0))(sell_x(0)) <= buy_enable(0);
-					if buy_x = sell_x(0) and buy_y = sell_y(0) then
-						data_g(sell_y(0))(sell_x(0)) <= '1';
-						data_r(sell_y(0))(sell_x(0)) <= '0';
-						if money >= 100 and buy_enable(0) = '1' then
-							money <= money - 100;
-							fodder <= fodder + 50;
-							buy_enable(0) <= '0';
-						end if;
-					end if;
-					if pressed = '1' and key = 1 and buy_y /= 7 then
-						buy_y <= buy_y + 1;
-					end if;
-					if pressed = '1' and key = 4 and buy_x /= 0 then
-						buy_x <= buy_x - 1;
-					end if;
-					if pressed = '1' and key = 6 and buy_x /= 7 then
-						buy_x <= buy_x + 1;
-					end if;
-					if pressed = '1' and key = 9 and buy_y /= 0 then
-						buy_y <= buy_y - 1;
-					end if;
-					if pressed = '1' and key = 14 then
-						state <= waiting;
-						buy_x <= 0;
-						buy_y <= 0;
-						data_g <= (others => x"00");
-						data_r <= (others => x"00");
-						buy_enable <= "1111";
-					end if;
+					case buying_state is
+						when red =>
+							data_r <= (x"18", x"1C", x"FE", x"FF", x"FF", x"FE", x"1C", x"18");
+							data_g <= (others => x"00");
+							timer_ena <= '0';
+							if pressed_i = '1' and key = 14 then
+								timer_ena <= '1';
+								if msec > 2000 then
+									timer_ena <= '0';
+									buying_state <= play;
+								end if;
+							end if;
+						when play =>
+							timer_ena <= '1';
+							data_g <= (others => x"00");
+							data_r <= (others => x"00");
+							data_g(buy_y)(buy_x) <= '1';
+							data_g(sell_y(0))(sell_x(0)) <= buy_enable(0);
+							data_r(sell_y(0))(sell_x(0)) <= buy_enable(0);
+							if buy_x = sell_x(0) and buy_y = sell_y(0) then
+								data_g(sell_y(0))(sell_x(0)) <= '1';
+								data_r(sell_y(0))(sell_x(0)) <= '0';
+								if msec < 10000 then
+									if money >= 100 and buy_enable(0) = '1' then
+										money <= money - 100;
+										fodder <= fodder + 50;
+										buy_enable(0) <= '0';
+										buying_state <= random;
+									end if;
+								elsif msec > 10000 then
+									if money >= 50 and buy_enable(0) = '1' then
+										money <= money - 50;
+										fodder <= fodder + 50;
+										buy_enable(0) <= '0';
+										buying_state <= random;
+									end if;
+								end if;
+							end if;
+							if pressed = '1' and key = 1 and buy_y /= 7 then
+								buy_y <= buy_y + 1;
+							end if;
+							if pressed = '1' and key = 4 and buy_x /= 0 then
+								buy_x <= buy_x - 1;
+							end if;
+							if pressed = '1' and key = 6 and buy_x /= 7 then
+								buy_x <= buy_x + 1;
+							end if;
+							if pressed = '1' and key = 9 and buy_y /= 0 then
+								buy_y <= buy_y - 1;
+							end if;
+							if pressed_i = '1' then
+								random1 <= random1 + 1;
+							end if;
+							random2 <= random2 + 1;
+						when random =>
+							sell_x <= random_x(random1);
+							sell_y <= random_y(random2);
+							buy_enable(0) <= '1';
+							buying_state <= play;
+					end case;
 			end case;
 		end if;
 	end process;
