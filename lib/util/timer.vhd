@@ -31,8 +31,8 @@ begin
 			clk_out => clk_timer
 		);
 
-	process (clk_timer, rst_n) begin
-		if rst_n = '0' then
+	process (clk_timer, rst_n, ena) begin
+		if rst_n = '0'or ena = '0' then
 			msec <= 0;
 		elsif rising_edge(clk_timer) then
 			if ena = '1' then
