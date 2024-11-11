@@ -5,6 +5,8 @@ use work.itc.all;
 use work.itc_lcd.all;
 entity test113_2 is
 	port (
+
+		--system
 		clk, rst_n : in std_logic;
 
 		-- sw
@@ -97,28 +99,33 @@ architecture arch of test113_2 is
 	signal fodder : integer := 100;
 	signal money : integer := 500;
 	signal egg : integer;
-	signal fodder_number : integer := 0;
+	signal fodder_number : integer range 0 to 9999 := 0;
+	signal egg_number : integer range 0 to 999 := 0;
 	signal digit : std_logic := '0';
 	type sell_coord is array(0 to 2) of integer range 0 to 7;
-	signal sell_x : sell_coord := (6, 0, 0);
-	signal sell_y : sell_coord := (1, 0, 0);
+	signal sell_x : integer range 0 to 7 := 6;
+	signal sell_y : integer range 0 to 7 := 6;
 	signal buy_x, buy_y : integer range 0 to 7;
 	signal buy_enable : unsigned(0 to 3) := "1111";
 	signal lcd_count : integer range 0 to 3;
-	signal price : integer range 0 to 9;
+	signal price : integer range 0 to 99;
 	signal reset_count : integer range 0 to 2;
 	type pro_state is (green, red, check, green_flash, orange_flash, red_flash);
-	type sel_state is (green, red, sell);
-	type buy_state is (red, play, random);
+	type sel_state is (timing_reset, red, sell);
+	type buy_state is (red, play, random, ending);
 	signal provide_state : pro_state;
 	signal sell_state : sel_state;
+	signal buying_state : buy_state;
 	signal password : string(1 to 6);
 	signal count : integer range 0 to 50;
 	signal pass : u8_arr_t(0 to 5);--rx's data
 	signal pass_str : string(1 to 6);--software pass
-	signal random : integer range 0 to 8;
-	constant random_x : sell_coord := (1, 5, 6);
-	constant random_y : sell_coord := (1, 5, 6);
+	signal random1 : integer range 0 to 2;
+	signal random2 : integer range 0 to 2;
+	constant random_x : sell_coord := (0, 3, 6);
+	constant random_y : sell_coord := (0, 3, 6);
+	constant all_black : l_px_arr_t(1 to 12) := (black, black, black, black, black, black, black, black, black, black, black, black);
+	constant all_white : l_px_arr_t(1 to 12) := (white, white, white, white, white, white, white, white, white, white, white, white);
 begin
 	dot_inst : entity work.dot(arch)
 		generic map(
@@ -351,79 +358,18 @@ begin
 						reset_count <= 0;
 						timer_ena <= '0';
 					end if;
-
 				when waiting =>
-					dot <= "00000000";
 					led_r <= '0';
 					led_g <= '0';
 					led_y <= '0';
-					timer_ena <= '0';
 					rgb <= "111";
+					dot <= "00000000";
+					lcd_clear <= '1';
 					data_r <= (X"3C", X"5A", X"A5", X"81", X"A5", X"A5", X"42", X"3C");
 					data_g <= (X"3C", X"5A", X"A5", X"81", X"A5", X"A5", X"42", X"3C");
-					lcd_clear <= '1';
 					seg_data <= "        ";
-					case sw(0 to 2) is
-						when "100" =>
-							timer_ena <= '1';
-							if msec > 50 then
-								lcd_clear <= '0';
-								text_data <= "FUNC:FEED" & "   ";
-								x <= 10;
-								y <= 10;
-								font_start <= '1';
-								if draw_done = '1' then
-									font_start <= '0';
-								end if;
-								data_g <= (X"00", X"06", X"03", X"FF", X"FF", X"03", X"06", X"00");
-								data_r <= (others => x"00");
-								if pressed = '1' and key = 14 then
-									provide_state <= red;
-									fodder_number <= 0;
-								end if;
-							else
-								lcd_clear <= '1';
-							end if;
-						when "010" =>
-							timer_ena <= '1';
-							if msec > 20 then
-								lcd_clear <= '0';
-								text_data <= "FUNC:SELL" & "   ";
-								x <= 10;
-								y <= 10;
-								font_start <= '1';
-								if draw_done = '1' then
-									font_start <= '0';
-								end if;
-								data_g <= (X"14", X"7F", X"54", X"54", X"7F", X"15", X"7F", X"14");
-								data_r <= (others => x"00");
-								if pressed = '1' and key = 14 then
-									provide_state <= red;
-									fodder_number <= 0;
-								end if;
-							else
-								lcd_clear <= '1';
-							end if;
-						when "001" =>
-							-- state <= buying;
-						when others => null;
-					end case;
 					if pressed_i = '1' and key = 14 then
-						lcd_clear <= '1';
-						timer_ena <= '0';
-						bg_color <= white;
-						if pressed = '1' and key = 14 then
-							case sw(0 to 2) is
-								when "100" =>
-									state <= provide;
-								when "010" =>
-									state <= selling;
-								when "001" =>
-									state <= buying;
-								when others => null;
-							end case;
-						end if;
-						if pressed_i = '1' and key = 14 and sw /= "100" and sw /= "010" and sw /= "001" then
+						if sw(0 to 2) /= "100" and sw(0 to 2) /= "010" and sw(0 to 2) /= "001" then
 							timer_ena <= '1';
 							if msec > 20 then
 								case lcd_count is
@@ -458,7 +404,6 @@ begin
 											lcd_count <= 3;
 										end if;
 									when 3 =>
-
 										lcd_clear <= '0';
 										text_data <= " FUNC:HOLD" & "  ";
 										font_start <= '1';
@@ -469,19 +414,110 @@ begin
 											lcd_count <= 0;
 										end if;
 								end case;
+							else
+								lcd_clear <= '1';
 							end if;
 						end if;
-					elsif sw(0 to 2) /= "100" and sw(0 to 2) /= "100" and sw(0 to 2) /= "100" then
-						timer_ena <= '0';
-						lcd_clear <= '1';
-						bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, white, pic_data_sivs, (80, 30), 70, 70)), "FUNC:HOLD", (10, 40), black);
-						pic_addr_sivs <= to_addr(l_paste(l_addr, white, pic_data_sivs, (80, 30), 70, 70));
+					else
+						if sw(0 to 2) /= "100" and sw(0 to 2) /= "010" and sw(0 to 2) /= "001" then
+							timer_ena <= '0';
+							lcd_clear <= '1';
+							bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, white, pic_data_sivs, (80, 30), 70, 70)), " FUNC:HOLD", (10, 40), black);
+							pic_addr_sivs <= to_addr(l_paste(l_addr, white, pic_data_sivs, (80, 30), 70, 70));
+						else
+							case sw(0 to 2) is
+								when "100" =>
+									timer_ena <= '1';
+									if msec > 100 then
+										data_g <= (X"00", X"06", X"03", X"FF", X"FF", X"03", X"06", X"00");
+										data_r <= (others => x"00");
+										lcd_clear <= '0';
+										text_data <= " FUNC:FEED  ";
+										x <= 10;
+										y <= 10;
+										text_color <= all_black;
+										font_start <= '1';
+										if draw_done = '1' then
+											font_start <= '0';
+										end if;
+										led_r <= '1';
+										led_g <= '0';
+										led_y <= '0';
+										rgb <= "100";
+									else
+										lcd_clear <= '1';
+										bg_color <= white;
+										font_start <= '0';
+									end if;
+								when "010" =>
+									seg_data <= to_string(msec, 99999999, 10, 8);
+									timer_ena <= '1';
+									if msec > 100 then
+										data_g <= (X"28", X"FE", X"2A", X"2A", X"FE", X"A8", X"FE", X"28");
+										data_r <= (others => x"00");
+										lcd_clear <= '0';
+										text_data <= " FUNC:SELL  ";
+										x <= 10;
+										y <= 10;
+										text_color <= all_black;
+										font_start <= '1';
+										if draw_done = '1' then
+											font_start <= '0';
+										end if;
+										led_r <= '0';
+										led_g <= '1';
+										led_y <= '0';
+										rgb <= "010";
+									else
+										lcd_clear <= '1';
+										bg_color <= white;
+										font_start <= '0';
+									end if;
+								when "001" =>
+									timer_ena <= '1';
+									if msec > 100 then
+										data_g <= (X"00", X"60", X"C0", X"FF", X"FF", X"C0", X"60", X"00");
+										data_r <= (others => x"00");
+										lcd_clear <= '0';
+										text_data <= " FUNC:BUY   ";
+										x <= 10;
+										y <= 10;
+										text_color <= all_black;
+										font_start <= '1';
+										if draw_done = '1' then
+											font_start <= '0';
+										end if;
+										led_r <= '0';
+										led_g <= '0';
+										led_y <= '1';
+										rgb <= "001";
+									else
+										lcd_clear <= '1';
+										bg_color <= white;
+										font_start <= '0';
+									end if;
+								when others => null;
+							end case;
+						end if;
+					end if;
+					if pressed = '1' and key = 14 then
+						case sw(0 to 2) is
+							when "100" =>
+								state <= provide;
+								provide_state <= red;
+								timer_ena <= '0';
+							when "010" =>
+								state <= selling;
+								sell_state <= timing_reset;
+								timer_ena <= '0';
+							when "001" =>
+								state <= buying;
+								buying_state <= red;
+								timer_ena <= '0';
+							when others => null;
+						end case;
 					end if;
 				when provide =>
-					rgb <= "100";
-					led_r <= '1';
-					led_g <= '0';
-					led_y <= '0';
 					if pressed_i = '1' and key = 14 then
 						seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
 					else
@@ -490,9 +526,43 @@ begin
 					case provide_state is
 						when green => null;
 						when red =>
-							lcd_clear <= '1';
-							bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, white, pic_data_feed, (0, 0), 128, 40)), "  NUM:" & to_string(fodder_number, 9999, 10, 4), (50, 40), black);
-							pic_addr_feed <= to_addr(l_paste(l_addr, white, pic_data_feed, (0, 0), 128, 40));
+							seg_data <= to_string(msec, 99999999, 10, 8);
+							timer_ena <= '1';
+							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 40));
+							if msec > 100 then
+								case lcd_count is
+									when 0 =>
+										lcd_clear <= '0';
+										text_data <= " NUM:" & to_string(fodder_number, 9999, 10, 4) & "   "; --& to_string(fodder, 9999, 10, 4) & "   ";
+										font_start <= '1';
+										text_color <= (others => black);
+										x <= 10;
+										y <= 40;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 1;
+										end if;
+										bg_color <= white;
+									when 1 =>
+										lcd_clear <= '0';
+										text_data <= " FUNC:FEED" & "  ";
+										text_color <= (others => white);
+										font_start <= '1';
+										x <= 10;
+										y <= 10;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 0;
+										end if;
+									when 2 =>
+										lcd_count <= 0;
+									when 3 =>
+										lcd_count <= 0;
+								end case;
+							else
+								bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 40));
+								lcd_clear <= '1';
+							end if;
 							if pressed = '1' and key = 12 then
 								provide_state <= green;
 								state <= waiting;
@@ -527,20 +597,69 @@ begin
 							elsif pressed = '1' and key = 13 then
 								fodder_number <= 5;
 							elsif pressed = '1' and key = 14 then
-								if fodder_number <= fodder then
+								if fodder_number <= fodder and fodder_number /= 0 then
 									provide_state <= green_flash;
+									timer_ena <= '0';
 								end if;
 							end if;
 						when green_flash =>
-							timer_ena <= '0';
 							data_r <= (others => x"00");
 							data_g <= (X"10", X"08", X"04", X"7E", X"FF", X"40", X"20", X"10");
 							lcd_clear <= '1';
 							bg_color <= l_paste_txt(l_addr, l_paste_txt(l_addr, l_paste_txt(l_addr, to_data(l_paste(l_addr, white, black, (0, 0), 128, 80)), " FUNC:FEED", (10, 10), white), " NUM:" & to_string(fodder_number, 9999, 10, 4) & "  ", (40, 10), white), "c o n n e c t . . .", (120, 10), black);
+							if msec = 0 then
+								timer_ena <= '1';
+							end if;
+							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 80));
+							if msec > 100 then
+								case lcd_count is
+									when 0 =>
+										lcd_clear <= '0';
+										text_data <= " NUM:" & to_string(fodder_number, 9999, 10, 4) & "   "; --& to_string(fodder, 9999, 10, 4) & "   ";
+										font_start <= '1';
+										text_color <= (others => white);
+										x <= 10;
+										y <= 40;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 1;
+										end if;
+									when 1 =>
+										lcd_clear <= '0';
+										text_data <= " FUNC:FEED" & "  ";
+										text_color <= (others => white);
+										font_start <= '1';
+										x <= 10;
+										y <= 10;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 2;
+										end if;
+									when 2 =>
+										lcd_clear <= '0';
+										text_data <= "connect..." & "  ";
+										text_color <= (others => black);
+										font_start <= '1';
+										x <= 10;
+										y <= 80;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 0;
+										end if;
+										bg_color <= white;
+									when 3 =>
+										lcd_count <= 0;
+								end case;
+							else
+								bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 80));
+								lcd_clear <= '1';
+							end if;
+
 							if rx_done = '1' then --接收軟體資料
 								if to_integer(rx_data) = 13 then
 									count <= 0;
 									provide_state <= check;
+									timer_ena <= '0';
 								else
 									pass(count) <= rx_data;
 									count <= count + 1;
@@ -551,16 +670,16 @@ begin
 							if pass_str = "912932" then
 								provide_state <= orange_flash;
 								fodder <= fodder - fodder_number + (fodder mod 5);
-								egg <= fodder_number/5;
+								egg <= egg + fodder_number/5;
 								fodder_number <= 0;
 							else
 								provide_state <= red_flash;
 							end if;
 						when orange_flash =>
-							-- data_g <= (X"10", X"08", X"04", X"7E", X"FF", X"40", X"20", X"10");
-							-- data_r <= (X"10", X"08", X"04", X"7E", X"FF", X"40", X"20", X"10");
-							--加了會當機-- bg_color <= l_paste_txt(l_addr, l_paste_txt(l_addr, l_paste_txt(l_addr, to_data(l_paste(l_addr, white, black, (0, 0), 128, 80)), " FUNC:FEED", (10, 10), white), " NUM:" & to_string(fodder_number, 9999, 10, 4) & "  ", (40, 10), white), " P A S S", (120, 10), black);
-							-- timer_ena <= '1';
+							data_g <= (others => x"00");
+							data_r <= (X"10", X"08", X"04", X"7E", X"FF", X"40", X"20", X"10");
+							bg_color <= l_paste_txt(l_addr, l_paste_txt(l_addr, l_paste_txt(l_addr, to_data(l_paste(l_addr, white, black, (0, 0), 128, 80)), " FUNC:FEED", (10, 10), white), " NUM:" & to_string(fodder_number, 9999, 10, 4) & "  ", (40, 10), white), " P A S S", (120, 10), black);
+							timer_ena <= '1';
 							if msec > 2000 then
 								timer_ena <= '0';
 								state <= waiting;
@@ -574,12 +693,162 @@ begin
 								state <= waiting;
 							end if;
 					end case;
-
 				when selling =>
+					case sell_state is
+						when timing_reset =>
+							if msec = 0 then
+								sell_state <= red;
+							else
+								timer_ena <= '0';
+							end if;
+						when red =>
+							seg_data <= to_string(msec, 99999999, 10, 8);
+							timer_ena <= '1';
+							data_g <= (others => x"00");
+							data_r <= (X"28", X"FE", X"2A", X"2A", X"FE", X"A8", X"FE", X"28");
+							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 40));
+							if msec > 100 then
+								case lcd_count is
+									when 0 =>
+										lcd_clear <= '0';
+										text_data <= "  $" & to_string(price, 99, 10, 2) & "/EGG   "; --& to_string(fodder, 9999, 10, 4) & "   ";
+										font_start <= '1';
+										text_color <= (others => red);
+										x <= 10;
+										y <= 40;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 1;
+										end if;
+										bg_color <= white;
+									when 1 =>
+										lcd_clear <= '0';
+										text_data <= " FUNC:SELL" & "  ";
+										text_color <= (others => white);
+										font_start <= '1';
+										x <= 10;
+										y <= 10;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 0;
+										end if;
+									when 2 =>
+										lcd_count <= 0;
+									when 3 =>
+										lcd_count <= 0;
+								end case;
+							else
+								bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 40));
+								lcd_clear <= '1';
+							end if;
+							if rx_done = '1'then
+								if to_integer(rx_data) = 13 then
+									count <= 0;
+								else
+									pass(count) <= rx_data;
+									count <= count + 1;
+								end if;
+							end if;
+							price <= (to_integer(pass(0)) - 48) * 10 + to_integer(pass(1)) - 48;
+
+							if pressed = '1' and key = 14 then
+								sell_state <= sell;
+								timer_ena <= '0';
+							end if;
+							if pressed = '1' and key = 12 then
+								state <= waiting;
+								timer_ena <= '0';
+							end if;
+						when sell =>
+							bg_color <= white;
+							timer_ena <= '1';
+							if msec > 100 then
+								bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, white, pic_data_sivs, (80, 30), 70, 70)), " FUNC:HOLD", (10, 40), black);
+								pic_addr_sivs <= to_addr(l_paste(l_addr, white, pic_data_sivs, (90, 30), 70, 70));
+								case lcd_count is
+									when 0 =>
+										lcd_clear <= '0';
+										text_data <= " NUM:" & to_string(egg_number, 999, 10, 3) & "    "; --& to_string(fodder, 9999, 10, 4) & "   ";
+										font_start <= '1';
+										text_color <= (others => black);
+										x <= 10;
+										y <= 40;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 1;
+										end if;
+									when 1 =>
+										lcd_clear <= '0';
+										if egg_number > egg then
+											text_data <= "NOT ENOUGH  ";
+										else
+											text_data <= "  $NT" & to_string(price, 99, 10, 2) & "     "; --& to_string(fodder, 9999, 10, 4) & "   ";
+										end if;
+										font_start <= '1';
+										text_color <= (others => black);
+										x <= 10;
+										y <= 60;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 2;
+										end if;
+									when 2 =>
+										lcd_count <= 3;
+									when 3 =>
+										lcd_clear <= '0';
+										text_data <= " FUNC:SELL" & "  ";
+										text_color <= (others => black);
+										font_start <= '1';
+										x <= 10;
+										y <= 10;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 0;
+										end if;
+								end case;
+							else
+								lcd_clear <= '1';
+								bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, white, pic_data_sivs, (80, 30), 70, 70)), " FUNC:HOLD", (10, 40), black);
+								pic_addr_sivs <= to_addr(l_paste(l_addr, white, pic_data_sivs, (90, 30), 70, 70));
+							end if;
+							if pressed = '1' and key < 11 and key /= 7 then
+								case key is
+									when 0 => number := 7;
+									when 1 => number := 8;
+									when 2 => number := 9;
+									when 3 => number := 0;
+									when 4 => number := 4;
+									when 5 => number := 5;
+									when 6 => number := 6;
+									when 8 => number := 1;
+									when 9 => number := 2;
+									when 10 => number := 3;
+									when others => null;
+								end case;
+								if egg_number = 0 then
+									egg_number <= number;
+								elsif egg_number > 0 and egg_number < 10 then
+									egg_number <= egg_number * 10 + number;
+								elsif egg_number > 9 and egg_number < 100 then
+									egg_number <= egg_number * 10 + number;
+								elsif egg_number > 99 then
+									egg_number <= (egg_number mod 100) * 10 + number;
+								end if;
+							elsif pressed = '1' and key = 13 then
+								egg_number <= 0;
+							elsif pressed = '1' and key = 14 then
+								if egg_number <= egg then
+									state <= waiting;
+									egg <= egg - egg_number;
+									money <= money + (egg_number * price);
+								end if;
+							end if;
+
+					end case;
 				when buying =>
 					case buying_state is
 						when red =>
-							data_r <= (x"18", x"1C", x"FE", x"FF", x"FF", x"FE", x"1C", x"18");
+							data_r <= (X"00", X"60", X"C0", X"FF", X"FF", X"C0", X"60", X"00");
 							data_g <= (others => x"00");
 							timer_ena <= '0';
 							if pressed_i = '1' and key = 14 then
@@ -590,15 +859,72 @@ begin
 								end if;
 							end if;
 						when play =>
+							seg_data <= "TIME  " & to_string(20 - msec/1000, 99, 10, 2);
+							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 40));
+							if msec > 300 then
+								case lcd_count is
+									when 0 =>
+										lcd_clear <= '0';
+										text_data <= " PTS:00     "; --& to_string(fodder, 9999, 10, 4) & "   ";
+										font_start <= '1';
+										text_color <= (others => black);
+										x <= 10;
+										y <= 40;
+										bg_color <= white;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 1;
+										end if;
+									when 1 =>
+										lcd_clear <= '0';
+										text_data <= " MONEY:" & to_string(money, 9999, 10, 4) & " ";
+										font_start <= '1';
+										text_color <= (others => black);
+										x <= 10;
+										y <= 80;
+										bg_color <= white;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 2;
+										end if;
+									when 2 =>
+										lcd_clear <= '0';
+										text_data <= " FEED:" & to_string(fodder, 9999, 10, 4) & "  ";
+										font_start <= '1';
+										text_color <= (others => black);
+										x <= 10;
+										y <= 120;
+										bg_color <= white;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 3;
+										end if;
+									when 3 =>
+										lcd_clear <= '0';
+										text_data <= " FUNC:BUY" & "   ";
+										text_color <= (others => white);
+										font_start <= '1';
+										x <= 10;
+										y <= 10;
+										bg_color <= black;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 0;
+										end if;
+								end case;
+							else
+								lcd_clear <= '1';
+								bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 40));
+							end if;
 							timer_ena <= '1';
 							data_g <= (others => x"00");
 							data_r <= (others => x"00");
 							data_g(buy_y)(buy_x) <= '1';
-							data_g(sell_y(0))(sell_x(0)) <= buy_enable(0);
-							data_r(sell_y(0))(sell_x(0)) <= buy_enable(0);
-							if buy_x = sell_x(0) and buy_y = sell_y(0) then
-								data_g(sell_y(0))(sell_x(0)) <= '1';
-								data_r(sell_y(0))(sell_x(0)) <= '0';
+							data_g(sell_y)(sell_x) <= buy_enable(0);
+							data_r(sell_y)(sell_x) <= buy_enable(0);
+							if buy_x = sell_x and buy_y = sell_y then
+								data_g(sell_y)(sell_x) <= '1';
+								data_r(sell_y)(sell_x) <= '0';
 								if msec < 10000 then
 									if money >= 100 and buy_enable(0) = '1' then
 										money <= money - 100;
@@ -606,7 +932,7 @@ begin
 										buy_enable(0) <= '0';
 										buying_state <= random;
 									end if;
-								elsif msec > 10000 then
+								elsif msec > 10000 and msec < 20000 then
 									if money >= 50 and buy_enable(0) = '1' then
 										money <= money - 50;
 										fodder <= fodder + 50;
@@ -631,11 +957,45 @@ begin
 								random1 <= random1 + 1;
 							end if;
 							random2 <= random2 + 1;
+
+							if msec >= 20000 then
+								if msec > 20500 then
+									data_g <= (others => x"00");
+									data_r <= (others => x"00");
+									buying_state <= ending;
+									timer_ena <= '0';
+								else
+									lcd_clear <= '1';
+									bg_color <= white;
+								end if;
+							end if;
 						when random =>
 							sell_x <= random_x(random1);
 							sell_y <= random_y(random2);
 							buy_enable(0) <= '1';
 							buying_state <= play;
+						when ending =>
+							data_g <= (others => x"00");
+							data_r <= (others => x"00");
+							bg_color <= white;
+							lcd_clear <= '0';
+							text_data <= " FUNC:BUY   ";
+							x <= 10;
+							y <= 10;
+							text_color <= all_black;
+							font_start <= '1';
+							if draw_done = '1' then
+								font_start <= '0';
+							end if;
+							led_r <= '0';
+							led_g <= '0';
+							led_y <= '1';
+							rgb <= "001";
+							timer_ena <= '1';
+							seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
+							if msec >= 5000 then
+								state <= waiting;
+							end if;
 					end case;
 			end case;
 		end if;
