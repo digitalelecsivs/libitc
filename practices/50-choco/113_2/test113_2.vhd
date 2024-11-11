@@ -668,7 +668,7 @@ begin
 							if pass_str = "912932" then
 								provide_state <= orange_flash;
 								fodder <= fodder - fodder_number + (fodder mod 5);
-								egg <= fodder_number/5;
+								egg <= egg + fodder_number/5;
 								fodder_number <= 0;
 							else
 								provide_state <= red_flash;
