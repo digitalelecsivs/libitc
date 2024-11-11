@@ -566,6 +566,7 @@ begin
 							if pressed = '1' and key = 12 then
 								provide_state <= green;
 								state <= waiting;
+								timer_ena <= '0';
 							end if;
 							data_r <= (X"00", X"06", X"03", X"FF", X"FF", X"03", X"06", X"00");
 							data_g <= (others => x"00");
@@ -671,25 +672,113 @@ begin
 								provide_state <= orange_flash;
 								fodder <= fodder - fodder_number + (fodder mod 5);
 								egg <= egg + fodder_number/5;
-								fodder_number <= 0;
 							else
 								provide_state <= red_flash;
 							end if;
 						when orange_flash =>
 							data_g <= (others => x"00");
 							data_r <= (X"10", X"08", X"04", X"7E", X"FF", X"40", X"20", X"10");
-							bg_color <= l_paste_txt(l_addr, l_paste_txt(l_addr, l_paste_txt(l_addr, to_data(l_paste(l_addr, white, black, (0, 0), 128, 80)), " FUNC:FEED", (10, 10), white), " NUM:" & to_string(fodder_number, 9999, 10, 4) & "  ", (40, 10), white), " P A S S", (120, 10), black);
+							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 80));
 							timer_ena <= '1';
+							if msec > 100 then
+								case lcd_count is
+									when 0 =>
+										lcd_clear <= '0';
+										text_data <= " NUM:" & to_string(fodder_number, 9999, 10, 4) & "   "; --& to_string(fodder, 9999, 10, 4) & "   ";
+										font_start <= '1';
+										text_color <= (others => white);
+										x <= 10;
+										y <= 40;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 1;
+										end if;
+									when 1 =>
+										lcd_clear <= '0';
+										text_data <= " FUNC:FEED" & "  ";
+										text_color <= (others => white);
+										font_start <= '1';
+										x <= 10;
+										y <= 10;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 2;
+										end if;
+									when 2 =>
+										lcd_clear <= '0';
+										text_data <= "    PASS    ";
+										text_color <= (others => black);
+										font_start <= '1';
+										x <= 10;
+										y <= 80;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 0;
+										end if;
+										bg_color <= white;
+									when 3 =>
+										lcd_count <= 0;
+								end case;
+							else
+								bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 80));
+								lcd_clear <= '1';
+							end if;
 							if msec > 2000 then
 								timer_ena <= '0';
+								fodder_number <= 0;
 								state <= waiting;
 							end if;
 						when red_flash =>
 							data_g <= (others => x"00");
 							data_r <= (X"10", X"08", X"04", X"7E", X"FF", X"40", X"20", X"10");
+							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 80));
 							timer_ena <= '1';
+							if msec > 100 then
+								case lcd_count is
+									when 0 =>
+										lcd_clear <= '0';
+										text_data <= " NUM:" & to_string(fodder_number, 9999, 10, 4) & "   "; --& to_string(fodder, 9999, 10, 4) & "   ";
+										font_start <= '1';
+										text_color <= (others => white);
+										x <= 10;
+										y <= 40;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 1;
+										end if;
+									when 1 =>
+										lcd_clear <= '0';
+										text_data <= " FUNC:FEED" & "  ";
+										text_color <= (others => white);
+										font_start <= '1';
+										x <= 10;
+										y <= 10;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 2;
+										end if;
+									when 2 =>
+										lcd_clear <= '0';
+										text_data <= "    FAIL    ";
+										text_color <= (others => black);
+										font_start <= '1';
+										x <= 10;
+										y <= 80;
+										if draw_done = '1' then
+											font_start <= '0';
+											lcd_count <= 0;
+										end if;
+										bg_color <= white;
+									when 3 =>
+										lcd_count <= 0;
+								end case;
+							else
+								bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 80));
+								lcd_clear <= '1';
+							end if;
 							if msec > 2000 then
 								timer_ena <= '0';
+								fodder_number <= 0;
 								state <= waiting;
 							end if;
 					end case;
