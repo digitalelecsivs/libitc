@@ -5,6 +5,8 @@ use work.itc.all;
 use work.itc_lcd.all;
 entity test113_2 is
 	port (
+
+		--system
 		clk, rst_n : in std_logic;
 
 		-- sw
