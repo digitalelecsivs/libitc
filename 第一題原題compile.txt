@@ -1,0 +1,47 @@
+	# Source files
+	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
+	set_global_assignment -name TOP_LEVEL_ENTITY test113_1
+
+	# Unit tests
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/test113_1.vhd
+	set_global_assignment -name VHDL_FILE practices/30-dora/tts_Jay/ser/tts_stop.vhd
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/diamond.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/diamond.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/circle.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/circle.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/hexagon.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/hexagon.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/octagon.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/octagon.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/rectangle.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/rectangle.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/rectangle_y.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/rectangle_y.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/square.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/square.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/triangle.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/triangle.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/triangle_r.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/triangle_r.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/wifi.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/wifi.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/line1.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/line1.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/line2.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/line2.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/triangle_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/triangle_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/square_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/square_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/diamond_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/diamond_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/circle_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/circle_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/hexagon_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/hexagon_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/octagon_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/octagon_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/rectangle_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/rectangle_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/triangle_s_r.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/triangle_s_r.qip
