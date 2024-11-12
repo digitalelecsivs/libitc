@@ -369,9 +369,12 @@ begin
 					data_r <= (X"3C", X"5A", X"A5", X"81", X"A5", X"A5", X"42", X"3C");
 					data_g <= (X"3C", X"5A", X"A5", X"81", X"A5", X"A5", X"42", X"3C");
 					seg_data <= "        ";
+					fodder_number <= 5;
+					egg_number <= 0;
 					if pressed_i = '1' and key = 14 then
 						if sw(0 to 2) /= "100" and sw(0 to 2) /= "010" and sw(0 to 2) /= "001" then
 							timer_ena <= '1';
+							text_color <= (others => black);
 							if msec > 20 then
 								case lcd_count is
 									when 0 =>
@@ -417,6 +420,7 @@ begin
 								end case;
 							else
 								lcd_clear <= '1';
+								bg_color <= white;
 							end if;
 						end if;
 					else
@@ -645,7 +649,13 @@ begin
 										end if;
 									when 2 =>
 										lcd_clear <= '0';
-										text_data <= "connect..." & "  ";
+										if msec mod 1000 < 300 then
+											text_data <= "connect." & "    ";
+										elsif msec mod 1000 < 600 then
+											text_data <= "connect.." & "   ";
+										elsif msec mod 1000 <= 1000 then
+											text_data <= "connect..." & "  ";
+										end if;
 										text_color <= (others => black);
 										font_start <= '1';
 										x <= 10;

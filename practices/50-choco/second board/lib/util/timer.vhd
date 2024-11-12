@@ -31,7 +31,7 @@ begin
 			clk_out => clk_timer
 		);
 
-	process (clk_timer, rst_n) begin
+	process (clk_timer, rst_n, ena) begin
 		if rst_n = '0' then
 			msec <= 0;
 		elsif ena = '0' then
