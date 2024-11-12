@@ -111,7 +111,7 @@ architecture arch of test113_2 is
 	signal price : integer range 0 to 99 := 10;
 	signal reset_count : integer range 0 to 2;
 	type pro_state is (green, red, check, green_flash, orange_flash, red_flash);
-	type sel_state is (timing_reset, red, sell);
+	type sel_state is (timing_reset, red, sell, ending);
 	type buy_state is (red, play, random, ending);
 	signal provide_state : pro_state;
 	signal sell_state : sel_state;
@@ -426,6 +426,7 @@ begin
 							bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, white, pic_data_sivs, (80, 30), 70, 70)), " FUNC:HOLD", (10, 40), black);
 							pic_addr_sivs <= to_addr(l_paste(l_addr, white, pic_data_sivs, (80, 30), 70, 70));
 						else
+							text_color <= (others => black);
 							case sw(0 to 2) is
 								when "100" =>
 									timer_ena <= '1';
@@ -511,6 +512,8 @@ begin
 								sell_state <= timing_reset;
 								timer_ena <= '0';
 								price <= 10;
+								pass(1) <= x"30";
+								pass(0) <= x"31";
 							when "001" =>
 								state <= buying;
 								buying_state <= red;
@@ -674,7 +677,7 @@ begin
 						when check => --check password true or not
 							if pass_str = "912932" then
 								provide_state <= orange_flash;
-								fodder <= fodder - fodder_number + (fodder mod 5);
+								fodder <= fodder - fodder_number + (fodder_number mod 5);
 								egg <= egg + fodder_number/5;
 							else
 								provide_state <= red_flash;
@@ -805,6 +808,7 @@ begin
 							end if;
 						when red =>
 							timer_ena <= '1';
+
 							data_g <= (others => x"00");
 							data_r <= (X"28", X"FE", X"2A", X"2A", X"FE", X"A8", X"FE", X"28");
 							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 40));
@@ -845,6 +849,10 @@ begin
 							if rx_done = '1'then
 								if to_integer(rx_data) = 13 then
 									count <= 0;
+									if count = 1 then
+										pass(1) <= pass(0);
+										pass(0) <= x"30";
+									end if;
 								else
 									pass(count) <= rx_data;
 									count <= count + 1;
@@ -939,12 +947,55 @@ begin
 								egg_number <= 0;
 							elsif pressed = '1' and key = 14 then
 								if egg_number <= egg then
-									state <= waiting;
+									sell_state <= ending;
+									timer_ena <= '0';
 									egg <= egg - egg_number;
 									money <= money + (egg_number * price);
 								end if;
 							end if;
-
+						when ending =>
+							timer_ena <= '1';
+							case lcd_count is
+								when 0 =>
+									lcd_clear <= '0';
+									text_data <= " NUM:" & to_string(egg_number, 999, 10, 3) & "    "; --& to_string(fodder, 9999, 10, 4) & "   ";
+									font_start <= '1';
+									text_color <= (others => black);
+									x <= 10;
+									y <= 40;
+									if draw_done = '1' then
+										font_start <= '0';
+										lcd_count <= 1;
+									end if;
+								when 1 =>
+									lcd_clear <= '0';
+									text_data <= "  $NT" & to_string(price, 99, 10, 2) & "     "; --& to_string(fodder, 9999, 10, 4) & "   ";
+									font_start <= '1';
+									text_color <= (others => red);
+									x <= 10;
+									y <= 60;
+									if draw_done = '1' then
+										font_start <= '0';
+										lcd_count <= 2;
+									end if;
+								when 2 =>
+									lcd_count <= 3;
+								when 3 =>
+									lcd_clear <= '0';
+									text_data <= " FUNC:SELL" & "  ";
+									text_color <= (others => black);
+									font_start <= '1';
+									x <= 10;
+									y <= 10;
+									if draw_done = '1' then
+										font_start <= '0';
+										lcd_count <= 0;
+									end if;
+							end case;
+							if msec > 2000 then
+								state <= waiting;
+								timer_ena <= '0';
+							end if;
 					end case;
 				when buying =>
 					led_r <= '0';
@@ -1067,10 +1118,8 @@ begin
 							if pressed = '1' and key = 9 and buy_y /= 0 then
 								buy_y <= buy_y - 1;
 							end if;
-							if pressed_i = '1' then
-								random1 <= random1 + 1;
-							end if;
-							random2 <= random2 + 1;
+							random2 <= random2 + 2;
+							random1 <= random1 + 1;
 
 							if msec >= 20000 then
 								if msec > 20500 then
