@@ -167,6 +167,13 @@ architecture arch of test113_1 is
 	constant gray : l_px_t := x"FFFFFF";
 	signal tts_c : integer range 0 to 6;
 	signal flag1, flag2 : std_logic;
+	type random_array is array(0 to 7) of integer range 0 to 8;
+	signal random : random_array := (0, 1, 2, 3, 5, 6, 7, 8);
+	signal random_r : random_array;
+	signal index : integer range 0 to 7;
+	signal random1 : integer range 0 to 7;
+	signal random2 : integer range 0 to 7;
+
 begin
 	pic_data(0) <= unsigned(pic_data_o(0));
 	pic_data(1) <= unsigned(pic_data_o(1));
@@ -526,6 +533,20 @@ begin
 				LCD_RESET <= '1';
 				seg_data <= "        ";
 			else
+				random1 <= random1 + 1;
+				random2 <= random1 + 3;
+				-- for i in 0 to 7 loop
+				-- 	if i < 6 then
+				-- 		random(i) <= random(i + 2);
+				-- 	elsif i = 6 then
+				-- 		random(i) <= random(0);
+				-- 	elsif i = 7 then
+				-- 		random(i) <= random(1);
+				-- 	end if;
+				-- end loop;
+				random(random1) <= random(random2);
+				random(random2) <= random(random1);
+
 				case sw_d is
 					when "00" =>
 						r_state11 <= start;
@@ -747,21 +768,6 @@ begin
 									end if;
 								end loop;
 								for i in 0 to 9 loop
-									-- if i = 0 then
-									-- 	if pics_data(0) /= white then
-									-- 		pic(0) := to_data(l_paste(l_addr, line(3), l_map(pics_data(0), pics_data(0), red), coord(0), 32, 32));
-									-- 	else
-									-- 		pic(0) := to_data(l_paste(l_addr, line(3), pics_data(0), coord(0), 32, 32));
-									-- 	end if;
-									-- 	pics_addr(0) <= to_addr(l_paste(l_addr, line(3), pics_data(0), coord(0), 32, 32));
-									-- elsif i > 0 and i /= 9 then
-									-- 	if i = 4 then
-									-- 		pic(i) := to_data(l_paste(l_addr, pic(i - 1), white, coord(i), 32, 32));
-									-- 		pics_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), white, coord(i), 32, 32));
-									-- 	else
-									-- 		pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pics_data(i), white, gray), coord(i), 32, 32));
-									-- 		pics_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pics_data(i), white, gray), coord(i), 32, 32));
-									-- 	end if;
 									if i = 9 then
 										if pressed = '1' then
 											tx_ena <= '1';
@@ -814,6 +820,7 @@ begin
 								end loop;
 								if pressed = '1' and key = 1 then
 									state1 <= rotate;
+									sel <= 4;
 								end if;
 							when rotate =>
 								bg_color <= l_map(pic(8), gray, line(3));
@@ -955,7 +962,6 @@ begin
 						end case;
 
 					when "10" =>
-						bg_color <= l_map(pic(8), gray, line(3));
 						for i in 0 to 3 loop
 							if i < 2 then
 								if i = 0 then
@@ -970,19 +976,41 @@ begin
 								line_addr(i) <= to_addr(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 2, 160));
 							end if;
 						end loop;
+						for i in 0 to 8 loop
+							if pic_number(i) = 0 then
+								if i = 0 then
+									font(i) := pic(8);
+								else
+									font(i) := font(i - 1);
+								end if;
+							elsif i = 0 then
+								font(i) := l_paste_txt(l_addr, pic(8), to_string(pic_number(i), 9, 10, 1), font_coord(i), black);
+							else
+								font(i) := l_paste_txt(l_addr, font(i - 1), to_string(pic_number(i), 9, 10, 1), font_coord(i), black);
+							end if;
+							if pic_number(i) = 8 then
+								r_state10 <= ending;
+							end if;
+						end loop;
 						state1 <= start;
 						state3 <= start;
 						r_state11 <= start;
 						tx_ena <= '0';
+						end_time <= game_time;
 						case r_state10 is
 							when start => --reset
+								random_r <= random;
+								timer_reset <= '0';
 								tx_mode <= '1';
-								P_S <= 3;
 								timer_ena <= '0';
 								PIC_8 <= '1';
+								pic_count <= 1;
 								PIC_STATE <= "11111111";
 								sel <= 4;
 								seg_data <= "        ";
+								pic_number <= (others => 0);
+								r_state10 <= r_state10;
+								index <= 0;
 								if pressed = '1' and key = 0 then
 									r_state10 <= cutdown;
 								end if;
@@ -1015,8 +1043,12 @@ begin
 											tx_ena <= '0';
 											timer_ena <= '0';
 										end if;
+									elsif msec > 7000 then
+										timer_ena <= '0';
+										r_state10 <= start;
 									end if;
 								end if;
+
 								bg_color <= l_map(pic(7), gray, line(3));
 								for i in 0 to 7 loop
 									if i <= 3 then
@@ -1029,8 +1061,8 @@ begin
 											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
 										end if;
 									elsif i >= 4 and i <= 7 then
-										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
+										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
+										pic_addr(i + 1) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
 									end if;
 								end loop;
 							when waiting =>
@@ -1049,79 +1081,78 @@ begin
 											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
 										end if;
 									elsif i >= 4 and i <= 7 then
-										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
+										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
+										pic_addr(i + 1) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
 									end if;
 									pic(8) := to_data(l_paste(l_addr, pic(7), l_map(pic_data(9), white, gray), coord(4), 32, 32));
 									pic_addr(9) <= to_addr(l_paste(l_addr, pic(7), l_map(pic_data(9), white, gray), coord(4), 32, 32));
 								end loop;
 							when connect =>
-								if rx_done = '1' then
-									case rx_data(1 to 8) is
-										when "00000000" =>
-											seg_data <= "CMD:UP! ";
-										when "10000000" =>
-											seg_data <= "CMD:DW! ";
-										when "20000000" =>
-											seg_data <= "CMD:LT! ";
-										when "30000000" =>
-											seg_data <= "CMD:RT! ";
-										when others => null;
-									end case;
+								seg_data(5 to 8) <= to_string(end_time/1000, 9999, 10, 4);
+								flag1 <= '0';
+								flag2 <= '0';
+								P_S <= random_r(index);
+								timer_reset <= '1';
+								if msec > 1000 then
+									timer_ena <= '0';
+									seg_data(1 to 4) <= "    ";
 								end if;
-								bg_color <= l_map(pic(8), gray, line(3));
+								bg_color <= l_map(font(8), gray, line(3));
 								for i in 0 to 8 loop
 									if i <= 3 then
 										if i = 0 then
-											if PIC_STATE(0) = '1' then
-												pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-												pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-											else
-												pic(0) := gray;
-											end if;
+											pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
+											pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
 										end if;
 										if i > 0 then
-											if PIC_STATE(i) = '1' then
-												pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-												pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-											else
-												pic(i) := pic(i - 1);
-											end if;
+											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
 										end if;
 									elsif i >= 4 and i <= 7 then
-										if PIC_STATE(i) = '1' then
-											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										else
-											pic(i) := pic(i - 1);
-										end if;
+										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
+										pic_addr(i + 1) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
 									elsif i = 8 then
-										if pressed = '1' and key = 2 then
-											angle <= angle + 1;
+										if pressed = '1' then
+											tx_ena <= '1';
+											if key = 1 then
+												tx_data(1 to 8) <= "11111111";
+												tx_len <= 3;
+											end if;
+											if key = 2 then
+												tx_data(1 to 8) <= "11111111";
+												tx_len <= 8;
+											end if;
+										else
+											tx_ena <= '0';
 										end if;
+
 										if rx_done = '1' then
 											case rx_data(1 to 8) is
 												when "00000000" =>
 													if sel > 2 then
 														sel <= sel - 3;
+														seg_data(1 to 4) <= "    ";
 													else
 														tts_mode <= idle;
 													end if;
 												when "10000000" =>
 													if sel < 6 then
 														sel <= sel + 3;
+														seg_data(1 to 4) <= "    ";
 													else
 														tts_mode <= idle;
 													end if;
 												when "20000000" =>
 													if sel /= 0 and sel /= 3 and sel /= 6 then
 														sel <= sel - 1;
+														seg_data(1 to 4) <= "    ";
 													else
 														tts_mode <= idle;
 													end if;
 												when "30000000" =>
 													if sel /= 2 and sel /= 5 and sel /= 8 then
 														sel <= sel + 1;
+														seg_data(1 to 4) <= "    ";
 													else
 														tts_mode <= idle;
 													end if;
@@ -1145,24 +1176,50 @@ begin
 										if pressed = '1' and key = 3 then
 											if sel < 4 then
 												if P_S = (sel) and PIC_ANGLE(P_S)(angle) = '1' then
+													index <= index + 1;
 													PIC_STATE(P_S) <= '0';
 													PIC_8 <= '0';
 													r_state10 <= cleaning;
+													flag1 <= '1';
+													pic_number(P_S) <= pic_count;
+													pic_count <= pic_count + 1;
+													seg_data(1 to 4) <= "BGO ";
+													timer_ena <= '1';
+												else
+													seg_data(1 to 4) <= "Err ";
+													timer_ena <= '1';
 												end if;
 											elsif sel > 4 then
 												if P_S = (sel) and PIC_ANGLE(P_S - 1)(angle) = '1' then
+													index <= index + 1;
 													PIC_STATE(P_S - 1) <= '0';
 													PIC_8 <= '0';
 													r_state10 <= cleaning;
+													pic_number(P_S) <= pic_count;
+													pic_count <= pic_count + 1;
+													seg_data(1 to 4) <= "BGO ";
+													timer_ena <= '1';
+												else
+													seg_data(1 to 4) <= "Err ";
+													timer_ena <= '1';
 												end if;
 											end if;
 										end if;
 									end if;
 								end loop;
 							when cleaning =>
+								seg_data(5 to 8) <= to_string(end_time/1000, 9999, 10, 4);
+								bg_color <= l_map(font(8), gray, line(3));
+								if msec > 1000 then
+									timer_ena <= '0';
+									seg_data(1 to 4) <= "    ";
+								end if;
 								pic(8) := l_map(pic(7), gray, line(3));
+								bg_color <= font(8);
 								if pressed = '1' and key = 1 then
 									r_state10 <= connect;
+									flag2 <= '1';
+									flag1 <= '0';
 									if P_S = 0 then
 										P_S <= 8;
 									elsif P_S = 5 then
@@ -1177,31 +1234,42 @@ begin
 								for i in 0 to 7 loop
 									if i <= 3 then
 										if i = 0 then
-											if PIC_STATE(0) = '1' then
-												pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-												pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-											else
-												pic(0) := gray;
-											end if;
+											pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
+											pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
 										end if;
 										if i > 0 then
-											if PIC_STATE(i) = '1' then
-												pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-												pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-											else
-												pic(i) := pic(i - 1);
-											end if;
+											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+
 										end if;
 									elsif i >= 4 and i <= 7 then
-										if PIC_STATE(i) = '1' then
-											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										else
-											pic(i) := pic(i - 1);
-										end if;
+										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
+										pic_addr(i + 1) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
 									end if;
 								end loop;
 							when ending =>
+								timer_reset <= '0';
+								seg_data(5 to 8) <= to_string(end_time/1000, 9999, 10, 4);
+								bg_color <= font(8);
+								pic(8) := l_map(pic(7), gray, line(3));
+								end_time <= end_time;--不讓他改變
+								seg_data(1 to 4) <= "    ";
+								for i in 0 to 7 loop
+									if i <= 3 then
+										if i = 0 then
+											pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
+											pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
+										end if;
+										if i > 0 then
+											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+
+										end if;
+									elsif i >= 4 and i <= 7 then
+										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
+										pic_addr(i + 1) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i + 1), white, gray), coord(i + 1), 32, 32));
+									end if;
+								end loop;
 						end case;
 					when "11" =>
 						dbg_a(0) <= busy;
@@ -1312,6 +1380,7 @@ begin
 										len <= 2;
 										tts_mode <= waiting;
 										tts_reset <= '0';
+										tts_ena <= '1';
 									when others => tts_mode <= idle;
 								end case;
 							when waiting =>
@@ -1369,26 +1438,27 @@ begin
 							else
 								font(i) := l_paste_txt(l_addr, font(i - 1), to_string(pic_number(i), 9, 10, 1), font_coord(i), black);
 							end if;
-							if pic_number(i) = 8 then
-								r_state11 <= ending;
-							end if;
 						end loop;
 						state1 <= start;
 						state3 <= start;
 						r_state10 <= start;
 						tx_ena <= '0';
-						seg_data(5 to 8) <= to_string(end_time/1000, 9999, 10, 4);
 						end_time <= game_time;
 						case r_state11 is
 							when start => --reset
+								random_r <= random;
+								pic_count <= 1;
 								timer_reset <= '0';
 								tx_mode <= '1';
-								P_S <= 3;
 								timer_ena <= '0';
 								PIC_8 <= '1';
 								PIC_STATE <= "11111111";
+								r_state11 <= r_state11;
 								sel <= 4;
 								seg_data <= "        ";
+								pic_number <= (others => 0);
+								index <= 0;
+								pic_number <= (others => 0);
 								if pressed = '1' and key = 0 then
 									r_state11 <= cutdown;
 								end if;
@@ -1472,33 +1542,25 @@ begin
 									pic_addr(9) <= to_addr(l_paste(l_addr, pic(7), l_map(pic_data(9), white, gray), coord(4), 32, 32));
 								end loop;
 							when connect =>
-								flag2 <= '0';
+								seg_data(5 to 8) <= to_string(end_time/1000, 9999, 10, 4);
 								flag1 <= '0';
+								flag2 <= '0';
+								P_S <= random_r(index);
 								timer_reset <= '1';
 								if msec > 1000 then
 									timer_ena <= '0';
 									seg_data(1 to 4) <= "    ";
 								end if;
-								if tts_mode = idle and tts_data /= "10000000" and tts_data /= "20000000"and tts_data /= "30000000" and tts_data /= "40000000" then
+								if tts_mode = idle and tts_data /= "00000000" and tts_data /= "10000000"and tts_data /= "20000000" and tts_data /= "30000000" then
 									tts_data(1 to 8) <= "picture" & to_string(pic_count, 9, 10, 1);
 									tts_mode <= play;
 								elsif rx_done = '1' or flag2 = '1' then
-									tts_data(1 to 8) <= "ttsreset";
-									tts_mode <= play;
+									txt(0 to 1) <= tts_instant_soft_reset;
+									len <= 2;
+									tts_mode <= waiting;
+									tts_reset <= '0';
+									tts_ena <= '1';
 								end if;
-								-- if rx_done = '1' then
-								-- 	case rx_data(1 to 8) is
-								-- 		when "00000000" =>
-								-- 			seg_data <= "CMD:UP! ";
-								-- 		when "10000000" =>
-								-- 			seg_data <= "CMD:DW! ";
-								-- 		when "20000000" =>
-								-- 			seg_data <= "CMD:LT! ";
-								-- 		when "30000000" =>
-								-- 			seg_data <= "CMD:RT! ";
-								-- 		when others => null;
-								-- 	end case;
-								-- end if;
 								bg_color <= l_map(font(8), gray, line(3));
 								for i in 0 to 8 loop
 									if i <= 3 then
@@ -1526,9 +1588,6 @@ begin
 											end if;
 										else
 											tx_ena <= '0';
-										end if;
-										if pressed = '1' and key = 2 then
-											angle <= angle + 1;
 										end if;
 										if rx_done = '1' then
 											case rx_data(1 to 8) is
@@ -1584,12 +1643,16 @@ begin
 										if pressed = '1' and key = 3 then
 											if sel < 4 then
 												if P_S = (sel) and PIC_ANGLE(P_S)(angle) = '1' then
+													index <= index + 1;
 													PIC_STATE(P_S) <= '0';
 													PIC_8 <= '0';
 													r_state11 <= cleaning;
-													tts_data(1 to 8) <= "ttsreset";
-													tts_c <= 5;
-													tts_mode <= play;
+													txt(0 to 1) <= tts_instant_soft_reset;
+													len <= 2;
+													tts_mode <= waiting;
+													tts_reset <= '0';
+													tts_ena <= '1';
+													flag1 <= '1';
 													pic_number(P_S) <= pic_count;
 													pic_count <= pic_count + 1;
 													seg_data(1 to 4) <= "BGO ";
@@ -1600,12 +1663,16 @@ begin
 												end if;
 											elsif sel > 4 then
 												if P_S = (sel) and PIC_ANGLE(P_S - 1)(angle) = '1' then
+													index <= index + 1;
 													PIC_STATE(P_S - 1) <= '0';
 													PIC_8 <= '0';
 													r_state11 <= cleaning;
-													tts_data(1 to 8) <= "ttsreset";
-													tts_mode <= play;
-													tts_c <= 5;
+													txt(0 to 1) <= tts_instant_soft_reset;
+													len <= 2;
+													tts_mode <= waiting;
+													tts_reset <= '0';
+													tts_ena <= '1';
+													flag1 <= '1';
 													pic_number(P_S) <= pic_count;
 													pic_count <= pic_count + 1;
 													seg_data(1 to 4) <= "BGO ";
@@ -1619,16 +1686,17 @@ begin
 									end if;
 								end loop;
 							when cleaning =>
-								flag1 <= '1';
+								for i in 0 to 8 loop
+									if pic_number(i) = 8 then
+										r_state11 <= ending;
+										flag1 <= '1';
+									end if;
+								end loop;
+								seg_data(5 to 8) <= to_string(end_time/1000, 9999, 10, 4);
 								bg_color <= l_map(font(8), gray, line(3));
 								if msec > 1000 then
 									timer_ena <= '0';
 									seg_data(1 to 4) <= "    ";
-								end if;
-								if flag1 = '1' then
-									tts_data(1 to 8) <= "piccheck";
-									tts_mode <= play;
-									flag1 <= '0';
 								end if;
 								pic(8) := l_map(pic(7), gray, line(3));
 								bg_color <= font(8);
@@ -1637,6 +1705,7 @@ begin
 									tts_mode <= play;
 									tts_data(1 to 8) <= "pic_gene";
 									flag2 <= '1';
+									flag1 <= '0';
 									tts_c <= 6;
 									if P_S = 0 then
 										P_S <= 8;
@@ -1666,7 +1735,15 @@ begin
 									end if;
 								end loop;
 							when ending =>
-								bg_color <= l_map(font(8), gray, line(3));
+								if tts_mode = idle and flag1 = '1' then
+									flag1 <= '0';
+									tts_data(1 to 8) <= "piccheck";
+									tts_mode <= play;
+								end if;
+								timer_reset <= '0';
+								seg_data(5 to 8) <= to_string(end_time/1000, 9999, 10, 4);
+								bg_color <= font(8);
+								pic(8) := l_map(pic(7), gray, line(3));
 								end_time <= end_time;--不讓他改變
 								seg_data(1 to 4) <= "    ";
 								for i in 0 to 7 loop
