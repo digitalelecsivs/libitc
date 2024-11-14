@@ -556,6 +556,9 @@ begin
 						LCD_RESET <= '1';
 						case state1 is
 							when start =>
+								seg_data <= "        ";
+								angle00 <= (others => 0);
+								pic_color <= (0, 0, 0, 1, 1, 1, 2, 2, 2);
 								timer_ena <= '0';
 								sel <= 4;
 								if pressed = '1' and key = 0 then
@@ -1686,6 +1689,11 @@ begin
 									end if;
 								end loop;
 							when cleaning =>
+								if tts_mode = idle and flag1 = '1' then
+									flag1 <= '0';
+									tts_data(1 to 8) <= "piccheck";
+									tts_mode <= play;
+								end if;
 								for i in 0 to 8 loop
 									if pic_number(i) = 8 then
 										r_state11 <= ending;
