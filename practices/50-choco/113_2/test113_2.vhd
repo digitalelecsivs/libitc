@@ -123,6 +123,7 @@ architecture arch of test113_2 is
 	signal random1 : integer range 0 to 2;
 	signal random2 : integer range 0 to 2;
 	signal point : integer range 0 to 99;
+	signal profit : integer;
 	constant random_x : sell_coord := (0, 3, 6);
 	constant random_y : sell_coord := (0, 3, 6);
 	constant all_black : l_px_arr_t(1 to 12) := (black, black, black, black, black, black, black, black, black, black, black, black);
@@ -530,11 +531,7 @@ begin
 					led_g <= '0';
 					led_y <= '0';
 					rgb <= "100";
-					if pressed_i = '1' and key = 14 then
-						seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
-					else
-						seg_data <= "        ";
-					end if;
+					seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
 					case provide_state is
 						when green => null;
 						when red =>
@@ -580,7 +577,7 @@ begin
 								timer_ena <= '0';
 							end if;
 							data_r <= (X"00", X"06", X"03", X"FF", X"FF", X"03", X"06", X"00");
-							data_g <= (others => x"00");
+							data_g <= (X"00", X"06", X"03", X"FF", X"FF", X"03", X"06", X"00");
 							if pressed = '1' and key < 11 and key /= 7 then
 								case key is
 									when 0 => number := 7;
@@ -693,7 +690,7 @@ begin
 								provide_state <= red_flash;
 							end if;
 						when orange_flash =>
-							data_g <= (others => x"00");
+							data_g <= (others => x"00");--???
 							data_r <= (X"10", X"08", X"04", X"7E", X"FF", X"40", X"20", X"10");
 							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 80));
 							timer_ena <= '1';
@@ -706,6 +703,7 @@ begin
 										text_color <= (others => white);
 										x <= 10;
 										y <= 40;
+										bg_color <= black;
 										if draw_done = '1' then
 											font_start <= '0';
 											lcd_count <= 1;
@@ -715,6 +713,7 @@ begin
 										text_data <= " FUNC:FEED" & "  ";
 										text_color <= (others => white);
 										font_start <= '1';
+										bg_color <= black;
 										x <= 10;
 										y <= 10;
 										if draw_done = '1' then
@@ -757,6 +756,7 @@ begin
 										text_data <= " NUM:" & to_string(fodder_number, 9999, 10, 4) & "   "; --& to_string(fodder, 9999, 10, 4) & "   ";
 										font_start <= '1';
 										text_color <= (others => white);
+										bg_color <= black;
 										x <= 10;
 										y <= 40;
 										if draw_done = '1' then
@@ -804,11 +804,8 @@ begin
 					led_g <= '1';
 					led_y <= '0';
 					rgb <= "010";
-					if pressed_i = '1' and key = 14 then
-						seg_data <= to_string(egg, 999, 10, 3) & "   " & to_string(price, 99, 10, 2);
-					else
-						seg_data <= "        ";
-					end if;
+					seg_data <= to_string(egg, 999, 10, 3) & "   " & to_string(price, 99, 10, 2);
+
 					case sell_state is
 						when timing_reset =>
 							if msec = 0 then
@@ -819,7 +816,7 @@ begin
 						when red =>
 							timer_ena <= '1';
 
-							data_g <= (others => x"00");
+							data_g <= (X"28", X"FE", X"2A", X"2A", X"FE", X"A8", X"FE", X"28");
 							data_r <= (X"28", X"FE", X"2A", X"2A", X"FE", X"A8", X"FE", X"28");
 							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 40));
 							if msec > 100 then
@@ -901,7 +898,8 @@ begin
 										if egg_number > egg then
 											text_data <= "NOT ENOUGH  ";
 										else
-											text_data <= "  $NT" & to_string(price, 99, 10, 2) & "     "; --& to_string(fodder, 9999, 10, 4) & "   ";
+											profit <= egg_number * price;
+											text_data <= " $NT" & to_string(price * egg_number, 9999, 10, 4) & "    "; --& to_string(fodder, 9999, 10, 4) & "   ";
 										end if;
 										font_start <= '1';
 										text_color <= (others => black);
@@ -979,7 +977,7 @@ begin
 									end if;
 								when 1 =>
 									lcd_clear <= '0';
-									text_data <= "  $NT" & to_string(price, 99, 10, 2) & "     "; --& to_string(fodder, 9999, 10, 4) & "   ";
+									text_data <= " $NT" & to_string(profit, 9999, 10, 4) & "    "; --& to_string(fodder, 9999, 10, 4) & "   ";
 									font_start <= '1';
 									text_color <= (others => red);
 									x <= 10;
@@ -1015,8 +1013,7 @@ begin
 					case buying_state is
 						when red =>
 							data_r <= (X"00", X"60", X"C0", X"FF", X"FF", X"C0", X"60", X"00");
-							data_g <= (others => x"00");
-							timer_ena <= '0';
+							data_g <= (X"00", X"60", X"C0", X"FF", X"FF", X"C0", X"60", X"00");
 							point <= 0;
 							lcd_clear <= '0';
 							text_data <= " FUNC:BUY   ";
@@ -1027,12 +1024,10 @@ begin
 							if draw_done = '1' then
 								font_start <= '0';
 							end if;
-							if pressed_i = '1' and key = 14 then
-								timer_ena <= '1';
-								if msec > 2000 then
-									timer_ena <= '0';
-									buying_state <= play;
-								end if;
+							timer_ena <= '1';
+							if msec > 2000 then
+								timer_ena <= '0';
+								buying_state <= play;
 							end if;
 						when play =>
 							seg_data <= "TIME  " & to_string(20 - msec/1000, 99, 10, 2);

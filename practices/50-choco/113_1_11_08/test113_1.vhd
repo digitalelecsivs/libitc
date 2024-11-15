@@ -534,7 +534,7 @@ begin
 				seg_data <= "        ";
 			else
 				random1 <= random1 + 1;
-				random2 <= random1 + 3;
+				random2 <= random2 + 3;
 				-- for i in 0 to 7 loop
 				-- 	if i < 6 then
 				-- 		random(i) <= random(i + 2);

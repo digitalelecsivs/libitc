@@ -57,60 +57,67 @@ if {$make_assignments} {
 
 	# Unit tests
 	# set_global_assignment -name VHDL_FILE practices/50-choco/mot_test/mot_test.vhd
-	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2/test113_2_2.vhd
+	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2/test113_2.vhd
 	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2/Logo_SIVS.vhd
 	# set_global_assignment -name QIP_FILE practices/50-choco/113_2/Logo_SIVS.qip
 	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2/FEED.vhd
 	# set_global_assignment -name QIP_FILE practices/50-choco/113_2/FEED.qip
 			
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/test113_1.vhd
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/test113_1.vhd
 	set_global_assignment -name VHDL_FILE practices/30-dora/tts_Jay/ser/tts_stop.vhd
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/diamond.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/diamond.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/circle.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/circle.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/square.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/square.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/triangle.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/triangle.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/diamond.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/diamond.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/circle.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/circle.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/square.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/square.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/triangle.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/triangle.qip
 
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/heart.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/heart.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/parallelogram.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/parallelogram.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/Q.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/Q.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/star.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/star.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/X.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/X.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/heart.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/heart.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/parallelogram.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/parallelogram.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/Q.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/Q.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/star.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/star.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/X.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/X.qip
 
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/wifi.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/wifi.qip
-	
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/line1.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/line1.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/line2.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/line2.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/wifi1.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/wifi1.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/wifi2.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/wifi2.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/wifi3.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/wifi3.qip	
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/wifi4.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/wifi4.qip
 
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/triangle_s.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/triangle_s.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/square_s.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/square_s.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/diamond_s.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/diamond_s.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/circle_s.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/circle_s.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/heart_s.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/heart_s.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/parallelogram_s.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/parallelogram_s.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/Q_s.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/Q_s.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/star_s.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/star_s.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_1/pic/X_s.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_1/pic/X_s.qip
+
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/line1.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/line1.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/line2.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/line2.qip
+
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/triangle_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/triangle_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/square_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/square_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/diamond_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/diamond_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/circle_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/circle_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/heart_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/heart_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/parallelogram_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/parallelogram_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/Q_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/Q_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/star_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/star_s.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_15/pic/X_s.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_1_11_15/pic/X_s.qip
 
 
 
@@ -129,8 +136,8 @@ if {$make_assignments} {
 
 	## Components
 	set_global_assignment -name VHDL_FILE lib/lcd_mix.vhd
-	set_global_assignment -name VHDL_FILE lib/font/Font.vhd
-	set_global_assignment -name QIP_FILE lib/font/Font.qip
+	# set_global_assignment -name VHDL_FILE lib/font/Font.vhd
+	# set_global_assignment -name QIP_FILE lib/font/Font.qip
 	set_global_assignment -name VHDL_FILE lib/dht.vhd
 	set_global_assignment -name VHDL_FILE lib/dot.vhd
 	set_global_assignment -name VHDL_FILE lib/key.vhd
