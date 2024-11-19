@@ -83,12 +83,12 @@ begin
 			addr       => l_addr,
 			data       => l_data
 		);
-	-- Font_inst : entity work.Font(syn)
-	-- 	port map(
-	-- 		address => std_logic_vector(to_unsigned(l_addr_p, 15)),
-	-- 		clock   => clk,
-	-- 		q       => q
-	-- 	);
+	Font_inst : entity work.Font(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(l_addr_p, 15)),
+			clock   => clk,
+			q       => q
+		);
 	-- bongo_inst : entity work.bongo(syn)
 	-- 	port map(
 	-- 		address => std_logic_vector(to_unsigned(l_addr, 15)),
