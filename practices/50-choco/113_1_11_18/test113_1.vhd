@@ -1400,6 +1400,7 @@ begin
 								bg_color <= l_map(line(3), white, pic(10));
 								if index < 9 then
 									P_S <= random_r(index);
+									bg_color <= l_map(line(3), white, pic(10));
 								else
 									pic(10) := pic(8);
 								end if;
