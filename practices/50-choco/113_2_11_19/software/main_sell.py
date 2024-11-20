@@ -6,7 +6,7 @@ import serial
 import serial.tools.list_ports
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QMainWindow
-from ui3 import Ui_MainWindow
+from ui4 import Ui_MainWindow
 
 
 class Main(QMainWindow, Ui_MainWindow):
@@ -28,7 +28,7 @@ class Main(QMainWindow, Ui_MainWindow):
     def onNumberClick(self, num: int):
         print(f"Clicked {num}")
         self.value += str(num)
-        self.label_inputnumber.setText("輸入飼料")
+        self.label_inputnumber.setText("輸入雞蛋數量")
         self.label_output.setText(self.value)
         ser.write((self.value + "\r").encode(encoding="utf-8"))
         print((self.value + "\r").encode(encoding="utf-8"))
@@ -37,7 +37,7 @@ class Main(QMainWindow, Ui_MainWindow):
         if cmd == "clear":
             self.value = ""
             self.label_output.setText(self.value)
-            self.label_inputnumber.setText("輸入飼料")
+            self.label_inputnumber.setText("輸入雞蛋數量")
             ser.write(("0000" + "\r").encode(encoding="utf-8"))
             print(("0000" + "\r").encode(encoding="utf-8"))
         if cmd == "send" and self.value != "":
@@ -48,7 +48,7 @@ class Main(QMainWindow, Ui_MainWindow):
             self.label_output.setText(self.value)
         if cmd == "back":
             self.value = self.value[:-1]
-            self.label_inputnumber.setText("輸入飼料")
+            self.label_inputnumber.setText("輸入雞蛋數量")
             self.label_output.setText(self.value)
             ser.write((self.value + "\r").encode(encoding="utf-8"))
             print((self.value + "\r").encode(encoding="utf-8"))

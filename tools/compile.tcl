@@ -57,17 +57,17 @@ if {$make_assignments} {
 
 	# Unit tests
 	# set_global_assignment -name VHDL_FILE practices/50-choco/mot_test/mot_test.vhd
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_2_11_19/test113_2.vhd
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_2_11_19/price.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_2_11_19/price.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_2_11_19/FEED.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_2_11_19/FEED.qip
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_2_11_19/egg.vhd
-	set_global_assignment -name QIP_FILE practices/50-choco/113_2_11_19/egg.qip
-	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2/Logo_SIVS.vhd
-	# set_global_assignment -name QIP_FILE practices/50-choco/113_2/Logo_SIVS.qip
-	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2/FEED.vhd
-	# set_global_assignment -name QIP_FILE practices/50-choco/113_2/FEED.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_2/test113_2.vhd
+	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2_11_19/price.vhd
+	# set_global_assignment -name QIP_FILE practices/50-choco/113_2_11_19/price.qip
+	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2_11_19/FEED.vhd
+	# set_global_assignment -name QIP_FILE practices/50-choco/113_2_11_19/FEED.qip
+	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2_11_19/egg.vhd
+	# set_global_assignment -name QIP_FILE practices/50-choco/113_2_11_19/egg.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_2/Logo_SIVS.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_2/Logo_SIVS.qip
+	set_global_assignment -name VHDL_FILE practices/50-choco/113_2/FEED.vhd
+	set_global_assignment -name QIP_FILE practices/50-choco/113_2/FEED.qip
 			
 	# set_global_assignment -name VHDL_FILE practices/50-choco/113_1_11_18/test113_1.vhd
 	# set_global_assignment -name VHDL_FILE practices/30-dora/tts_Jay/ser/tts_stop.vhd

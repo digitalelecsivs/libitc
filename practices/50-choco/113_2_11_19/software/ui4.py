@@ -221,7 +221,7 @@ class Ui_MainWindow(object):
         self.pushButton_clear.setText(_translate("MainWindow", "清除"))
         self.pushButton_back.setText(_translate("MainWindow", "返回"))
         self.pushButton_send.setText(_translate("MainWindow", "送出"))
-        self.label_inputnumber.setText(_translate("MainWindow", "輸入密碼"))
+        self.label_inputnumber.setText(_translate("MainWindow", "輸入雞蛋數量"))
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ entity lcd_mix is
 		font_start       : in std_logic;
 		font_busy        : out std_logic;
 		text_size        : in integer range 1 to 12;
-		text_data        : in string(1 to 4);--需要的話改回(1 to 12)
+		text_data        : in string(1 to 12);
 		text_count       : out integer range 1 to 12;
 		addr             : out l_addr_t;
 		text_color       : in l_px_t;

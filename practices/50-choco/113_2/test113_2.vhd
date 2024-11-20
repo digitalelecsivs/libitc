@@ -690,7 +690,7 @@ begin
 								provide_state <= red_flash;
 							end if;
 						when orange_flash =>
-							data_g <= (others => x"00");--???
+							data_g <= (X"10", X"08", X"04", X"7E", X"FF", X"40", X"20", X"10");
 							data_r <= (X"10", X"08", X"04", X"7E", X"FF", X"40", X"20", X"10");
 							bg_color <= to_data(l_paste(l_addr, white, black, (0, 0), 128, 80));
 							timer_ena <= '1';
