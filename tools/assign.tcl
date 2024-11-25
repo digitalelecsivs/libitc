@@ -98,19 +98,21 @@ if {$make_assignments} {
 	set_location_assignment PIN_133 -to tsl_sda
 
 	# LCD_{CLK,DAT,RES,DC,CS,BL}
-	set_location_assignment PIN_166 -to lcd_sclk		
-	set_location_assignment PIN_164 -to lcd_mosi
-	set_location_assignment PIN_161 -to lcd_rst_n
-	set_location_assignment PIN_160 -to lcd_dc
-	set_location_assignment PIN_159 -to lcd_ss_n
-	set_location_assignment PIN_146 -to lcd_bl
-
-	# set_location_assignment PIN_166 -to lcd_sclk
+	#2
+	# set_location_assignment PIN_166 -to lcd_sclk		
 	# set_location_assignment PIN_164 -to lcd_mosi
-	# set_location_assignment PIN_162 -to lcd_rst_n
-	# set_location_assignment PIN_161 -to lcd_dc
-	# set_location_assignment PIN_160 -to lcd_ss_n
-	# set_location_assignment PIN_159 -to lcd_bl
+	# set_location_assignment PIN_161 -to lcd_rst_n
+	# set_location_assignment PIN_160 -to lcd_dc
+	# set_location_assignment PIN_159 -to lcd_ss_n
+	# set_location_assignment PIN_146 -to lcd_bl
+
+	#1
+	set_location_assignment PIN_166 -to lcd_sclk 
+	set_location_assignment PIN_164 -to lcd_mosi
+	set_location_assignment PIN_162 -to lcd_rst_n
+	set_location_assignment PIN_161 -to lcd_dc
+	set_location_assignment PIN_160 -to lcd_ss_n
+	set_location_assignment PIN_159 -to lcd_bl
 
 	
 

@@ -394,6 +394,22 @@ begin
 			txt        => txt,
 			txt_len    => len
 		);
+	-- tts_inst : entity work.tts(arch)
+	-- 	generic map(
+	-- 		txt_len_max => max_len
+	-- 	)
+	-- 	port map(
+	-- 		clk       => clk,
+	-- 		rst_n     => rst_n,
+	-- 		tts_scl   => tts_scl,
+	-- 		tts_sda   => tts_sda,
+	-- 		tts_mo    => tts_mo,
+	-- 		tts_rst_n => tts_rst_n,
+	-- 		ena       => tts_ena,
+	-- 		busy      => busy,
+	-- 		txt       => txt,
+	-- 		txt_len   => len
+	-- 	);
 	uart_txt : entity work.uart_txt(arch)
 		generic map(
 			txt_len_max => 12,
@@ -564,11 +580,17 @@ begin
 				tts_mode <= idle;
 				LCD_RESET <= '1';
 				seg_data <= "        ";
+				txt(0 to 1) <= tts_instant_soft_reset;
+				len <= 2;
+				tts_mode <= waiting;
+				tts_ena <= '1';
+				tts_data(1 to 8) <= "ttsreset";
 			else
 				random1 <= random1 + 1;
 				random2 <= random2 + 3;
 				random(random1) <= random(random2);
 				random(random2) <= random(random1);
+
 				-- random1 <= random1 + 1;
 				-- random2 <= random2 + 3;
 				-- random(random1) <= random(random2);
@@ -1239,6 +1261,8 @@ begin
 								r_state11 <= r_state11;
 								if pressed = '1' and key = 0 then
 									r_state11 <= cutdown;
+									tts_data(1 to 8) <= "ttsreset";
+									tts_mode <= play;
 								end if;
 								LCD_RESET <= '0';
 							when cutdown =>
@@ -1295,7 +1319,7 @@ begin
 									elsif msec > 7000 then
 										timer_ena <= '0';
 										r_state11 <= start;
-										tts_data(1 to 8) <= "wififali";
+										tts_data(1 to 8) <= "wififail";
 										tts_mode <= play;
 									end if;
 								end if;
@@ -1397,6 +1421,10 @@ begin
 									tts_mode <= play;
 								end if;
 							when ending =>
+								if pressed = '1' and key = 0 then
+									tts_data(1 to 8) <= "ttsreset";
+									tts_mode <= play;
+								end if;
 								bg_color <= l_map(line(3), white, pic(10));
 								if index < 9 then
 									P_S <= random_r(index);

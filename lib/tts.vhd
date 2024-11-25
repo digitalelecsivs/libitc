@@ -41,6 +41,12 @@ architecture arch of tts is
 
 	signal txt_cnt : integer range 0 to txt_len_max - 1;
 
+	--timer
+	signal msec, load : i32_t;
+	signal timer_ena : std_logic;
+
+	--reset
+	constant reset_txt : u8_arr_t(0 to 1) := (x"8f", x"03");
 begin
 
 	tts_rst_n <= rst_n;
@@ -87,59 +93,122 @@ begin
 			rising  => tts_done,
 			falling => tts_accepted
 		);
-
+	timer_inst : entity work.timer(arch)
+		port map(
+			clk   => clk,
+			rst_n => rst_n,
+			ena   => timer_ena, --當ena='0', msec=load
+			load  => load,      --起始值
+			msec  => msec       --毫秒數
+		);
 	process (clk, rst_n) begin
 		if rst_n = '0' then
 			txt_cnt <= 0;
 			busy <= '1';
 			state <= idle;
 		elsif rising_edge(clk) then
-			case state is
-				when idle =>
-					if start = '1' then
-						busy <= '1';
-						i2c_in <= tts_set_mo; -- send first byte
-						i2c_ena <= '1';
-						state <= send;
-					else
-						busy <= '0';
-					end if;
-
-				when send =>
-					if i2c_done = '1' then -- interface is ready for next byte
-						if txt_cnt = 0 then
-							i2c_in <= x"06"; -- set MO[2..0] = 110
-						elsif txt_cnt >= 1 and txt_cnt <= txt_len then
-							i2c_in <= txt(txt_cnt - 1);
-						elsif txt_cnt = txt_len + 1 then
-							i2c_in <= tts_set_mo;
+			if msec = 0 then
+				timer_ena <= '1';
+			end if;
+			if msec > 200 then
+				case state is
+					when idle =>
+						if start = '1' then
+							busy <= '1';
+							i2c_in <= tts_set_mo; -- send first byte
+							i2c_ena <= '1';
+							state <= send;
 						else
-							i2c_in <= x"07"; -- set MO[2..0] = 111
+							busy <= '0';
 						end if;
 
-						if txt_cnt = txt_len + 2 then
-							txt_cnt <= 0;
-							state <= send_stop;
-						else
-							txt_cnt <= txt_cnt + 1;
+					when send =>
+						if i2c_done = '1' then -- interface is ready for next byte
+							if txt_cnt = 0 then
+								i2c_in <= x"06"; -- set MO[2..0] = 110
+							elsif txt_cnt >= 1 and txt_cnt <= txt_len then
+								i2c_in <= txt(txt_cnt - 1);
+							elsif txt_cnt = txt_len + 1 then
+								i2c_in <= tts_set_mo;
+							else
+								i2c_in <= x"07"; -- set MO[2..0] = 111
+							end if;
+
+							if txt_cnt = txt_len + 2 then
+								txt_cnt <= 0;
+								state <= send_stop;
+							else
+								txt_cnt <= txt_cnt + 1;
+							end if;
 						end if;
-					end if;
 
-				when send_stop =>
-					if i2c_accepted = '1' then -- last byte sent to interface
-						i2c_ena <= '0';
-					end if;
+					when send_stop =>
+						if i2c_accepted = '1' then -- last byte sent to interface
+							i2c_ena <= '0';
+						end if;
 
-					-- if i2c_done = '1' and tts_accepted = '1' then -- last byte transmission complete
-					if i2c_done = '1' then -- last byte transmission complete
-						state <= wait_speech;
-					end if;
+						-- if i2c_done = '1' and tts_accepted = '1' then -- last byte transmission complete
+						if i2c_done = '1' then -- last byte transmission complete
+							state <= wait_speech;
+						end if;
 
-				when wait_speech =>
-					if tts_done = '1' then
-						state <= idle;
-					end if;
-			end case;
+					when wait_speech =>
+						if tts_done = '1' then
+							state <= idle;
+						end if;
+				end case;
+			elsif msec > 0 and msec < 100 then
+				case state is
+					when idle =>
+						if start = '1' then
+							busy <= '1';
+							i2c_in <= tts_set_mo; -- send first byte
+							i2c_ena <= '1';
+							state <= send;
+						else
+							busy <= '0';
+						end if;
+
+					when send =>
+						if i2c_done = '1' then -- interface is ready for next byte
+							if txt_cnt = 0 then
+								i2c_in <= x"06"; -- set MO[2..0] = 110
+							elsif txt_cnt >= 1 and txt_cnt <= 2 then
+								i2c_in <= reset_txt(txt_cnt - 1);
+							elsif txt_cnt = txt_len + 1 then
+								i2c_in <= tts_set_mo;
+							else
+								i2c_in <= x"07"; -- set MO[2..0] = 111
+							end if;
+
+							if txt_cnt = txt_len + 2 then
+								txt_cnt <= 0;
+								state <= send_stop;
+							else
+								txt_cnt <= txt_cnt + 1;
+							end if;
+						end if;
+
+					when send_stop =>
+						if i2c_accepted = '1' then -- last byte sent to interface
+							i2c_ena <= '0';
+						end if;
+
+						-- if i2c_done = '1' and tts_accepted = '1' then -- last byte transmission complete
+						if i2c_done = '1' then -- last byte transmission complete
+							state <= wait_speech;
+						end if;
+
+					when wait_speech =>
+						if tts_done = '1' then
+							state <= idle;
+						end if;
+				end case;
+			else
+				txt_cnt <= 0;
+				busy <= '1';
+				state <= idle;
+			end if;
 		end if;
 	end process;
 

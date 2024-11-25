@@ -10,7 +10,7 @@ entity tts_stop is
 	);
 	port (
 		-- system
-		clk, rst_n : in std_logic;
+		clk, rst_n : in std_logic := '1';
 		-- tts
 		tts_scl, tts_sda : inout std_logic;
 		tts_mo           : in unsigned(2 downto 0);
@@ -45,7 +45,7 @@ architecture arch of tts_stop is
 	signal tts_pause : std_logic;
 begin
 
-	tts_rst_n <= rst_n;
+	tts_rst_n <= '1';
 
 	i2c_inst : entity work.i2c(arch)
 		generic map(
@@ -90,11 +90,12 @@ begin
 			falling => tts_accepted
 		);
 	process (clk, rst_n) begin
-		if rst_n = '0' then
-			txt_cnt <= 0;
-			busy <= '1';
-			state <= idle;
-		elsif rising_edge(clk) then
+		if rising_edge(clk) then
+			if rst_n = '0' then
+				txt_cnt <= 0;
+				busy <= '1';
+				state <= idle;
+			end if;
 			case state is
 				when idle =>
 					if start = '1' then

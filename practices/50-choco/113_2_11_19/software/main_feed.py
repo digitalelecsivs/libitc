@@ -61,7 +61,7 @@ port = list(serial.tools.list_ports.comports())
 ser = serial.Serial()
 
 ser.baudrate = 9600
-ser.port = "COM9"
+ser.port = "COM14"
 ser.open()
 
 app = QtWidgets.QApplication(sys.argv)

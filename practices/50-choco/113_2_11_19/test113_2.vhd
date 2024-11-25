@@ -395,17 +395,20 @@ begin
 					if sw(0 to 2) = "100" then
 						data_g <= (X"40", X"40", X"40", X"7E", X"40", X"40", X"7E", X"00");
 						data_r <= (X"40", X"40", X"40", X"7E", X"40", X"40", X"7E", X"00");
+						seg_data <= "FEED    ";
 					elsif sw(0 to 2) = "010" then
 						data_g <= (X"00", X"08", X"04", X"FE", X"FF", X"06", X"04", X"08");
 						data_r <= (X"00", X"08", X"04", X"FE", X"FF", X"06", X"04", X"08");
+						seg_data <= "SELL    ";
 					elsif sw(0 to 2) = "001" then
 						data_g <= (X"00", X"10", X"20", X"7F", X"FF", X"60", X"20", X"10");
 						data_r <= (X"00", X"10", X"20", X"7F", X"FF", X"60", X"20", X"10");
+						seg_data <= "BUY     ";
 					else
 						data_g <= (others => x"00");
 						data_r <= (others => x"00");
+						seg_data <= "HOLD    ";
 					end if;
-					seg_data <= "HOLD    ";
 					if pressed = '1' and key = 7 then
 						case sw(0 to 2) is
 							when "100" =>
@@ -475,7 +478,7 @@ begin
 					else
 						mot_speed <= 0;
 					end if;
-					if pressed = '1' and key = 14 then
+					if pressed = '1' and key = 15 then
 						state <= waiting;
 						timer_ena <= '0';
 					end if;
@@ -592,9 +595,13 @@ begin
 								timer_ena <= '0';
 								selling_state <= check;
 							end if;
-							if pressed = '1' and key = 14 then
+							if pressed = '1' and key = 15 then
 								state <= waiting;
 								timer_ena <= '0';
+							end if;
+							if pressed = '1' and key = 11 then
+								count <= 0;
+								pass <= (others => x"30");
 							end if;
 						when check =>
 							if pass_str = "147852" then
@@ -763,7 +770,7 @@ begin
 					end case;
 					data_g(buy_y)(buy_x) <= '1';
 					for i in 0 to 4 loop
-						if i > 3 then
+						if i > 2 then
 							data_g(sell_y(i))(sell_x(i)) <= buy_enable(i);
 							data_r(sell_y(i))(sell_x(i)) <= buy_enable(i);
 						else
@@ -774,7 +781,7 @@ begin
 							data_g(sell_y(i))(sell_x(i)) <= '1';
 							data_r(sell_y(i))(sell_x(i)) <= '0';
 							if money >= 100 and buy_enable(i) = '1' then
-								if i > 3 then
+								if i > 2 then
 									money <= money - 100;
 									fodder <= fodder + 100;
 									buy_enable(i) <= '0';
