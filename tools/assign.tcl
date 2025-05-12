@@ -99,20 +99,20 @@ if {$make_assignments} {
 
 	# LCD_{CLK,DAT,RES,DC,CS,BL}
 	#2
-	# set_location_assignment PIN_166 -to lcd_sclk		
-	# set_location_assignment PIN_164 -to lcd_mosi
-	# set_location_assignment PIN_161 -to lcd_rst_n
-	# set_location_assignment PIN_160 -to lcd_dc
-	# set_location_assignment PIN_159 -to lcd_ss_n
-	# set_location_assignment PIN_146 -to lcd_bl
+	set_location_assignment PIN_166 -to lcd_sclk		
+	set_location_assignment PIN_164 -to lcd_mosi
+	set_location_assignment PIN_161 -to lcd_rst_n
+	set_location_assignment PIN_160 -to lcd_dc
+	set_location_assignment PIN_159 -to lcd_ss_n
+	set_location_assignment PIN_146 -to lcd_bl
 
 	#1
-	set_location_assignment PIN_166 -to lcd_sclk 
-	set_location_assignment PIN_164 -to lcd_mosi
-	set_location_assignment PIN_162 -to lcd_rst_n
-	set_location_assignment PIN_161 -to lcd_dc
-	set_location_assignment PIN_160 -to lcd_ss_n
-	set_location_assignment PIN_159 -to lcd_bl
+	# set_location_assignment PIN_166 -to lcd_sclk 
+	# set_location_assignment PIN_164 -to lcd_mosi
+	# set_location_assignment PIN_162 -to lcd_rst_n
+	# set_location_assignment PIN_161 -to lcd_dc
+	# set_location_assignment PIN_160 -to lcd_ss_n
+	# set_location_assignment PIN_159 -to lcd_bl
 
 	
 
@@ -159,12 +159,7 @@ if {$make_assignments} {
 	# set_location_assignment PIN_117 -to dot_com[7]
 
 	# PWM{1..2}, IN{1,2,3,4}
-	# set_location_assignment PIN_131 -to mot_ena[0]
-	# set_location_assignment PIN_132 -to mot_ena[1]
-	# set_location_assignment PIN_127 -to mot_ch[0]
-	# set_location_assignment PIN_128 -to mot_ch[1]
-	# set_location_assignment PIN_118 -to mot_ch[2]
-	# set_location_assignment PIN_126 -to mot_ch[3]
+2
 	set_location_assignment PIN_132 -to mot_ena
 	set_location_assignment PIN_128 -to mot_ch[0]
 	set_location_assignment PIN_127 -to mot_ch[1]

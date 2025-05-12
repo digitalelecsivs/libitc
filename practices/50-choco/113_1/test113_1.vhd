@@ -67,16 +67,23 @@ architecture arch of test113_1 is
 	-- "圖形往左方移動", 14
 	constant way_l : u8_arr_t(0 to 13) := (x"b9", x"cf", x"a7", x"ce", x"a9", x"b9", x"a5", x"aa", x"a4", x"e8", x"b2", x"be", x"b0", x"ca");
 
-	-- "幾何圖形相同"
-	constant piccheck : u8_arr_t(0 to 11) := (x"b4", x"58", x"a6", x"f3", x"b9", x"cf", x"a7", x"ce", x"ac", x"db", x"a6", x"50");
-	-- "實心幾何圖形產生"
-	constant pic_gene : u8_arr_t(0 to 15) := (x"b9", x"ea", x"a4", x"df", x"b4", x"58", x"a6", x"f3", x"b9", x"cf", x"a7", x"ce", x"b2", x"a3", x"a5", x"cd");
-	-- "無線連接成功", 12
-	constant wifisucc : u8_arr_t(0 to 11) := (x"b5", x"4c", x"bd", x"75", x"b3", x"73", x"b1", x"b5", x"a6", x"a8", x"a5", x"5c");
-	-- "無線連接失敗", 12
-	constant wififail : u8_arr_t(0 to 11) := (x"b5", x"4c", x"bd", x"75", x"b3", x"73", x"b1", x"b5", x"a5", x"a2", x"b1", x"d1");
+	-- "無線傳輸未連結", 14
+	-- tts_data(0 to 13) <= wififail;
+	-- tts_len <= 14;
+	constant wififail : u8_arr_t(0 to 13) := (x"b5", x"4c", x"bd", x"75", x"b6", x"c7", x"bf", x"e9", x"a5", x"bc", x"b3", x"73", x"b5", x"b2");
 
+	-- "無線傳輸已連結", 14
+	-- tts_data(0 to 13) <= wifisucc;
+	-- tts_len <= 14;
+	constant wifisucc : u8_arr_t(0 to 13) := (x"b5", x"4c", x"bd", x"75", x"b6", x"c7", x"bf", x"e9", x"a4", x"77", x"b3", x"73", x"b5", x"b2");
+
+	-- "幾何圖形不相同", 14
+	-- tts_data(0 to 13) <= piccheckf;
+	-- tts_len <= 14;
+	constant piccheck : u8_arr_t(0 to 13) := (x"b4", x"58", x"a6", x"f3", x"b9", x"cf", x"a7", x"ce", x"a4", x"a3", x"ac", x"db", x"a6", x"50");
 	--lcd_draw
+
+	constant pic_gene : u8_arr_t(0 to 15) := (x"b9", x"ea", x"a4", x"df", x"b4", x"58", x"a6", x"f3", x"b9", x"cf", x"a7", x"ce", x"b2", x"a3", x"a5", x"cd");
 	signal bg_color, text_color, data_1 : l_px_t;
 	signal addr : l_addr_t;
 	signal data : string(1 to 12);
@@ -117,7 +124,7 @@ architecture arch of test113_1 is
 	type l_px_t_array is array (0 to 10) of l_px_t;
 	type l_px_t_array_line is array (0 to 3) of l_px_t;
 
-	type state is (start, print, move);
+	type state is (start, print, move, STM);
 	signal state1 : state;
 	signal state2 : state;
 	signal state3 : state;
@@ -136,6 +143,7 @@ architecture arch of test113_1 is
 	constant PIC_ANGLE : ANGLE_ID := ("1010", "1111", "1111", "1000", "1010", "1010", "1000", "1111");
 	constant coord_line : inter_l := ((50, 0), (110, 0), (0, 42), (0, 84));
 	constant gray : l_px_t := x"FFFFFF";
+	signal sleep : std_logic;
 
 begin
 	pic_data(0) <= unsigned(pic_data_o(0));
@@ -148,6 +156,8 @@ begin
 	pic_data(7) <= unsigned(pic_data_o(7));
 	pic_data(8) <= unsigned(pic_data_o(8));
 	pic_data(9) <= unsigned(pic_data_o(9));
+	pic_data(10) <= unsigned(pic_data_o(10));
+
 	line_data(0) <= unsigned(line_data_o(0));
 	line_data(1) <= unsigned(line_data_o(1));
 	line_data(2) <= unsigned(line_data_o(2));
@@ -332,63 +342,69 @@ begin
 		);
 	hexagon : entity work.hexagon(syn)
 		port map(
-			address => std_logic_vector(to_unsigned(pic_addr(0), 10)),
-			clock   => clk,
-			q       => pic_data_o(0)
-		);
-	circle : entity work.circle(syn)
-		port map(
-			address => std_logic_vector(to_unsigned(pic_addr(1), 10)),
-			clock   => clk,
-			q       => pic_data_o(1)
-		);
-	square : entity work.square(syn)
-		port map(
-			address => std_logic_vector(to_unsigned(pic_addr(2), 10)),
-			clock   => clk,
-			q       => pic_data_o(2)
-		);
-	triangle : entity work.triangle(syn)
-		port map(
 			address => std_logic_vector(to_unsigned(pic_addr(3), 10)),
 			clock   => clk,
 			q       => pic_data_o(3)
 		);
-	diamond : entity work.diamond(syn)
+	circle : entity work.circle(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(pic_addr(4), 10)),
 			clock   => clk,
 			q       => pic_data_o(4)
 		);
-	rectangle : entity work.rectangle(syn)
+	square : entity work.square(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(pic_addr(5), 10)),
 			clock   => clk,
 			q       => pic_data_o(5)
 		);
-	triangle_r : entity work.triangle_r(syn)
+	triangle : entity work.triangle(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(pic_addr(6), 10)),
 			clock   => clk,
 			q       => pic_data_o(6)
 		);
-	octagon : entity work.octagon(syn)
-		port map(
-			address => std_logic_vector(to_unsigned(pic_addr(7), 10)),
-			clock   => clk,
-			q       => pic_data_o(7)
-		);
-	rectangle_y : entity work.rectangle_y(syn)
+	diamond : entity work.diamond(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(pic_addr(8), 10)),
 			clock   => clk,
 			q       => pic_data_o(8)
 		);
+	rectangle : entity work.rectangle(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pic_addr(0), 10)),
+			clock   => clk,
+			q       => pic_data_o(0)
+		);
+	triangle_r : entity work.triangle_r(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pic_addr(1), 10)),
+			clock   => clk,
+			q       => pic_data_o(1)
+		);
+	octagon : entity work.octagon(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pic_addr(2), 10)),
+			clock   => clk,
+			q       => pic_data_o(2)
+		);
+	-- rectangle_y : entity work.triangle_s_y(syn)
+	-- 	port map(
+	-- 		address => std_logic_vector(to_unsigned(pic_addr(10), 10)),
+	-- 		clock   => clk,
+	-- 		q       => pic_data_o(10)
+	-- 	);
 	wifi : entity work.wifi(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(pic_addr(9), 10)),
 			clock   => clk,
 			q       => pic_data_o(9)
+		);
+	wifix : entity work.wifix(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pic_addr(10), 10)),
+			clock   => clk,
+			q       => pic_data_o(10)
 		);
 	line1 : entity work.line1(syn)
 		port map(
@@ -398,71 +414,71 @@ begin
 		);
 	line2 : entity work.line1(syn)
 		port map(
-			address => std_logic_vector(to_unsigned(pic_addr(1), 8)),
+			address => std_logic_vector(to_unsigned(line_addr(1), 8)),
 			clock   => clk,
 			q       => line_data_o(1)
 		);
 	line3 : entity work.line2(syn)
 		port map(
-			address => std_logic_vector(to_unsigned(pic_addr(2), 9)),
+			address => std_logic_vector(to_unsigned(line_addr(2), 9)),
 			clock   => clk,
 			q       => line_data_o(2)
 		);
 	line4 : entity work.line2(syn)
 		port map(
-			address => std_logic_vector(to_unsigned(pic_addr(3), 9)),
+			address => std_logic_vector(to_unsigned(line_addr(3), 9)),
 			clock   => clk,
 			q       => line_data_o(3)
 		);
 
 	hexagon_s : entity work.hexagon_s(syn)
 		port map(
-			address => std_logic_vector(to_unsigned(pics_addr(0), 10)),
-			clock   => clk,
-			q       => pics_data_o(0)
-		);
-	circle_s : entity work.circle_s(syn)
-		port map(
-			address => std_logic_vector(to_unsigned(pics_addr(1), 10)),
-			clock   => clk,
-			q       => pics_data_o(1)
-		);
-	square_s : entity work.square_s(syn)
-		port map(
-			address => std_logic_vector(to_unsigned(pics_addr(2), 10)),
-			clock   => clk,
-			q       => pics_data_o(2)
-		);
-	triangle_s : entity work.triangle_s(syn)
-		port map(
 			address => std_logic_vector(to_unsigned(pics_addr(3), 10)),
 			clock   => clk,
 			q       => pics_data_o(3)
 		);
-
-	diamond_s : entity work.diamond_s(syn)
+	circle_s : entity work.circle_s(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pics_addr(4), 10)),
+			clock   => clk,
+			q       => pics_data_o(4)
+		);
+	square_s : entity work.square_s(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(pics_addr(5), 10)),
 			clock   => clk,
 			q       => pics_data_o(5)
 		);
-	rectangle_s : entity work.rectangle_s(syn)
+	triangle_s : entity work.triangle_s(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(pics_addr(6), 10)),
 			clock   => clk,
 			q       => pics_data_o(6)
 		);
-	triangle_s_r : entity work.triangle_s_r(syn)
-		port map(
-			address => std_logic_vector(to_unsigned(pics_addr(7), 10)),
-			clock   => clk,
-			q       => pics_data_o(7)
-		);
-	octagon_s : entity work.octagon_s(syn)
+
+	diamond_s : entity work.diamond_s(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(pics_addr(8), 10)),
 			clock   => clk,
 			q       => pics_data_o(8)
+		);
+	rectangle_s : entity work.rectangle_s(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pics_addr(0), 10)),
+			clock   => clk,
+			q       => pics_data_o(0)
+		);
+	triangle_s_r : entity work.triangle_s_r(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pics_addr(1), 10)),
+			clock   => clk,
+			q       => pics_data_o(1)
+		);
+	octagon_s : entity work.octagon_s(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pics_addr(2), 10)),
+			clock   => clk,
+			q       => pics_data_o(2)
 		);
 
 	process (clk, rst_n)
@@ -479,6 +495,7 @@ begin
 				tts_mode <= idle;
 				LCD_RESET <= '1';
 				seg_data <= "        ";
+				sleep <= '0';
 			else
 				case sw_d is
 					when "00" =>
@@ -486,10 +503,11 @@ begin
 						r_state10 <= start;
 						state2 <= start;
 						state3 <= start;
-
 						case state1 is
 							when start =>
+								LCD_RESET <= '1';
 								lcd_clear <= '1';
+								seg_data <= "        ";
 								bg_color <= white;
 								if pressed = '1' and key = 0 then
 									state1 <= print;
@@ -525,39 +543,80 @@ begin
 								if msec > 900 then
 									pic(3) := to_data(l_paste(l_addr, pic(2), l_map(pic_data(3), white, gray), coord(3), 32, 32));
 									pic_addr(3) <= to_addr(l_paste(l_addr, pic(2), l_map(pic_data(3), white, gray), coord(3), 32, 32));
-									pic(4) := to_data(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(5), 32, 32));
-									pic_addr(4) <= to_addr(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(5), 32, 32));
-
+									pic(4) := to_data(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(4), 32, 32));
+									pic_addr(4) <= to_addr(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(4), 32, 32));
+									pic(5) := to_data(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(5), 32, 32));
+									pic_addr(5) <= to_addr(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(5), 32, 32));
 								end if;
 								if msec > 1500 then
-									pic(5) := to_data(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(6), 32, 32));
-									pic_addr(5) <= to_addr(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(6), 32, 32));
-									pic(6) := to_data(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(7), 32, 32));
-									pic_addr(6) <= to_addr(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(7), 32, 32));
-									pic(7) := to_data(l_paste(l_addr, pic(6), l_map(pic_data(7), white, gray), coord(8), 32, 32));
-									pic_addr(7) <= to_addr(l_paste(l_addr, pic(6), l_map(pic_data(7), white, gray), coord(8), 32, 32));
+									pic(6) := to_data(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(6), 32, 32));
+									pic_addr(6) <= to_addr(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(6), 32, 32));
+									pic(8) := to_data(l_paste(l_addr, pic(6), l_map(pic_data(8), white, gray), coord(8), 32, 32));
+									pic_addr(8) <= to_addr(l_paste(l_addr, pic(6), l_map(pic_data(8), white, gray), coord(8), 32, 32));
 								end if;
 								if msec > 2100 then
-									pic(8) := to_data(l_paste(l_addr, pic(7), l_map(pic_data(8), white, gray), coord(4), 32, 32));
-									pic_addr(8) <= to_addr(l_paste(l_addr, pic(7), l_map(pic_data(8), white, gray), coord(4), 32, 32));
+									pic(7) := to_data(l_paste(l_addr, pic(8), l_map(pic_data(10), white, gray), coord(7), 32, 32));
+									pic_addr(10) <= to_addr(l_paste(l_addr, pic(8), l_map(pic_data(10), white, gray), coord(7), 32, 32));
 								end if;
 								if msec > 300 and msec < 900 then
 									pic(8) := pic(2);
 								elsif msec > 900 and msec < 1500 then
-									pic(8) := pic(4);
+									pic(8) := pic(5);
 								elsif msec > 1500 and msec < 2100 then
+									pic(8) := pic(8);
+								elsif msec > 2100 then
 									pic(8) := pic(7);
 								end if;
 								bg_color <= l_map(pic(8), gray, line(3));
-								if msec > 4000 then
-									timer_ena <= '0';
-									state1 <= move;
+								if rx_done = '1' then
+									if rx_data(1 to 8) = "RRRRRRRR" then
+										timer_ena <= '0';
+										state1 <= move;
+									end if;
 								end if;
 							when move =>
-								if rx_done = '1' then
-									seg_data <= rx_data(1 to 8);
+								timer_ena <= '1';
+								if pressed = '1' and key = 1 then
+									state1 <= STM;
+									timer_ena <= '0';
+									sel <= 7;
 								end if;
-								bg_color <= l_map(pic(8), gray, line(3));
+								tx_data(1 to 8) <= "11111111";
+								pic(0) := to_data(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
+								pic_addr(0) <= to_addr(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
+								pic(1) := to_data(l_paste(l_addr, pic(0), l_map(pic_data(1), white, gray), coord(1), 32, 32));
+								pic_addr(1) <= to_addr(l_paste(l_addr, pic(0), l_map(pic_data(1), white, gray), coord(1), 32, 32));
+								pic(2) := to_data(l_paste(l_addr, pic(1), l_map(pic_data(2), white, gray), coord(2), 32, 32));
+								pic_addr(2) <= to_addr(l_paste(l_addr, pic(1), l_map(pic_data(2), white, gray), coord(2), 32, 32));
+								pic(3) := to_data(l_paste(l_addr, pic(2), l_map(pic_data(3), white, gray), coord(3), 32, 32));
+								pic_addr(3) <= to_addr(l_paste(l_addr, pic(2), l_map(pic_data(3), white, gray), coord(3), 32, 32));
+								pic(4) := to_data(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(4), 32, 32));
+								pic_addr(4) <= to_addr(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(4), 32, 32));
+								pic(5) := to_data(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(5), 32, 32));
+								pic_addr(5) <= to_addr(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(5), 32, 32));
+								pic(6) := to_data(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(6), 32, 32));
+								pic_addr(6) <= to_addr(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(6), 32, 32));
+								pic(8) := to_data(l_paste(l_addr, pic(6), l_map(pic_data(8), white, gray), coord(8), 32, 32));
+								pic_addr(8) <= to_addr(l_paste(l_addr, pic(6), l_map(pic_data(8), white, gray), coord(8), 32, 32));
+								pic(7) := to_data(l_paste(l_addr, pic(8), l_map(pic_data(9), white, gray), coord(7), 32, 32));
+								pic_addr(9) <= to_addr(l_paste(l_addr, pic(8), l_map(pic_data(9), white, gray), coord(7), 32, 32));
+								bg_color <= l_map(pic(7), gray, line(3));
+								for i in 0 to 3 loop
+									if i < 2 then
+										if i = 0 then
+											line(i) := to_data(l_paste(l_addr, gray, line_data(i), coord_line(i), 128, 2));
+											line_addr(i) <= to_addr(l_paste(l_addr, gray, line_data(i), coord_line(i), 128, 2));
+										else
+											line(i) := to_data(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 128, 2));
+											line_addr(i) <= to_addr(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 128, 2));
+										end if;
+									else
+										line(i) := to_data(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 2, 160));
+										line_addr(i) <= to_addr(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 2, 160));
+									end if;
+								end loop;
+							when STM =>
+								bg_color <= l_map(pic(7), gray, line(3));
 								for i in 0 to 3 loop
 									if i < 2 then
 										if i = 0 then
@@ -573,7 +632,7 @@ begin
 									end if;
 								end loop;
 								for i in 0 to 8 loop
-									if i <= 3 then
+									if i <= 5 then
 										if i = 0 then
 											pic(0) := to_data(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
 											pic_addr(0) <= to_addr(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
@@ -583,10 +642,22 @@ begin
 											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
 											--pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
 										end if;
-									elsif i >= 4 and i <= 7 then
-										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-									elsif i = 8 then
+									elsif i >= 6 and i <= 8 and i /= 7 then
+										if i /= 7 then
+											if i = 8 then
+												pic(i) := to_data(l_paste(l_addr, pic(6), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+												pic_addr(i) <= to_addr(l_paste(l_addr, pic(6), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											else
+												pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+												pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											end if;
+										else
+											pic(i) := to_data(l_paste(l_addr, pic(8), l_map(pic_data(7), white, gray), coord(7), 32, 32));
+											pic_addr(7) <= to_addr(l_paste(l_addr, pic(8), l_map(pic_data(7), white, gray), coord(7), 32, 32));
+										end if;
+									elsif i = 7 then
+										pic(i) := to_data(l_paste(l_addr, pic(8), l_map(pics_data(6), white, gray), coord(sel), 32, 32));
+										pics_addr(6) <= l_rotate(to_addr(l_paste(l_addr, pic(8), l_map(pics_data(6), white, gray), coord(sel), 32, 32)), 32, 32, 1);
 										if pressed = '1' then
 											tx_ena <= '1';
 											if key = 1 then
@@ -601,9 +672,6 @@ begin
 											end if;
 										else
 											tx_ena <= '0';
-										end if;
-										if pressed = '1' and key = 2 then
-											angle <= angle + 1;
 										end if;
 										if rx_done = '1' then
 											case rx_data(1 to 8) is
@@ -626,16 +694,16 @@ begin
 												when others => null;
 											end case;
 										end if;
-										if sel > 4 then
-											pic(i) := l_map(to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(sel), 32, 32)), gray, pic(sel - 1));
+										if sel > 7 then
+											pic(7) := l_map(to_data(l_paste(l_addr, pic(8), l_map(pics_data(1), white, gray), coord(sel), 32, 32)), gray, pic(sel - 1));
 											--	type inter is array (0 to 8) of l_coord_t;
 											--	constant coord : inter := ((6, 5), (6, 45), (6, 85), (65, 5), (65, 45), (65, 85), (125, 5), (125, 45), (125, 85));
-										elsif sel < 4 then
-											pic(i) := l_map(to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(sel), 32, 32)), gray, pic(sel));
+										elsif sel < 6 then
+											pic(7) := l_map(to_data(l_paste(l_addr, pic(8), l_map(pics_data(1), white, gray), coord(sel), 32, 32)), gray, pic(sel));
 										else
-											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(sel), 32, 32));
+											pic(7) := to_data(l_paste(l_addr, pic(8), l_map(pics_data(1), white, gray), coord(sel), 32, 32));
 										end if;
-										pic_addr(i) <= l_rotate(to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(sel), 32, 32)), angle, 32, 32);
+										pics_addr(1) <= l_rotate(to_addr(l_paste(l_addr, pic(8), l_map(pics_data(1), white, gray), coord(sel), 32, 32)), 1, 32, 32);
 									end if;
 								end loop;
 						end case;
@@ -652,9 +720,35 @@ begin
 									seg_data <= "START!  ";
 									state2 <= move;
 									PIC_STATE <= "11111111";
-
+									timer_ena <= '1';
 								end if;
 							when move =>
+								timer_ena <= '1';
+								if msec < 1000 then
+									seg_data <= "START!! ";
+								elsif msec > 1000 and msec < 1500 then
+									seg_data <= "        ";
+								elsif msec > 1500 then
+									timer_ena <= '0';
+								end if;
+								if rx_done = '1' then
+									timer_ena <= '0';
+									state2 <= STM;
+									case rx_data(1 to 8) is
+										when "00000000" =>
+											seg_data <= "CMD:UP! ";
+										when "10000000" =>
+											seg_data <= "CMD:DW! ";
+										when "20000000" =>
+											seg_data <= "CMD:LT! ";
+										when "30000000" =>
+											seg_data <= "CMD:RT! ";
+										when "RRRRRRRR" =>
+											seg_data <= "RUN!!!! ";
+										when others => null;
+									end case;
+								end if;
+							when STM =>
 								if rx_done = '1' then
 									case rx_data(1 to 8) is
 										when "00000000" =>
@@ -665,6 +759,13 @@ begin
 											seg_data <= "CMD:LT! ";
 										when "30000000" =>
 											seg_data <= "CMD:RT! ";
+										when "RRRRRRRR" =>
+											timer_ena <= '1';
+											if msec < 1000 then
+												seg_data <= "RUN!!!! ";
+											else
+												seg_data <= "SLEEP!! ";
+											end if;
 										when others => null;
 									end case;
 								end if;
@@ -697,83 +798,157 @@ begin
 								timer_ena <= '0';
 								PIC_8 <= '1';
 								PIC_STATE <= "11111111";
-								sel <= 4;
+								sel <= 7;
 								lcd_clear <= '1';
+								P_S <= 1;
 								bg_color <= white;
 								if pressed = '1' and key = 0 then
 									r_state10 <= cutdown;
+									seg_data <= "RUN!!!! ";
 								end if;
 							when cutdown =>
 								LCD_RESET <= '1';
-								timer_ena <= '1';
-								tx_ena <= '1';
-								tx_data(1 to 3) <= "+++";
-								tx_len <= 3;
-								r_state10 <= reset;
-							when reset =>
-								tx_ena <= '0';
-								if msec > 1000 then
-									tx_data(1 to 8) <= "AT+RST" & CR & LF;
-									tx_len <= 8;
-									r_state10 <= check;
-									tx_ena <= '1';
-								end if;
-							when check =>
-								tx_ena <= '0';
-								if msec > 4000 then
-									tx_data(1 to 8) <= "11111111";
-									tx_len <= 8;
-									tx_mode <= '0';
-									tx_ena <= not tx_ena;
-									if rx_done = '1' then
-										if rx_data(1 to 8) = "success1" then
-											r_state10 <= waiting;
-											tx_ena <= '0';
-											timer_ena <= '0';
-										end if;
-									end if;
-								end if;
 								bg_color <= l_map(pic(7), gray, line(3));
-								for i in 0 to 7 loop
-									if i <= 3 then
+								for i in 0 to 3 loop
+									if i < 2 then
 										if i = 0 then
-											pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-											pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
+											line(i) := to_data(l_paste(l_addr, gray, line_data(i), coord_line(i), 128, 2));
+											line_addr(i) <= to_addr(l_paste(l_addr, gray, line_data(i), coord_line(i), 128, 2));
+										else
+											line(i) := to_data(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 128, 2));
+											line_addr(i) <= to_addr(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 128, 2));
 										end if;
-										if i > 0 then
-											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-										end if;
-									elsif i >= 4 and i <= 7 then
-										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
+									else
+										line(i) := to_data(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 2, 160));
+										line_addr(i) <= to_addr(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 2, 160));
 									end if;
 								end loop;
-							when waiting =>
-								bg_color <= l_map(pic(8), gray, line(3));
-								if pressed = '1' and key = 1 then
-									r_state10 <= connect;
+								for i in 0 to 8 loop
+									if i <= 5 then
+										if i = 0 then
+											if PIC_STATE(i) = '1' then
+												pic(0) := to_data(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
+												pic_addr(0) <= to_addr(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
+											else
+												pic(0) := line(3);
+											end if;
+										end if;
+										if i > 0 then
+											if PIC_STATE(i) = '1' then
+												pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+												pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+												--pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											else
+												pic(i) := pic(i - 1);
+											end if;
+										end if;
+									elsif i >= 6 and i <= 8 and i /= 7 then
+										if i /= 7 then
+											if i = 8 then
+												pic(i) := to_data(l_paste(l_addr, pic(6), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+												pic_addr(i) <= to_addr(l_paste(l_addr, pic(6), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											else
+												pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+												pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											end if;
+
+										end if;
+									elsif i = 7 then
+										pic(i) := to_data(l_paste(l_addr, pic(8), l_map(pics_data(1), white, gray), coord(sel), 32, 32));
+										pics_addr(1) <= to_addr(l_paste(l_addr, pic(8), l_map(pics_data(1), white, gray), coord(sel), 32, 32));
+										if pressed = '1' then
+											tx_ena <= '1';
+											if key = 1 then
+												tx_mode <= '0';
+												tx_data(1 to 8) <= "11111111";
+												tx_len <= 3;
+											end if;
+											if key = 2 then
+												tx_mode <= '0';
+												tx_data(1 to 8) <= "11111111";
+												tx_len <= 8;
+											end if;
+										else
+											tx_ena <= '0';
+										end if;
+										if rx_done = '1' then
+											case rx_data(1 to 8) is
+												when "00000000" =>
+													if sel > 2 then
+														sel <= sel - 3;
+														seg_data <= "CMD:UP! ";
+
+													else
+														tts_mode <= idle;
+													end if;
+												when "10000000" =>
+													if sel < 6 then
+														sel <= sel + 3;
+														seg_data <= "CMD:DW! ";
+
+													else
+														tts_mode <= idle;
+													end if;
+												when "20000000" =>
+													if sel /= 0 and sel /= 3 and sel /= 6 then
+														sel <= sel - 1;
+														seg_data <= "CMD:LT! ";
+													else
+														tts_mode <= idle;
+													end if;
+												when "30000000" =>
+													if sel /= 2 and sel /= 5 and sel /= 8 then
+														sel <= sel + 1;
+														seg_data <= "CMD:RT! ";
+													else
+														tts_mode <= idle;
+													end if;
+												when others => null;
+											end case;
+										end if;
+										if sel > 7 then
+											pic(7) := l_map(to_data(l_paste(l_addr, pic(8), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), gray, pic(sel));
+										elsif sel < 6 then
+											pic(7) := l_map(to_data(l_paste(l_addr, pic(8), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), gray, pic(sel));
+										else
+											pic(7) := (to_data(l_paste(l_addr, pic(8), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)));
+										end if;
+										pics_addr(P_S) <= to_addr(l_paste(l_addr, pic(8), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32));
+									end if;
+								end loop;
+								if pressed = '1' and key = 2 then
+									if sel < 7 then
+										if P_S = (sel) and PIC_ANGLE(P_S)(angle) = '1' then
+											PIC_STATE(P_S) <= '0';
+											PIC_8 <= '0';
+											r_state10 <= cleaning;
+
+										end if;
+									elsif sel > 7 then
+										if P_S = (sel) and PIC_ANGLE(P_S - 1)(angle) = '1' then
+											PIC_STATE(P_S - 1) <= '0';
+											PIC_8 <= '0';
+											r_state10 <= cleaning;
+
+										end if;
+									end if;
 								end if;
-								for i in 0 to 8 loop
-									if i <= 3 then
-										if i = 0 then
-											pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-											pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-										end if;
-										if i > 0 then
-											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-										end if;
-									elsif i >= 4 and i <= 7 then
-										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-									end if;
-									pic(8) := to_data(l_paste(l_addr, pic(7), l_map(pic_data(9), white, gray), coord(4), 32, 32));
-									pic_addr(9) <= to_addr(l_paste(l_addr, pic(7), l_map(pic_data(9), white, gray), coord(4), 32, 32));
-								end loop;
+							when reset =>
+
+							when check =>
+
+							when waiting =>
+
 							when connect =>
-								bg_color <= l_map(pic(8), gray, line(3));
-								for i in 0 to 8 loop
+
+							when cleaning =>
+								pic(8) := l_map(pic(7), gray, line(3));
+								r_state10 <= cutdown;
+								P_S <= 0;
+								angle <= 0;
+								PIC_8 <= '1';
+								sel <= 7;
+								for i in 0 to 7 loop
 									if i <= 3 then
 										if i = 0 then
 											if PIC_STATE(0) = '1' then
@@ -798,78 +973,9 @@ begin
 										else
 											pic(i) := pic(i - 1);
 										end if;
-									elsif i = 8 then
-										if pressed = '1' then
-											tx_ena <= '1';
-											if key = 1 then
-												tx_data(1 to 8) <= "11111111";
-												tx_len <= 3;
-											end if;
-											if key = 2 then
-												tx_data(1 to 8) <= "11111111";
-												tx_len <= 8;
-											end if;
-										else
-											tx_ena <= '0';
-										end if;
-										if pressed = '1' and key = 2 then
-											angle <= angle + 1;
-										end if;
-										if rx_done = '1' then
-											case rx_data(1 to 8) is
-												when "00000000" =>
-													if sel > 2 then
-														sel <= sel - 3;
-														seg_data <= "CMD:UP! ";
-													end if;
-												when "10000000" =>
-													if sel < 6 then
-														sel <= sel + 3;
-														seg_data <= "CMD:DW! ";
-													end if;
-												when "20000000" =>
-													if sel /= 0 and sel /= 3 and sel /= 6 then
-														sel <= sel - 1;
-														seg_data <= "CMD:LT! ";
-													end if;
-												when "30000000" =>
-													if sel /= 2 and sel /= 5 and sel /= 8 then
-														sel <= sel + 1;
-														seg_data <= "CMD:RT! ";
-													end if;
-												when others => null;
-											end case;
-										end if;
-										if PIC_8 = '1' then
-											if sel > 4 then
-												pic(8) := l_map(to_data(l_paste(l_addr, pic(7), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), gray, pic(sel - 1));
-												--	type inter is array (0 to 8) of l_coord_t;
-												--	constant coord : inter := ((6, 5), (6, 45), (6, 85), (65, 5), (65, 45), (65, 85), (125, 5), (125, 45), (125, 85));
-											elsif sel < 4 then
-												pic(8) := l_map(to_data(l_paste(l_addr, pic(7), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), gray, pic(sel));
-											else
-												pic(8) := to_data(l_paste(l_addr, pic(7), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32));
-											end if;
-											pics_addr(P_S) <= l_rotate(to_addr(l_paste(l_addr, pic(7), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), angle, 32, 32);
-										else
-											pic(8) := l_map(pic(7), gray, line(3));
-										end if;
-										if pressed = '1' and key = 3 then
-											if sel < 4 then
-												if P_S = (sel) and PIC_ANGLE(P_S)(angle) = '1' then
-													PIC_STATE(P_S) <= '0';
-													PIC_8 <= '0';
-												end if;
-											elsif sel > 4 then
-												if P_S = (sel + 1) and PIC_ANGLE(P_S)(angle) = '1' then
-													PIC_STATE(P_S) <= '0';
-													PIC_8 <= '0';
-												end if;
-											end if;
-										end if;
 									end if;
 								end loop;
-							when others => null;
+
 						end case;
 					when "11" =>
 						bg_color <= l_map(pic(8), gray, line(3));
@@ -917,8 +1023,8 @@ begin
 										tts_ena <= '1';
 										tts_mode <= waiting;
 									when "piccheck" =>
-										txt(0 to 11) <= piccheck;
-										len <= 12;
+										txt(0 to 13) <= piccheck;
+										len <= 14;
 										tts_ena <= '1';
 										tts_mode <= waiting;
 									when "pic_gene" =>
@@ -927,13 +1033,13 @@ begin
 										tts_ena <= '1';
 										tts_mode <= waiting;
 									when "wifisucc" =>
-										txt(0 to 11) <= wifisucc;
-										len <= 12;
+										txt(0 to 13) <= wifisucc;
+										len <= 14;
 										tts_ena <= '1';
 										tts_mode <= waiting;
 									when "wififail" =>
-										txt(0 to 11) <= wififail;
-										len <= 12;
+										txt(0 to 13) <= wififail;
+										len <= 14;
 										tts_ena <= '1';
 										tts_mode <= waiting;
 									when "ttsreset" =>
@@ -978,211 +1084,215 @@ begin
 								timer_ena <= '0';
 								PIC_8 <= '1';
 								PIC_STATE <= "11111111";
-								sel <= 4;
+								sel <= 7;
 								seg_data <= "        ";
-								LCD_RESET <= '0';
+								LCD_RESET <= '1';
 								bg_color <= white;
 								if pressed = '1' and key = 0 then
 									r_state11 <= cutdown;
+									tts_data(1 to 8) <= "wififail";
+									tts_mode <= play;
+									timer_ena <= '0';
 								end if;
 							when cutdown =>
+								pic(0) := to_data(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
+								pic_addr(0) <= to_addr(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
+								pic(1) := to_data(l_paste(l_addr, pic(0), l_map(pic_data(1), white, gray), coord(1), 32, 32));
+								pic_addr(1) <= to_addr(l_paste(l_addr, pic(0), l_map(pic_data(1), white, gray), coord(1), 32, 32));
+								pic(2) := to_data(l_paste(l_addr, pic(1), l_map(pic_data(2), white, gray), coord(2), 32, 32));
+								pic_addr(2) <= to_addr(l_paste(l_addr, pic(1), l_map(pic_data(2), white, gray), coord(2), 32, 32));
+								pic(3) := to_data(l_paste(l_addr, pic(2), l_map(pic_data(3), white, gray), coord(3), 32, 32));
+								pic_addr(3) <= to_addr(l_paste(l_addr, pic(2), l_map(pic_data(3), white, gray), coord(3), 32, 32));
+								pic(4) := to_data(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(4), 32, 32));
+								pic_addr(4) <= to_addr(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(4), 32, 32));
+								pic(5) := to_data(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(5), 32, 32));
+								pic_addr(5) <= to_addr(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(5), 32, 32));
+								pic(6) := to_data(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(6), 32, 32));
+								pic_addr(6) <= to_addr(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(6), 32, 32));
+								pic(8) := to_data(l_paste(l_addr, pic(6), l_map(pic_data(8), white, gray), coord(8), 32, 32));
+								pic_addr(8) <= to_addr(l_paste(l_addr, pic(6), l_map(pic_data(8), white, gray), coord(8), 32, 32));
+								pic(7) := to_data(l_paste(l_addr, pic(8), l_map(pic_data(10), white, gray), coord(7), 32, 32));
+								pic_addr(10) <= to_addr(l_paste(l_addr, pic(8), l_map(pic_data(10), white, gray), coord(7), 32, 32));
+								bg_color <= l_map(pic(7), gray, line(3));
 								timer_ena <= '1';
-								tx_ena <= '1';
-								tx_data(1 to 3) <= "+++";
-								tx_len <= 3;
-								r_state11 <= reset;
-								LCD_RESET <= '1';
+								if msec < 1000 then
+									seg_data <= "START!! ";
+								elsif msec > 1000 and msec < 1500 then
+									seg_data <= "        ";
+								elsif msec > 1500 then
+									timer_ena <= '0';
+								end if;
+								if rx_done = '1' then
+									if rx_data(1 to 8) = "RRRRRRRR" then
+										timer_ena <= '0';
+										r_state11 <= reset;
+										tts_data(1 to 8) <= "wifisucc";
+										tts_mode <= play;
+										seg_data <= "RUN!!!! ";
+									end if;
+								end if;
 							when reset =>
-								tx_ena <= '0';
-								if msec > 2000 then
-									tx_data(1 to 8) <= "AT+RST" & CR & LF;
-									tx_len <= 8;
+								pic(0) := to_data(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
+								pic_addr(0) <= to_addr(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
+								pic(1) := to_data(l_paste(l_addr, pic(0), l_map(pic_data(1), white, gray), coord(1), 32, 32));
+								pic_addr(1) <= to_addr(l_paste(l_addr, pic(0), l_map(pic_data(1), white, gray), coord(1), 32, 32));
+								pic(2) := to_data(l_paste(l_addr, pic(1), l_map(pic_data(2), white, gray), coord(2), 32, 32));
+								pic_addr(2) <= to_addr(l_paste(l_addr, pic(1), l_map(pic_data(2), white, gray), coord(2), 32, 32));
+								pic(3) := to_data(l_paste(l_addr, pic(2), l_map(pic_data(3), white, gray), coord(3), 32, 32));
+								pic_addr(3) <= to_addr(l_paste(l_addr, pic(2), l_map(pic_data(3), white, gray), coord(3), 32, 32));
+								pic(4) := to_data(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(4), 32, 32));
+								pic_addr(4) <= to_addr(l_paste(l_addr, pic(3), l_map(pic_data(4), white, gray), coord(4), 32, 32));
+								pic(5) := to_data(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(5), 32, 32));
+								pic_addr(5) <= to_addr(l_paste(l_addr, pic(4), l_map(pic_data(5), white, gray), coord(5), 32, 32));
+								pic(6) := to_data(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(6), 32, 32));
+								pic_addr(6) <= to_addr(l_paste(l_addr, pic(5), l_map(pic_data(6), white, gray), coord(6), 32, 32));
+								pic(8) := to_data(l_paste(l_addr, pic(6), l_map(pic_data(8), white, gray), coord(8), 32, 32));
+								pic_addr(8) <= to_addr(l_paste(l_addr, pic(6), l_map(pic_data(8), white, gray), coord(8), 32, 32));
+								pic(7) := to_data(l_paste(l_addr, pic(8), l_map(pic_data(9), white, gray), coord(7), 32, 32));
+								pic_addr(9) <= to_addr(l_paste(l_addr, pic(8), l_map(pic_data(9), white, gray), coord(7), 32, 32));
+								bg_color <= l_map(pic(7), gray, line(3));
+								if pressed = '1' and key = 1 then
 									r_state11 <= check;
-									tx_ena <= '1';
+									tts_data(1 to 8) <= "pic_gene";
+									tts_mode <= play;
 								end if;
 							when check =>
-								tx_ena <= '0';
-								if msec > 4000 then
-									tx_data(1 to 8) <= "11111111";
-									tx_len <= 8;
-									tx_mode <= '0';
-									tx_ena <= not tx_ena;
-									if rx_done = '1' then
-										if rx_data(1 to 8) = "success1" then
-											r_state11 <= waiting;
-											tts_mode <= play;
-											tts_data(1 to 8) <= "wifisucc";
-											tx_ena <= '0';
-											timer_ena <= '0';
-										end if;
-									elsif msec > 7000 then
-										tts_mode <= play;
-										timer_ena <= '0';
-										tts_data(1 to 8) <= "wififail";
-									end if;
-								end if;
-
 								bg_color <= l_map(pic(7), gray, line(3));
-								for i in 0 to 7 loop
-									if i <= 3 then
+								for i in 0 to 3 loop
+									if i < 2 then
 										if i = 0 then
-											pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-											pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
+											line(i) := to_data(l_paste(l_addr, gray, line_data(i), coord_line(i), 128, 2));
+											line_addr(i) <= to_addr(l_paste(l_addr, gray, line_data(i), coord_line(i), 128, 2));
+										else
+											line(i) := to_data(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 128, 2));
+											line_addr(i) <= to_addr(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 128, 2));
 										end if;
-										if i > 0 then
-											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-										end if;
-									elsif i >= 4 and i <= 7 then
-										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
+									else
+										line(i) := to_data(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 2, 160));
+										line_addr(i) <= to_addr(l_paste(l_addr, line(i - 1), line_data(i), coord_line(i), 2, 160));
 									end if;
 								end loop;
-							when waiting =>
-								bg_color <= l_map(pic(8), gray, line(3));
-								if pressed = '1' and key = 1 then
-									r_state11 <= connect;
-									tts_mode <= play;
-									tts_data(1 to 8) <= "pic_gene";
-								end if;
 								for i in 0 to 8 loop
-									if i <= 3 then
+									if i <= 5 then
 										if i = 0 then
-											pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-											pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-										end if;
-										if i > 0 then
-											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
-										end if;
-									elsif i >= 4 and i <= 7 then
-										pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-									end if;
-									pic(8) := to_data(l_paste(l_addr, pic(7), l_map(pic_data(9), white, gray), coord(4), 32, 32));
-									pic_addr(9) <= to_addr(l_paste(l_addr, pic(7), l_map(pic_data(9), white, gray), coord(4), 32, 32));
-								end loop;
-							when connect =>
-								if rx_done = '1' then
-									case rx_data(1 to 8) is
-										when "00000000" =>
-											seg_data <= "CMD:UP! ";
-										when "10000000" =>
-											seg_data <= "CMD:DW! ";
-										when "20000000" =>
-											seg_data <= "CMD:LT! ";
-										when "30000000" =>
-											seg_data <= "CMD:RT! ";
-										when others => null;
-									end case;
-								end if;
-								bg_color <= l_map(pic(8), gray, line(3));
-								for i in 0 to 8 loop
-									if i <= 3 then
-										if i = 0 then
-											if PIC_STATE(0) = '1' then
-												pic(0) := to_data(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
-												pic_addr(0) <= to_addr(l_paste(l_addr, gray, l_map(pic_data(0), white, gray), coord(0), 32, 32));
+											if PIC_STATE(i) = '1' then
+												pic(0) := to_data(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
+												pic_addr(0) <= to_addr(l_paste(l_addr, line(3), l_map(pic_data(0), white, gray), coord(0), 32, 32));
 											else
-												pic(0) := gray;
+												pic(0) := line(3);
 											end if;
 										end if;
 										if i > 0 then
 											if PIC_STATE(i) = '1' then
 												pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
 												pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+												--pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
 											else
 												pic(i) := pic(i - 1);
 											end if;
 										end if;
-									elsif i >= 4 and i <= 7 then
-										if PIC_STATE(i) = '1' then
-											pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-											pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i + 1), 32, 32));
-										else
-											pic(i) := pic(i - 1);
+									elsif i >= 6 and i <= 8 and i /= 7 then
+										if i /= 7 then
+											if i = 8 then
+												pic(i) := to_data(l_paste(l_addr, pic(6), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+												pic_addr(i) <= to_addr(l_paste(l_addr, pic(6), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											else
+												pic(i) := to_data(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+												pic_addr(i) <= to_addr(l_paste(l_addr, pic(i - 1), l_map(pic_data(i), white, gray), coord(i), 32, 32));
+											end if;
+
 										end if;
-									elsif i = 8 then
+									elsif i = 7 then
+										P_S <= 1;
+										pic(i) := to_data(l_paste(l_addr, pic(8), l_map(pics_data(1), white, gray), coord(sel), 32, 32));
+										pics_addr(1) <= to_addr(l_paste(l_addr, pic(8), l_map(pics_data(1), white, gray), coord(sel), 32, 32));
 										if pressed = '1' then
 											tx_ena <= '1';
 											if key = 1 then
+												tx_mode <= '0';
 												tx_data(1 to 8) <= "11111111";
 												tx_len <= 3;
 											end if;
 											if key = 2 then
+												tx_mode <= '0';
 												tx_data(1 to 8) <= "11111111";
 												tx_len <= 8;
 											end if;
 										else
 											tx_ena <= '0';
 										end if;
-										if pressed = '1' and key = 2 then
-											angle <= angle + 1;
-										end if;
 										if rx_done = '1' then
 											case rx_data(1 to 8) is
 												when "00000000" =>
 													if sel > 2 then
 														sel <= sel - 3;
+														seg_data <= "CMD:UP! ";
+
 													else
 														tts_mode <= idle;
 													end if;
 												when "10000000" =>
 													if sel < 6 then
 														sel <= sel + 3;
+														seg_data <= "CMD:DW! ";
+
 													else
 														tts_mode <= idle;
 													end if;
 												when "20000000" =>
 													if sel /= 0 and sel /= 3 and sel /= 6 then
 														sel <= sel - 1;
+														seg_data <= "CMD:LT! ";
 													else
 														tts_mode <= idle;
 													end if;
 												when "30000000" =>
 													if sel /= 2 and sel /= 5 and sel /= 8 then
 														sel <= sel + 1;
+														seg_data <= "CMD:RT! ";
 													else
 														tts_mode <= idle;
 													end if;
 												when others => null;
 											end case;
 										end if;
-										if PIC_8 = '1' then
-											if sel > 4 then
-												pic(8) := l_map(to_data(l_paste(l_addr, pic(7), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), gray, pic(sel - 1));
-												--	type inter is array (0 to 8) of l_coord_t;
-												--	constant coord : inter := ((6, 5), (6, 45), (6, 85), (65, 5), (65, 45), (65, 85), (125, 5), (125, 45), (125, 85));
-											elsif sel < 4 then
-												pic(8) := l_map(to_data(l_paste(l_addr, pic(7), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), gray, pic(sel));
-											else
-												pic(8) := to_data(l_paste(l_addr, pic(7), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32));
-											end if;
-											pics_addr(P_S) <= l_rotate(to_addr(l_paste(l_addr, pic(7), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), angle, 32, 32);
+										if sel > 7 then
+											pic(7) := l_map(to_data(l_paste(l_addr, pic(8), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), gray, pic(sel));
+											--	type inter is array (0 to 8) of l_coord_t;
+											--	constant coord : inter := ((6, 5), (6, 45), (6, 85), (65, 5), (65, 45), (65, 85), (125, 5), (125, 45), (125, 85));
+										elsif sel < 6 then
+											pic(7) := l_map(to_data(l_paste(l_addr, pic(8), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), gray, pic(sel));
 										else
-											pic(8) := l_map(pic(7), gray, line(3));
+											pic(7) := l_map(to_data(l_paste(l_addr, pic(8), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32)), gray, pic(sel));
 										end if;
-										if pressed = '1' and key = 3 then
-											if sel < 4 then
-												if P_S = (sel) and PIC_ANGLE(P_S)(angle) = '1' then
-													PIC_STATE(P_S) <= '0';
-													PIC_8 <= '0';
-													r_state11 <= cleaning;
-													tts_data(1 to 8) <= "piccheck";
-													tts_mode <= play;
-												end if;
-											elsif sel > 4 then
-												if P_S = (sel) and PIC_ANGLE(P_S - 1)(angle) = '1' then
-													PIC_STATE(P_S - 1) <= '0';
-													PIC_8 <= '0';
-													r_state11 <= cleaning;
-													tts_data(1 to 8) <= "piccheck";
-													tts_mode <= play;
-												end if;
-											end if;
-										end if;
+										pics_addr(P_S) <= to_addr(l_paste(l_addr, pic(8), l_map(pics_data(P_S), white, gray), coord(sel), 32, 32));
 									end if;
 								end loop;
+								if pressed = '1' and key = 2 then
+									if sel < 7 then
+										if P_S = (sel) and PIC_ANGLE(P_S)(angle) = '1' then
+											PIC_STATE(P_S) <= '0';
+											PIC_8 <= '0';
+											r_state11 <= cleaning;
+										else
+											tts_data(1 to 8) <= "piccheck";
+											tts_mode <= play;
+										end if;
+									elsif sel > 7 then
+										if P_S = (sel) and PIC_ANGLE(P_S - 1)(angle) = '1' then
+											PIC_STATE(P_S - 1) <= '0';
+											PIC_8 <= '0';
+											r_state11 <= cleaning;
+										else
+											tts_data(1 to 8) <= "piccheck";
+											tts_mode <= play;
+										end if;
+									end if;
+								end if;
+							when waiting =>
+
+							when connect =>
+
 							when cleaning =>
 								pic(8) := l_map(pic(7), gray, line(3));
 								if pressed = '1' and key = 1 then
@@ -1198,7 +1308,7 @@ begin
 									end if;
 									angle <= 0;
 									PIC_8 <= '1';
-									sel <= 4;
+									sel <= 7;
 								end if;
 								for i in 0 to 7 loop
 									if i <= 3 then

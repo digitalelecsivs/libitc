@@ -118,7 +118,8 @@ class Ui_MainWindow(object):
         font.setBold(True)
         font.setWeight(75)
         self.label_output.setFont(font)
-        self.label_output.setStyleSheet("background-color: rgb(170, 255, 255);\n" "")
+        self.label_output.setStyleSheet("background-color: rgb(170, 255, 255);\n"
+"")
         self.label_output.setText("")
         self.label_output.setObjectName("label_output")
         self.label_inputnumber = QtWidgets.QLabel(self.frame)
@@ -131,7 +132,10 @@ class Ui_MainWindow(object):
         self.label_inputnumber.setObjectName("label_inputnumber")
         self.label_2 = QtWidgets.QLabel(self.frame)
         self.label_2.setGeometry(QtCore.QRect(0, 0, 211, 151))
-        self.label_2.setStyleSheet("border: 2px solid black;\n" "\n" "\n" "")
+        self.label_2.setStyleSheet("border: 2px solid black;\n"
+"\n"
+"\n"
+"")
         self.label_2.setText("")
         self.label_2.setObjectName("label_2")
         self.label_2.raise_()
@@ -149,7 +153,10 @@ class Ui_MainWindow(object):
         self.label_0.setObjectName("label_0")
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
         self.label_3.setGeometry(QtCore.QRect(320, 50, 311, 251))
-        self.label_3.setStyleSheet("border: 2px solid black;\n" "\n" "\n" "")
+        self.label_3.setStyleSheet("border: 2px solid black;\n"
+"\n"
+"\n"
+"")
         self.label_3.setText("")
         self.label_3.setObjectName("label_3")
         self.pushButton_null_1 = QtWidgets.QPushButton(self.centralwidget)
@@ -220,12 +227,11 @@ class Ui_MainWindow(object):
         self.pushButton_clear.setText(_translate("MainWindow", "清除"))
         self.pushButton_back.setText(_translate("MainWindow", "返回"))
         self.pushButton_send.setText(_translate("MainWindow", "送出"))
-        self.label_inputnumber.setText(_translate("MainWindow", "輸入蛋價"))
+        self.label_inputnumber.setText(_translate("MainWindow", "雞蛋單價"))
 
 
 if __name__ == "__main__":
     import sys
-
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

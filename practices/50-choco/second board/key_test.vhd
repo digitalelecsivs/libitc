@@ -26,8 +26,12 @@ architecture arch of key_test is
 	signal tx_len, rx_len : integer range 1 to 8;
 	--key
 	signal key : i4_t;
+	signal key_s : i4_t;
 	signal pressed_i : std_logic;
 	signal key_r : std_logic;
+		--timer
+	signal msec, load : i32_t;
+	signal timer_ena : std_logic;
 
 begin
 	key_inst : entity work.key_2x2_1(arch)
@@ -54,6 +58,14 @@ begin
 			sig_in  => rx_busy,
 			rising  => open,
 			falling => rx_done
+		);
+		timer_inst : entity work.timer(arch)
+		port map(
+			clk   => clk,
+			rst_n => rst_n,
+			ena   => timer_ena, --當ena='0', msec=load
+			load  => load,      --起始值
+			msec  => msec       --毫秒數
 		);
 	uart_txt : entity work.uart_txt(arch)
 		generic map(
@@ -85,30 +97,45 @@ begin
 					led <= "0000";
 				end if;
 			end if;
-			if key_r = '1' then
-				tx_ena <= '1';
-				if key = 0 then
-					led <= "0111";
-					tx_data <= "00000000";
-				end if;
-				if key = 1 then
-					tx_ena <= '1';
-					led <= "1011";
-					tx_data <= "10000000";
-				end if;
-				if key = 2 then
-					tx_ena <= '1';
-					led <= "1101";
-					tx_data <= "20000000";
-				end if;
-				if key = 3 then
-					tx_ena <= '1';
-					led <= "1110";
-					tx_data <= "30000000";
-				end if;
-			end if;
 			if rx_done = '0' and key_r='0' then
 				tx_ena <= '0';
+			end if;
+			if key_r = '1' then
+				key_s <= key;
+				timer_ena <='0';
+			else 
+				timer_ena <= '1';
+			end if;
+			if msec > 50 then 
+				if key_r = '1' then
+					tx_ena <= '1';
+					case key is 
+					when 0 =>
+						led <= "0111";
+						tx_data <= "00000000";
+					when 1 =>
+						tx_ena <= '1';
+						led <= "1011";
+						tx_data <= "10000000";
+					when 2 =>
+						tx_ena <= '1';
+						led <= "1101";
+						tx_data <= "20000000";
+					when 3 =>
+						tx_ena <= '1';
+						led <= "1110";
+						tx_data <= "30000000";
+						when others => 
+						null;
+					end case;
+				end if;
+			elsif  key_s = 2 and key = 3 then 
+					tx_ena <= '1';
+					tx_data <= "RRRRRRRR";
+			elsif key_s = 3 and key = 2 then
+					tx_ena <= '1';
+					tx_data <= "RRRRRRRR";
+		
 			end if;
 		end if;
 	end process;
