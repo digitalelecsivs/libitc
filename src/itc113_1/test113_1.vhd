@@ -135,9 +135,9 @@ architecture arch of test113_1 is
 	constant PIC_ANGLE : ANGLE_ID := ("1010", "1111", "1111", "1000", "1010", "1010", "1000", "1111");
 	constant coord_line : inter_l := ((50, 0), (110, 0), (0, 42), (0, 84));
 	constant gray : l_px_t := x"FFFFFF";
-
 begin
 
+	
 	pic_data(0) <= unsigned(pic_data_o(0));
 	pic_data(1) <= unsigned(pic_data_o(1));
 	pic_data(2) <= unsigned(pic_data_o(2));
