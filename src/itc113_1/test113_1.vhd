@@ -116,7 +116,6 @@ architecture arch of test113_1 is
 	--user
 	type l_px_t_array is array (0 to 10) of l_px_t;
 	type l_px_t_array_line is array (0 to 3) of l_px_t;
-
 	type state is (start, print, move);
 	signal state1 : state;
 	signal state2 : state;
@@ -138,6 +137,7 @@ architecture arch of test113_1 is
 	constant gray : l_px_t := x"FFFFFF";
 
 begin
+
 	pic_data(0) <= unsigned(pic_data_o(0));
 	pic_data(1) <= unsigned(pic_data_o(1));
 	pic_data(2) <= unsigned(pic_data_o(2));
