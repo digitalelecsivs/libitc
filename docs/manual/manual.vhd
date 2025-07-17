@@ -212,7 +212,7 @@ begin
 			font_busy        => font_busy,        -- 當畫面正在更新時，font_busy='1'
 			text_size        => text_size,        -- 字體大小
 			text_data        => text_data,        -- 文字資料
-			addr             => open,             -- 偵錯用
+			addr             => open,             -- 偵錯用 --可以用來貼圖
 			text_color       => text_color,       -- 字體顏色(只能改單行)(若要使用需改gen_font.vhd(有註記))(若沒用到隨便填一顏色即可)
 			bg_color         => bg_color,         -- 背景顏色
 			text_color_array => text_color_array, -- 字體顏色(同一行依位元改變)(text_color_array:l_px_arr_t(1 to 12);)
@@ -227,6 +227,32 @@ begin
 			pic_addr         => pic_addr,         -- 圖片addr	
 			pic_data         => pic_data          -- 圖片資料
 		);
+	-- lcd_mix_inst : entity work.lcd_mix(arch)
+	-- 	port map(
+	-- 		clk              => clk,
+	-- 		rst_n            => rst_n,
+	-- 		x                => x,
+	-- 		y                => y,
+	-- 		font_start       => font_start,
+	-- 		font_busy        => font_busy,
+	-- 		text_size        => 1,
+	-- 		text_data        => text_data,
+	-- 		text_count       => open,
+	-- 		addr             => open,
+	-- 		text_color       => green,
+	-- 		bg_color         => bg_color,
+	-- 		text_color_array => text_color,
+	-- 		clear            => lcd_clear,
+	-- 		con              => lcd_con,
+	-- 		pic_addr         => pic_addr,
+	-- 		pic_data         => pic_data,
+	-- 		lcd_sclk         => lcd_sclk,
+	-- 		lcd_mosi         => lcd_mosi,
+	-- 		lcd_ss_n         => lcd_ss_n,
+	-- 		lcd_dc           => lcd_dc,
+	-- 		lcd_bl           => lcd_bl,
+	-- 		lcd_rst_n        => lcd_rst_n
+	-- 	);
 	-- lcd_draw : entity work.gen_font(arch)--lcd 文字
 	-- 	port map(
 	-- 		clk              => clk,

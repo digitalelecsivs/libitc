@@ -87,18 +87,26 @@ architecture arch of test113_2 is
 	--user
 	type system_state is (reset, waiting, provide, selling, buying);
 	signal state : system_state;
+	type feeding_state is (feed, day, guess, enough, notenough, waiting);
+	type buying_state is (move, enough, notenough);
+	type selling_state is (sell, finish, waiting);
+	signal sell_state : selling_state;
+	signal feed_state : feeding_state;
+	signal buy_state : buying_state;
 	signal fodder : integer := 100;
 	signal money : integer := 500;
 	signal egg : integer;
 	signal fodder_number : integer := 0;
 	signal digit : std_logic := '0';
-	type sell_coord is array(0 to 3) of integer range 0 to 7;
-	signal sell_x : sell_coord := (6, 0, 0, 0);
-	signal sell_y : sell_coord := (1, 0, 0, 0);
-	signal buy_x, buy_y : integer range 0 to 7;
-	signal buy_enable : unsigned(0 to 3) := "1111";
+	type sell_coord is array(0 to 4) of integer range 0 to 7;
+	signal sell_x : sell_coord := (2, 6, 1, 3, 6);
+	signal sell_y : sell_coord := (1, 6, 3, 5, 2);
+	signal buy_x : integer range 0 to 7 := 1;
+	signal buy_y : integer range 0 to 7 := 6;
+	signal buy_enable : unsigned(0 to 4) := "11111";
 	signal lcd_count : integer range 0 to 3;
 	signal price : integer range 0 to 9;
+	signal flag : std_logic;
 begin
 	dot_inst : entity work.dot(arch)
 		generic map(
@@ -218,195 +226,342 @@ begin
 		);
 	process (clk, rst_n)
 		variable number : integer := 0;
+		variable day_number : integer := 0;
 	begin
-		if rst_n = '0' or (pressed = '1' and key = 7) then
+		if rst_n = '0' or (pressed = '1' and key = 3) then
 			lcd_con <= '0';
 			state <= reset;
 			timer_ena <= '0';
-			buy_enable <= "1111";
+			buy_enable <= "11111";
 			seg_data <= "        ";
 			lcd_clear <= '1';
 			bg_color <= white;
 		elsif rising_edge(clk) then
+			if pressed = '1' and key = 12 then
+				state <= waiting;
+			end if;
+			if state /= reset then
+				case lcd_count is
+					when 0 =>
+						text_data <= " EGG        ";
+						font_start <= '1';
+						x <= - 5;
+						y <= 0;
+						text_color(1 to 12) <= (others => black);
+						if draw_done = '1' then
+							font_start <= '0';
+							lcd_count <= 1;
+						end if;
+					when 1 =>
+						text_data <= " " & to_string(egg, 999, 10, 2) & "  " & to_string(price, 9, 10, 1) & "      ";
+						font_start <= '1';
+						x <= - 5;
+						y <= 40;
+						text_color(1 to 6) <= (black, black, black, black, black, red);
+						if draw_done = '1' then
+							font_start <= '0';
+							lcd_count <= 2;
+						end if;
+					when 2 =>
+						text_data <= "            ";
+						font_start <= '1';
+						x <= - 5;
+						y <= 80;
+						text_color(1 to 12) <= (others => black);
+						if draw_done = '1' then
+							font_start <= '0';
+							lcd_count <= 3;
+						end if;
+					when 3 =>
+						if sw(2) = '0' then
+							text_data <= "    S0      ";
+						else
+							text_data <= "    S1      ";
+						end if;
+						font_start <= '1';
+						x <= - 5;
+						y <= 120;
+						text_color(1 to 12) <= (others => black);
+						if draw_done = '1' then
+							font_start <= '0';
+							lcd_count <= 0;
+						end if;
+				end case;
+			end if;
 			case state is
 				when reset =>
-					led_r <= '0';
-					led_g <= '0';
-					led_y <= '0';
+					data_g <= (others => x"00");
+					data_r <= (others => x"00");
 					timer_ena <= '1';
-					fodder <= 100;
+					fodder <= 40;
 					money <= 500;
+					seg_data <= "        ";
 					egg <= 0;
 					bg_color <= white;
 					lcd_clear <= '1';
-					rgb <= "111";
-					if msec < 500 then
-						rgb <= "000";
-					elsif msec < 1000 then
-						rgb <= "100";
+					rgb <= "000";
+					if msec < 1000 then
+						led_r <= '1';
+						led_g <= '0';
+						led_y <= '0';
 					elsif msec < 2000 then
-						rgb <= "110";
+						led_r <= '0';
+						led_g <= '1';
+						led_y <= '0';
 					elsif msec < 3000 then
-						rgb <= "111";
-					elsif msec > 4000 then
-						rgb <= "000";
+						led_r <= '0';
+						led_g <= '0';
+						led_y <= '1';
+					elsif msec > 3000 then
+						led_r <= '0';
+						led_g <= '0';
+						led_y <= '0';
 						timer_ena <= '0';
 						state <= waiting;
 					end if;
 				when waiting =>
-					led_r <= '0';
-					led_g <= '0';
-					led_y <= '0';
-					lcd_clear <= '1';
+					mot_speed <= 0;
+					data_g <= (x"00", x"7e", x"42", x"42", x"42", x"42", x"7E", x"00");
+					data_r <= (others => x"00");
+					timer_ena <= '1';
+
+					if msec mod 1500 < 500 then
+						rgb <= "100";
+					elsif msec mod 1500 < 1000 then
+						rgb <= "010";
+					elsif msec mod 1500 < 1500 then
+						rgb <= "001";
+					end if;
+					lcd_clear <= '0';
 					seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
-					if pressed = '1' and key = 14 then
-						case sw(0 to 2) is
-							when "100" =>
+					if pressed = '1' and key = 11 then
+						case sw(0 to 1) is
+							when "10" =>
 								state <= provide;
-							when "010" =>
-								state <= selling;
-							when "001" =>
+								feed_state <= feed;
+								timer_ena <= '0';
+								fodder_number <= 0;
+								day_number := 0;
+								flag <= '0';
+							when "01" =>
 								state <= buying;
+								buy_state <= move;
+								timer_ena <= '0';
 							when others => null;
 						end case;
 					end if;
 				when provide =>
-					led_r <= '1';
-					led_g <= '0';
-					led_y <= '0';
-					seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
-					if pressed = '1' and key < 11 and key /= 7 then
-						case key is
-							when 0 => number := 7;
-							when 1 => number := 8;
-							when 2 => number := 9;
-							when 3 => number := 0;
-							when 4 => number := 4;
-							when 5 => number := 5;
-							when 6 => number := 6;
-							when 8 => number := 1;
-							when 9 => number := 2;
-							when 10 => number := 3;
-							when others => null;
-						end case;
-						if fodder_number > 0 then
-							fodder_number <= (fodder_number mod 10) * 10 + number;
-						else
-							fodder_number <= number;
-						end if;
-					end if;
-					if pressed = '1' and key = 14 then
-						if fodder_number = 0 then
-							state <= waiting;
-						elsif fodder >= fodder_number then
-							fodder <= fodder - fodder_number;
-							egg <= fodder_number * 4;
-							fodder_number <= 0;
-						else
-							fodder_number <= 0;
-						end if;
+					case feed_state is
+						when feed =>
 
-					end if;
-				when selling =>
-					led_r <= '0';
-					led_g <= '1';
-					led_y <= '0';
-					lcd_clear <= '0';
-					if rx_done = '1' and to_integer(rx_data) /= 13 then
-						price <= to_integer(rx_data);
-					end if;
-					if pressed = '1' and key = 14 then
-						money <= money + egg * price;
-						egg <= 0;
-						price <= 0;
-						state <= waiting;
-					end if;
-					case lcd_count is
-						when 0 =>
-							text_data <= " PR" & to_string(price, 9, 10, 1) & "        ";
-							font_start <= '1';
-							x <= - 5;
-							y <= 0;
-							text_color(1 to 4) <= lcd_color1;
-							if draw_done = '1' then
-								font_start <= '0';
-								lcd_count <= 1;
+							if pressed = '1' and key < 14 and key /= 3 then
+								case key is
+									when 0 => number := 1;
+									when 1 => number := 2;
+									when 2 => number := 3;
+									when 3 => number := 0;
+									when 4 => number := 4;
+									when 5 => number := 5;
+									when 6 => number := 6;
+									when 7 => number := 0;
+									when 8 => number := 7;
+									when 9 => number := 8;
+									when 10 => number := 9;
+									when 13 => number := 0;
+									when others => null;
+								end case;
+								fodder_number <= number;
 							end if;
-						when 1 =>
-							text_data <= " T" & to_string(egg, 999, 10, 3) & "       ";
-							font_start <= '1';
-							x <= - 5;
-							y <= 40;
-							text_color(1 to 4) <= lcd_color2;
-							if draw_done = '1' then
-								font_start <= '0';
-								lcd_count <= 2;
+							seg_data <= to_string(fodder, 9999, 10, 4) & to_string(fodder_number, 9999, 10, 4);
+							data_g <= (others => x"00");
+							data_r <= (x"F8", x"F0", x"F0", x"F8", x"9C", x"0E", x"07", x"02");
+							if pressed = '1' and key = 11 then
+								feed_state <= day;
+								number := 0;
 							end if;
-						when 2 =>
-							text_data <= " SE         ";
-							font_start <= '1';
-							x <= - 5;
-							y <= 80;
-							text_color(1 to 4) <= lcd_color1;
-							if draw_done = '1' then
-								font_start <= '0';
-								lcd_count <= 3;
+						when day =>
+							if pressed = '1' and key < 14 and key /= 3 then
+								case key is
+									when 0 => number := 1;
+									when 1 => number := 2;
+									when 2 => number := 3;
+									when 3 => number := 0;
+									when 4 => number := 4;
+									when 5 => number := 5;
+									when 6 => number := 6;
+									when 7 => number := 0;
+									when 8 => number := 7;
+									when 9 => number := 8;
+									when 10 => number := 9;
+									when 13 => number := 0;
+									when others => null;
+								end case;
+								day_number := number;
 							end if;
-						when 3 =>
-							text_data <= "            ";
-							font_start <= '1';
-							x <= - 5;
-							y <= 120;
-							text_color(1 to 4) <= lcd_color2;
-							if draw_done = '1' then
-								font_start <= '0';
-								lcd_count <= 0;
+							seg_data <= to_string(fodder, 9999, 10, 4) & to_string(day_number, 9999, 10, 4);
+							data_g <= (others => x"00");
+							data_r <= (x"F8", x"F0", x"F0", x"F8", x"9C", x"0E", x"07", x"02");
+							if pressed = '1' and key = 11 then
+								feed_state <= guess;
+							end if;
+						when guess =>
+							seg_data <= to_string(fodder, 9999, 10, 4) & to_string(day_number * fodder_number, 9999, 10, 4);
+							if pressed = '1' and key = 11 then
+								if day_number * fodder_number <= fodder then
+									feed_state <= enough;
+									fodder <= fodder - day_number * fodder_number;
+									egg <= egg + 2 * day_number * fodder_number;
+								else
+									feed_state <= notenough;
+								end if;
+							end if;
+						when notenough =>
+							seg_data <= to_string(fodder, 9999, 10, 4) & to_string(day_number * fodder_number, 9999, 10, 4);
+							timer_ena <= '1';
+							if msec < 1000 then
+								buz <= '1';
+								led_r <= '1';
+							else
+								buz <= '0';
+								led_r <= '0';
+							end if;
+							if pressed = '1' and key = 11 then
+								state <= waiting;
+							end if;
+						when enough =>
+							seg_data <= to_string(fodder, 9999, 10, 4) & to_string(day_number * fodder_number, 9999, 10, 4);
+							feed_state <= waiting;
+						when waiting =>
+							buz <= '0';
+							timer_ena <= '1';
+							if msec < 1000 then
+								led_g <= '1';
+							else
+								led_g <= '0';
+							end if;
+							if pressed = '1' and key = 11 then
+								state <= selling;
+								sell_state <= sell;
 							end if;
 					end case;
-					if pressed = '1' and key = 14 then
-						state <= waiting;
-					end if;
+				when selling =>
+					case sell_state is
+						when sell =>
+							if sw(2) = '0' then
+								seg_data <= to_string(egg * price, 9999, 10, 4) & to_string(money, 9999, 10, 4);
+							else
+								seg_data <= to_string(3 * egg * price, 9999, 10, 4) & to_string(money, 9999, 10, 4);
+							end if;
+							if flag = '1' then
+								seg_data <= "    " & to_string(money, 9999, 10, 4);
+							end if;
+							data_g <= (x"24", x"24", x"FE", x"25", x"7E", x"A4", x"7F", x"24");
+							data_r <= (x"24", x"24", x"FE", x"25", x"7E", x"A4", x"7F", x"24");
+							lcd_clear <= '0';
+							if rx_done = '1' and to_integer(rx_data) /= 13 then
+								price <= to_integer(rx_data);
+							end if;
+							if pressed = '1' and key = 11 then
+								if sw(2) = '0' then
+									money <= money + egg * price;
+								else
+									money <= money + 3 * egg * price;
+								end if;
+								egg <= 0;
+								price <= 0;
+								sell_state <= finish;
+							end if;
+						when finish =>
+							seg_data <= "    " & to_string(money, 9999, 10, 4);
+							if pressed = '1' and key = 11 then
+								state <= waiting;
+							end if;
+						when waiting =>
+					end case;
 				when buying =>
-					led_r <= '0';
-					led_g <= '0';
-					led_y <= '1';
-					seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
-					data_g <= (others => x"00");
-					data_r <= (others => x"00");
-					data_g(buy_y)(buy_x) <= '1';
-					data_g(sell_y(0))(sell_x(0)) <= buy_enable(0);
-					data_r(sell_y(0))(sell_x(0)) <= buy_enable(0);
-					if buy_x = sell_x(0) and buy_y = sell_y(0) then
-						data_g(sell_y(0))(sell_x(0)) <= '1';
-						data_r(sell_y(0))(sell_x(0)) <= '0';
-						if money >= 100 and buy_enable(0) = '1' then
-							money <= money - 100;
-							fodder <= fodder + 50;
-							buy_enable(0) <= '0';
-						end if;
-					end if;
-					if pressed = '1' and key = 1 and buy_y /= 7 then
-						buy_y <= buy_y + 1;
-					end if;
-					if pressed = '1' and key = 4 and buy_x /= 0 then
-						buy_x <= buy_x - 1;
-					end if;
-					if pressed = '1' and key = 6 and buy_x /= 7 then
-						buy_x <= buy_x + 1;
-					end if;
-					if pressed = '1' and key = 9 and buy_y /= 0 then
-						buy_y <= buy_y - 1;
-					end if;
-					if pressed = '1' and key = 14 then
-						state <= waiting;
-						buy_x <= 0;
-						buy_y <= 0;
-						data_g <= (others => x"00");
-						data_r <= (others => x"00");
-						buy_enable <= "1111";
-					end if;
+					case buy_state is
+						when move =>
+							seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
+							data_g <= (others => x"00");
+							data_r <= (others => x"00");
+							data_g(buy_y)(buy_x) <= '1';
+							for i in 0 to 4 loop
+								if i > 1 then
+									data_g(sell_y(i))(sell_x(i)) <= buy_enable(i);
+									data_r(sell_y(i))(sell_x(i)) <= buy_enable(i);
+									if buy_x = sell_x(i) and buy_y = sell_y(i) then
+										data_g(sell_y(i))(sell_x(i)) <= '1';
+										data_r(sell_y(i))(sell_x(i)) <= '0';
+										if money >= 300 and buy_enable(i) = '1' then
+											buy_state <= enough;
+											fodder <= fodder + 50;
+											buy_enable(i) <= '0';
+											money <= money - 300;
+										else
+											buy_state <= notenough;
+											timer_ena <= '0';
+										end if;
+									end if;
+								else
+									data_g(sell_y(i))(sell_x(i)) <= '0';
+									data_r(sell_y(i))(sell_x(i)) <= buy_enable(i);
+									if buy_x = sell_x(i) and buy_y = sell_y(i) then
+										data_g(sell_y(i))(sell_x(i)) <= '1';
+										data_r(sell_y(i))(sell_x(i)) <= '0';
+										if money >= 500 and buy_enable(i) = '1' then
+											buy_state <= enough;
+											fodder <= fodder + 100;
+											buy_enable(i) <= '0';
+											money <= money - 500;
+										else
+											buy_state <= notenough;
+											timer_ena <= '0';
+										end if;
+									end if;
+								end if;
+							end loop;
+							if pressed = '1' and key = 1 and buy_y /= 7 then
+								buy_y <= buy_y + 1;
+							end if;
+							if pressed = '1' and key = 4 and buy_x /= 0 then
+								buy_x <= buy_x - 1;
+							end if;
+							if pressed = '1' and key = 6 and buy_x /= 7 then
+								buy_x <= buy_x + 1;
+							end if;
+							if pressed = '1' and key = 9 and buy_y /= 0 then
+								buy_y <= buy_y - 1;
+							end if;
+						when enough =>
+							seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
+							mot_speed <= 70;
+							if pressed = '1' and key = 11 then
+								state <= waiting;
+								buy_x <= 1;
+								buy_y <= 6;
+								data_g <= (others => x"00");
+								data_r <= (others => x"00");
+								buy_enable <= "11111";
+							end if;
+						when notenough =>
+							seg_data <= to_string(fodder, 9999, 10, 4) & to_string(money, 9999, 10, 4);
+							timer_ena <= '1';
+							if msec < 1000 then
+								buz <= '1';
+							else
+								buz <= '0';
+							end if;
+							if pressed = '1' and key = 11 then
+								buz <= '0';
+								state <= waiting;
+								buy_x <= 1;
+								buy_y <= 6;
+								data_g <= (others => x"00");
+								data_r <= (others => x"00");
+								buy_enable <= "11111";
+							end if;
+					end case;
 			end case;
 		end if;
-
 	end process;
 end arch;
