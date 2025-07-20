@@ -62,7 +62,7 @@ if {$make_assignments} {
 	set_location_assignment PIN_13 -to seg_com[5]
 	set_location_assignment PIN_21 -to seg_com[6]
 	set_location_assignment PIN_37 -to seg_com[7]
-
+ 
 	# KEY_COL{1..4}
 	set_location_assignment PIN_49 -to key_row[0]
 	set_location_assignment PIN_45 -to key_row[1]
