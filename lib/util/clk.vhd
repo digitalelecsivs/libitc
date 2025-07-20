@@ -20,15 +20,15 @@ end clk;
 architecture arch of clk is
 
 	signal cnt : integer range 0 to sys_clk_freq / freq / 2 - 1;
-
+									--50MHz			
 begin
 
 	process (clk_in, rst_n) begin
 		if rst_n = '0' then
 			clk_out <= '0';
 			cnt <= 0;
-		elsif rising_edge(clk_in) then
-			if cnt = cnt'high then
+		elsif rising_edge(clk_in) then	
+			if cnt = cnt'high then		--cnt'high => the highest number of cnt == (sys_clk_freq/freq/2-1)	
 				cnt <= 0;
 				clk_out <= not clk_out;
 			else

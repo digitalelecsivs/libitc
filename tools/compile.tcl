@@ -53,7 +53,7 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY test113_2
+	set_global_assignment -name TOP_LEVEL_ENTITY dot_try
 
 	# Unit tests
 	# set_global_assignment -name VHDL_FILE practices/50-choco/113_1/test113_1.vhd
@@ -105,7 +105,7 @@ if {$make_assignments} {
 
 
 	# set_global_assignment -name VHDL_FILE practices/50-choco/mot_test/mot_test.vhd
-	set_global_assignment -name VHDL_FILE practices/50-choco/113_2/test113_2.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/dot_try.vhd
 	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2_11_19/price.vhd
 	# set_global_assignment -name QIP_FILE practices/50-choco/113_2_11_19/price.qip
 	# set_global_assignment -name VHDL_FILE practices/50-choco/113_2_11_19/FEED.vhd
