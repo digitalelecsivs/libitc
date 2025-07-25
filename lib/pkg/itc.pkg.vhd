@@ -160,6 +160,12 @@ package itc is
 	function to_string(num, num_max, base, length : integer) return string;
 	function to_string(num, num_max, base, length : integer) return u8_arr_t;
 	function to_big(txt: integer) return u8_arr_t;
+--to_unsigned ( integer , length )
+--to_signed	  ( integer , length )
+--to_integer  ( unsigned/signed )
+--unsigned 	  ( std_logic_vector )
+--signed	  ( std_logic_vector )
+--std_logic_vector( unsigned/signed )
 end package;
 
 package body itc is
