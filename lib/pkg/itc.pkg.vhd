@@ -190,7 +190,8 @@ package body itc is
 		variable temp : integer := 1;
 		variable result : integer := 0;
 		begin
-			for i in 0 to num loop
+			for i in+
+			 0 to num loop
 				if temp < num then
 					temp := temp * base;
 					result := result + 1;

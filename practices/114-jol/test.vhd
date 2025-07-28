@@ -19,18 +19,30 @@ architecture arch of test is
 	signal l_data : l_px_t;
 	signal p_data_i : std_logic_vector(23 downto 0);
 	signal p_data : l_px_t;
-
 	signal x : integer range -127 to 127;
 	signal y : integer range -159 to 159;
+	-- signal 
 	signal font_start, font_busy, l_clear : std_logic;
 	signal pic_data_o : l_px_t;
 begin
-	bongo_inst : entity work.bongo(syn)
+	bongo_inst : entity work.bongo2(syn)
 		port map(
-			address => std_logic_vector(to_unsigned(pic_addr, 8)),
+			address => std_logic_vector(to_unsigned(pic_addr, 15)),
 			clock   => clk,
 			q       => p_data_i
 		);
+	-- black_inst : entity work.black(syn)
+	-- 	port map(
+	-- 		address => std_logic_vector(to_unsigned(pic_addr, 15)),
+	-- 		clock   => clk,
+	-- 		q       => p_data_i
+	-- 	);
+	-- square_inst : entity work.testfile(syn)
+	-- 	port map(
+	-- 		address => std_logic_vector(to_unsigned(pic_addr, 15)),
+	-- 		clock   => clk,
+	-- 		q       => p_data_i
+	-- 	);
 	lcd_inst : entity work.lcd(arch)
 		port map(
 			clk        => clk,
@@ -77,8 +89,8 @@ begin
 	begin
 		if rst_n = '0' then
 		elsif rising_edge(clk) then
-			pic_data_o <= to_data(l_paste(l_addr, white, p_data, (0, 0), 16, 16));
-			pic_addr <= to_addr(l_paste(l_addr, white, p_data, (0, 0), 16, 16));
+			pic_data_o <= to_data(l_paste(l_addr, white, p_data, (0, 50), 16, 16));
+			pic_addr <= to_addr(l_paste(l_addr, white, p_data, (0, 50), 16, 16));
 			if l_addr < l_px_cnt - 1 then
 				if wr_ena = '0' then
 					wr_ena <= '1';
