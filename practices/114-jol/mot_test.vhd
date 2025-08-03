@@ -38,7 +38,6 @@ architecture arch of mot_test is
 	signal dir : u2r_t;
 	type speed_t is array (0 to 1) of integer range 0 to 100;
 	signal speed : speed_t;
-
 	signal mot_disp : integer range 0 to 1;
 	signal dir_disp : u2r_t;
 	type speed_disp_t is array (0 to 1) of integer range 0 to 9;

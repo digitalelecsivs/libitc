@@ -21,13 +21,13 @@ architecture arch of seg_test is
 	signal clock : std_logic;
 	signal clk_cnt : std_logic;
 
-	signal cnt : integer range 0 to (2**7-1) ;
-	
+	signal cnt : integer range 0 to (2 ** 7 - 1) := 65;
+
 	signal seg : string(1 to 8);
 begin
 	clk_inst : entity work.clk(arch)
 		generic map(
-			freq => 10 
+			freq => 1
 		)
 		port map(
 			clk_in  => clk,
@@ -43,7 +43,7 @@ begin
 			data    => seg,
 			dot => (others => '0')
 		);
-	
+
 	-- with to_integer(reverse(sw(0 to 1))) select base <=
 	-- 2 when 0,
 	-- 8 when 1,
@@ -59,13 +59,16 @@ begin
 	clk_cnt <= clock;
 	process (clk_cnt, rst_n) begin
 		if rst_n = '0' then
-			cnt <= 0;
+			cnt <= 65;
 		elsif rising_edge(clk_cnt) then
 			if cnt = cnt'high then
-				cnt <= 0;
+				cnt <= 65;
 			end if;
 			cnt <= cnt + 1;
-			seg<=to_string(cnt, cnt'high, 10, 8);
+			seg(8) <= Character'val(cnt);
+			
+			-- seg(1) <= to_string(cnt, cnt'high,2, 1);
+			seg(1 to 7) <= seg(2 to 8);
 		end if;
 	end process;
 end arch;
