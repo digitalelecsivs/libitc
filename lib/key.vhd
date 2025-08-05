@@ -63,7 +63,7 @@ begin
 
 	debounce_inst : entity work.debounce(arch)
 		generic map(
-			stable_time => 10
+			stable_time => 100
 		)
 		port map(
 			clk     => clk,

@@ -4,7 +4,7 @@
 -- MODULE: altsyncram 
 
 -- ============================================================
--- File Name: testfile.vhd
+-- File Name: hollow_square.vhd
 -- Megafunction Name(s):
 -- 			altsyncram
 --
@@ -39,17 +39,17 @@ USE ieee.std_logic_1164.all;
 LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
 
-ENTITY testfile IS
+ENTITY hollow_square IS
 	PORT
 	(
 		address		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
 		q		: OUT STD_LOGIC_VECTOR (23 DOWNTO 0)
 	);
-END testfile;
+END hollow_square;
 
 
-ARCHITECTURE SYN OF testfile IS
+ARCHITECTURE SYN OF hollow_square IS
 
 	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (23 DOWNTO 0);
 
@@ -61,7 +61,7 @@ BEGIN
 		address_aclr_a => "NONE",
 		clock_enable_input_a => "BYPASS",
 		clock_enable_output_a => "BYPASS",
-		init_file => "C:\Users\user\Desktop\libitc\practices\114-jol\testfile.mif",
+		init_file => "hollow_square.mif",
 		intended_device_family => "Cyclone III",
 		lpm_hint => "ENABLE_RUNTIME_MOD=NO",
 		lpm_type => "altsyncram",
@@ -103,7 +103,7 @@ END SYN;
 -- Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 -- Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
 -- Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
--- Retrieval info: PRIVATE: MIFfilename STRING "../../Users/user/Desktop/libitc/practices/114-jol/test.mif"
+-- Retrieval info: PRIVATE: MIFfilename STRING "hollow_square.mif"
 -- Retrieval info: PRIVATE: NUMWORDS_A NUMERIC "20480"
 -- Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "0"
 -- Retrieval info: PRIVATE: RegAddr NUMERIC "1"
@@ -118,7 +118,7 @@ END SYN;
 -- Retrieval info: CONSTANT: ADDRESS_ACLR_A STRING "NONE"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_INPUT_A STRING "BYPASS"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
--- Retrieval info: CONSTANT: INIT_FILE STRING "../../Users/user/Desktop/libitc/practices/114-jol/test.mif"
+-- Retrieval info: CONSTANT: INIT_FILE STRING "hollow_square.mif"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone III"
 -- Retrieval info: CONSTANT: LPM_HINT STRING "ENABLE_RUNTIME_MOD=NO"
 -- Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
@@ -135,9 +135,9 @@ END SYN;
 -- Retrieval info: CONNECT: @address_a 0 0 15 0 address 0 0 15 0
 -- Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: q 0 0 24 0 @q_a 0 0 24 0
--- Retrieval info: GEN_FILE: TYPE_NORMAL testfile.vhd TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL testfile.inc FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL testfile.cmp TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL testfile.bsf FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL testfile_inst.vhd FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL hollow_square.vhd TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL hollow_square.inc FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL hollow_square.cmp TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL hollow_square.bsf FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL hollow_square_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: altera_mf

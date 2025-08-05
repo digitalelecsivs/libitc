@@ -53,27 +53,20 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY game
+	set_global_assignment -name TOP_LEVEL_ENTITY lcd_picture
 
 	# Unit tests
-	# set_global_assignment -name VHDL_FILE practices/114-jol/snake/random.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/game.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/seg_test.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/rgb_test.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/pwm_test.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/dot_try.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/traffic_dot.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/mot_test.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/pwm_mot.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/test.vhd
-	set_global_assignment -name VHDL_FILE tests/lcd_pic_16x16_test/bongo.vhd
-	set_global_assignment -name QIP_FILE tests/lcd_pic_16x16_test/bongo.qip
-	set_global_assignment -name VHDL_FILE tests/lcd_pic_16x16_test/bongo2.vhd
-	set_global_assignment -name QIP_FILE tests/lcd_pic_16x16_test/bongo2.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/testfile.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/testfile.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/black.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/black.qip
+	# set_global_assignment -name VHDL_FILE
+	# set_global_assignment -name VHDL_FILE
+	# set_global_assignment -name VHDL_FILE
+	# set_global_assignment -name VHDL_FILE
+	# set_global_assignment -name VHDL_FILE
+	# set_global_assignment -name VHDL_FILE
+	# set_global_assignment -name VHDL_FILE
+	# set_global_assignment -name VHDL_FILE
+	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_picture.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/hollow_square.vhd
+	set_global_assignment -name QIP_FILE practices/114-jol/lcd/hollow_square.qip
 
 	# set_global_assignment -name VHDL_FILE practices/50-choco/113_1/test113_1.vhd
 	# set_global_assignment -name VHDL_FILE practices/30-dora/tts_Jay/ser/tts_stop.vhd
