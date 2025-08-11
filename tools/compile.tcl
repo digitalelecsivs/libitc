@@ -53,20 +53,36 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY lcd_picture
+	set_global_assignment -name TOP_LEVEL_ENTITY pic_test1
 
 	# Unit tests
-	# set_global_assignment -name VHDL_FILE
-	# set_global_assignment -name VHDL_FILE
-	# set_global_assignment -name VHDL_FILE
-	# set_global_assignment -name VHDL_FILE
-	# set_global_assignment -name VHDL_FILE
-	# set_global_assignment -name VHDL_FILE
-	# set_global_assignment -name VHDL_FILE
-	# set_global_assignment -name VHDL_FILE
-	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_picture.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/hollow_square.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/lcd/hollow_square.qip
+	# # set_global_assignment -name VHDL_FILE
+	# # set_global_assignment -name VHDL_FILE
+	# # set_global_assignment -name VHDL_FILE
+	# # set_global_assignment -name VHDL_FILE
+	# # set_global_assignment -name VHDL_FILE
+	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_test1.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_picture.vhd
+	# # set_global_assignment -name VHDL_FILE practices/114-jol/dot/game.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/hollow_square.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/hollow_square.vhd
+
+	# # set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/git_icon.qip
+	# # set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/git_icon.vhd
+	# # set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/logitech_icon.qip
+	# # set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/logitech_icon.vhd
+	set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/msi_icon.qip
+	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/msi_icon.vhd
+	# # set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/sivs_icon.qip
+	# # set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/sivs_icon.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/vhdl_icon.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/vhdl_icon.vhd
+
+
+	
+
+
+
 
 	# set_global_assignment -name VHDL_FILE practices/50-choco/113_1/test113_1.vhd
 	# set_global_assignment -name VHDL_FILE practices/30-dora/tts_Jay/ser/tts_stop.vhd

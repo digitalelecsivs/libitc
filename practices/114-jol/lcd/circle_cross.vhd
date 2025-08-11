@@ -17,34 +17,58 @@ entity lcd_picture is
 end lcd_picture;
 
 architecture arch of lcd_picture is
-	signal wr_ena : std_logic;
+	signal lcd_x : integer range -127 to 127 := 30;
+	signal lcd_y : integer range -159 to 159 := 30;
 	signal l_addr, pic_addr : l_addr_t;
 	signal l_data : l_px_t;
-	signal p_data_i : std_logic_vector(23 downto 0);
+	type u24_t is array(Integer range <>) of STD_LOGIC_VECTOR(23 downto 0);
+	signal p_data_i : u24_t(0 to 2);
 	signal pic_data : l_px_t;
-	signal x : integer range -127 to 127 := 30;
-	signal y : integer range -159 to 159 := 30;
-	signal font_start, font_busy, l_clear : std_logic;
+	signal font_start : std_logic;
 	signal font_busy_i : std_logic;
+	signal font_busy : std_logic;
+	signal l_clear : std_logic;
 	signal text_data : string(1 to 12) := (others => character'val(20));
 	signal bg_color : l_px_t;
 	--timer
 	signal ena_tim : std_logic := '1';
 	signal msec : integer range 0 to 1000 := 0;
-	type state is (pic_mode, txt_mode);
-	signal mode : state := pic_mode;
+	--keyboard
 	signal pressed_i : std_logic;
 	signal pressed : std_logic;
 	signal key : integer range 0 to 15;
+	--others
+	signal player_cnt : integer range 0 to 9;
+	--state machine
+	type state is (map_init, key_mode);
+	signal mode : state := pic_mode;
 begin
-	edge_inst1 : entity work.edge(arch)
+	--< Picture >------------------------------------------------------------------------------
+	msi_icon : entity work.msi_icon(syn)
 		port map(
-			clk     => clk,
-			rst_n   => rst_n,
-			sig_in  => font_busy_i,
-			rising  => open,
-			falling => font_busy
+			address => std_logic_vector(to_unsigned(pic_addr, 15)),
+			clock   => clk,
+			q       => p_data_i
 		);
+	X_icon : entity work.X(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pic_addr, 15)),
+			clock   => clk,
+			q       => p_data_i
+		);
+	C_icon : entity work.circle(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pic_addr, 15)),
+			clock   => clk,
+			q       => p_data_i
+		);
+	Map_image : entity work.map_icon(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(pic_addr, 15)),
+			clock   => clk,
+			q       => p_data_i
+		);
+	--< Component >-----------------------------------------------------------------------------
 	timer_inst : entity work.timer(arch)
 		port map(
 			clk   => clk,
@@ -62,7 +86,7 @@ begin
 			pressed => pressed_i,
 			key     => key
 		);
-	edge_inst2 : entity work.edge(arch)
+	keyboard_edge_inst2 : entity work.edge(arch)
 		port map(
 			clk     => clk,
 			rst_n   => rst_n,
@@ -70,12 +94,15 @@ begin
 			rising  => pressed,
 			falling => open
 		);
-	msi_icon : entity work.msi_icon(syn)
+	font_busy_edge_inst1 : entity work.edge(arch)
 		port map(
-			address => std_logic_vector(to_unsigned(pic_addr, 15)),
-			clock   => clk,
-			q       => p_data_i
+			clk     => clk,
+			rst_n   => rst_n,
+			sig_in  => font_busy_i,
+			rising  => open,
+			falling => font_busy
 		);
+
 	lcd_mix_inst : entity work.lcd_mix(arch)
 		port map(
 			clk              => clk,
@@ -101,8 +128,10 @@ begin
 			-- pic_addr         => pic_addr,                                                     -- 圖片addr	
 			pic_data => pic_data -- 圖片資料
 		);
-
-	pic_data <= unsigned(p_data_i);
+	----------------------------------------------------------------------------------
+pic_data <= unsigned(p_data_i(0)) when player_cnt mod 2 = 1 else 
+	unsigned(p_data_i(1)) when player_cnt mod 2 = 1 else (others=>'0');
+	--< State machine >-----------------------------------------------------------------------------
 	process (clk, rst_n)
 	begin
 		if rst_n = '0' then
@@ -110,51 +139,24 @@ begin
 			ena_tim <= '1';
 		elsif rising_edge(clk) then
 			case mode is
-				when pic_mode =>
+				when map_init =>
 					l_clear <= '1';
 					bg_color <= to_data(l_paste(l_addr, white, pic_data, (0, 0), 128, 160));
 					pic_addr <= to_addr(l_paste(l_addr, white, pic_data, (0, 0), 128, 160));
-
+					if msec >= 250 then
+                        ena_tim <= '0';
+                        l_clear <= '0';
+                        mode<=key_mode;
+                    end if;
+				when key_mode =>
 					if pressed = '1' then
-						case key is
-							when 15 => mode <= txt_mode;
-							when others => null;
-						end case;
-					end if;
-				when txt_mode =>
-
-					text_data <= "text_data   ";
-					l_clear <= '1';
-					-- 
-					bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, pic_data, (0, 0), 128, 160)), "text_data", (45, 30), green);
-					pic_addr <= to_addr(l_paste(l_addr, red, pic_data, (0, 0), 128, 160));
-					if font_busy = '1' then
-						font_start <= '0';
-					end if;
-					if pressed = '1' then
-						case key is
-							when 15 => mode <= pic_mode;
-							when others => null;
-						end case;
-					end if;
+                        case key is
+                            when 15 => mode <= txt_mode;
+                            when others => null;
+                        end case;
+                    end if;
+					
 			end case;
-			-- if msec < 500 then
-			-- 	l_clear <= '1';
-			-- 	bg_color <= to_data(l_paste(l_addr, white, pic_data, (0, 0), 128, 160));
-			-- 	pic_addr <= to_addr(l_paste(l_addr, white, pic_data, (0, 0), 128, 160));
-			-- else
-			-- 	l_clear <= '0';
-			-- 	text_data <= "text_data   ";
-			-- 	-- bg_color <= to_data(l_paste(l_addr, red, pic_data, (x, y), 128, 160));
-			-- 	-- pic_addr <= to_addr(l_paste(l_addr, red, pic_data, (x, y), 128, 160));
-			-- 	font_start <= '1';
-			-- 	if font_busy = '1' then
-			-- 		font_start <= '0';
-			-- 	end if;
-			-- end if;
-			-- if msec >= 1000 then
-			-- 	ena_tim <= '0';
-			-- end if;
 
 		end if;
 	end process;

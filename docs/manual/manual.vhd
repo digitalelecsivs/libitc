@@ -101,7 +101,24 @@ architecture rtl of manual is
 	signal msec, load : i32_t;
 	signal timer_ena : std_logic;
 
-	--lcd_draw
+	-- --lcd_draw
+	-- signal bg_color, text_color : l_px_t;
+	-- signal addr : l_addr_t;
+	-- signal data : string(1 to 12);
+	-- signal font_start, font_busy, lcd_clear : std_logic;
+	-- signal draw_done : std_logic;
+	-- signal x, y : integer range 0 to 159;
+
+	-- --lcd_inst
+	-- signal brightness : integer range 0 to 100;
+	-- signal l_wr_ena : std_logic;
+	-- signal l_addr : l_addr_t;
+	-- signal l_data : l_px_t;
+	-- signal icon_addr : integer range 0 to l_px_cnt - 1;
+	-- signal icon_data_i : std_logic_vector(0 downto 0);
+	-- signal icon_data : l_px_t;
+
+	--lcd_mix
 	signal bg_color, text_color : l_px_t;
 	signal addr : l_addr_t;
 	signal data : string(1 to 12);
@@ -109,14 +126,7 @@ architecture rtl of manual is
 	signal draw_done : std_logic;
 	signal x, y : integer range 0 to 159;
 
-	--lcd_inst
-	signal brightness : integer range 0 to 100;
-	signal l_wr_ena : std_logic;
-	signal l_addr : l_addr_t;
-	signal l_data : l_px_t;
-	signal icon_addr : integer range 0 to l_px_cnt - 1;
-	signal icon_data_i : std_logic_vector(0 downto 0);
-	signal icon_data : l_px_t;
+	
 
 	--8*8 dot led
 	constant data_wang : u8r_arr_t(0 to 7) := (x"00", x"7C", x"10", x"38", x"10", x"7C", x"00", x"00"); --王
