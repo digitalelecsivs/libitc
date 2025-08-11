@@ -53,15 +53,15 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY pic_test1
+	set_global_assignment -name TOP_LEVEL_ENTITY test
 
 	# Unit tests
 	# # set_global_assignment -name VHDL_FILE
 	# # set_global_assignment -name VHDL_FILE
 	# # set_global_assignment -name VHDL_FILE
 	# # set_global_assignment -name VHDL_FILE
-	# # set_global_assignment -name VHDL_FILE
-	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_test1.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/test.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_test1.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_picture.vhd
 	# # set_global_assignment -name VHDL_FILE practices/114-jol/dot/game.vhd
 	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/hollow_square.qip
@@ -71,8 +71,8 @@ if {$make_assignments} {
 	# # set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/git_icon.vhd
 	# # set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/logitech_icon.qip
 	# # set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/logitech_icon.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/msi_icon.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/msi_icon.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/msi_icon.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/msi_icon.vhd
 	# # set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/sivs_icon.qip
 	# # set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/sivs_icon.vhd
 	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/vhdl_icon.qip

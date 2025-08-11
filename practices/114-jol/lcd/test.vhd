@@ -30,7 +30,7 @@ architecture arch of test is
 	signal busy_f : std_logic;
 	signal msec : integer range 0 to 500;
 	signal ena_tim : std_logic;
-	signal text_data : string(1 to 12) := (others => character'val(20));
+	signal text_data : string(1 to 12) := (others => character'val(32));
 	signal pressed_i : std_logic;
 	signal pressed : std_logic;
 	signal key : i4_t;
@@ -73,12 +73,12 @@ begin
 	-- 		clock   => clk,
 	-- 		q       => p_data_i
 	-- 	);
-	square_inst : entity work.testfile(syn)
-		port map(
-			address => std_logic_vector(to_unsigned(pic_addr, 15)),
-			clock   => clk,
-			q       => p_data_i
-		);
+	-- square_inst : entity work.testfile(syn)
+	-- 	port map(
+	-- 		address => std_logic_vector(to_unsigned(pic_addr, 15)),
+	-- 		clock   => clk,
+	-- 		q       => p_data_i
+	-- 	);
 	-- lcd_inst : entity work.lcd(arch)
 	-- 	port map(
 	-- 		clk        => clk,
@@ -138,7 +138,7 @@ begin
 			l_clear <= '1';
 			-- bg_color <= white;
 			 key_times <= 0;
-			text_data <= (others => character'val(20));
+			text_data <= (others => character'val(32));
 		elsif rising_edge(clk) then
 			ena_tim <= '1';
 			if msec = 500 then
@@ -164,7 +164,7 @@ begin
 					when 12 => text_data <= ("M" & text_data(1 to 11));
 					when 13 => text_data <= ("N" & text_data(1 to 11));
 					when 14 => text_data <= ("O" & text_data(1 to 11));
-					when 15 => text_data <= ("P" & text_data(1 to 11));
+					when 15 => text_data <= (" " & text_data(1 to 11));
 					when others => null;
 				end case;
 				key_times <= key_times + 1;
@@ -175,10 +175,10 @@ begin
 				if key_times = 12 then
 					y <= y + 16;
 					key_times <= 0;
-					text_data<=(others=> character'val(20));
+					text_data<=(others=> character'val(32));
 					if y>=160 then
 						y<=0;
-						text_data<=(others=> character'val(20));
+						text_data<=(others=> character'val(32));
 					end if;
 				end if;
 			end if;
