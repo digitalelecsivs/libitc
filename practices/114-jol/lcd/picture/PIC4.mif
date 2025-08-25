@@ -71,7 +71,7 @@ CONTENT BEGIN
   63: ffffff;
   64: ffffff;
   65: ffffff;
-  66: ffffff;
+  66: 0;
   67: ffffff;
   68: ffffff;
   69: ffffff;
@@ -98,7 +98,7 @@ CONTENT BEGIN
   90: ffffff;
   91: ffffff;
   92: ffffff;
-  93: ffffff;
+  93: 0;
   94: ffffff;
   95: ffffff;
   96: ffffff;
@@ -935,7 +935,7 @@ CONTENT BEGIN
   927: ffffff;
   928: ffffff;
   929: ffffff;
-  930: ffffff;
+  930: 0;
   931: ffffff;
   932: ffffff;
   933: ffffff;
@@ -962,7 +962,7 @@ CONTENT BEGIN
   954: ffffff;
   955: ffffff;
   956: ffffff;
-  957: ffffff;
+  957: 0;
   958: ffffff;
   959: ffffff;
   960: ffffff;
