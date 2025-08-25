@@ -104,7 +104,7 @@ begin
 			q       => msi_data_i
 		);
 	msi_data <= unsigned(msi_data_i);
-	X_icon : entity work.X2(syn)
+	X_icon : entity work.test(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(X_addr, 10)),
 			clock   => clk,
@@ -123,24 +123,24 @@ begin
 				when pic_mode1 =>
 					-- ena_tim <= '1';
 					l_clear <= '1';
-					bg_color <= to_data(l_paste(l_addr, to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160)), X_data, (30, 30), 32, 32));
-					msi_addr <= to_addr(l_paste(l_addr, to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160)), msi_data, (0, 0), 128, 160));
-					X_addr <= to_addr(l_paste(l_addr, to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160)), x_data, (0, 0), 128, 160));
-					-- if msec>1000 then
-					-- 	mode <= pic_mode2;
-					-- 	ena_tim <= '0';
-					-- end if; 
+					bg_color <= to_data(l_paste(l_addr, white,msi_data, (0, 0), 128, 160));
+					msi_addr <= to_addr(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
+					-- X_addr <= to_addr(l_paste(l_addr, to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160)), x_data, (0, 0), 128, 160));
+					if msec>1000 then
+						mode <= pic_mode2;
+						ena_tim <= '0';
+					end if; 
 
-					if pressed = '1' then
-						case key is
-							when 15 => mode <= pic_mode2;
-							when others => null;
-						end case;
-					end if;
+					-- if pressed = '1' then
+					-- 	case key is
+					-- 		when 15 => mode <= pic_mode2;
+					-- 		when others => null;
+					-- 	end case;
+					-- end if;
 				when pic_mode2 =>
 					l_clear <= '1';
-					bg_color <= to_data(l_paste(l_addr, red, X_data, (10, 10), 32, 32));
-					X_addr <= to_addr(l_paste(l_addr, red, X_data, (10, 10), 32, 32));
+					bg_color <= to_data(l_paste(l_addr, white, X_data, (10, 10), 32, 32));
+					X_addr <= to_addr(l_paste(l_addr, white, X_data, (10, 10), 32, 32));
 					if pressed = '1' then
 						case key is
 							when 15 => mode <= txt_mode;
