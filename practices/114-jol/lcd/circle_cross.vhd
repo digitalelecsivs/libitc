@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity lcd_picture is
+entity circle_cross is
 	port (
 		clk                                                     : in std_logic;
 		rst_n                                                   : in std_logic;
@@ -14,13 +14,13 @@ entity lcd_picture is
 		key_row : in u4r_t;
 		key_col : out u4r_t
 	);
-end lcd_picture;
+end circle_cross;
 
-architecture arch of lcd_picture is
+architecture arch of circle_cross is
 	signal l_addr : l_addr_t;
-	signal msi_addr, X_addr : l_addr_t;
-	signal msi_data_i, X_data_i : std_logic_vector(23 downto 0);
-	signal msi_data, X_data : l_px_t;
+	signal O_addr, X_addr, msi_addr : l_addr_t;
+	signal O_data_i, X_data_i, msi_data_i : std_logic_vector(23 downto 0);
+	signal O_data, X_data, msi_data : l_px_t;
 	signal x : integer range -127 to 127 := 30;
 	signal y : integer range -159 to 159 := 30;
 	signal font_start, font_busy, font_busy_i, l_clear : std_logic;
@@ -32,12 +32,19 @@ architecture arch of lcd_picture is
 	signal ena_tim : std_logic := '1';
 	signal msec : integer range 0 to 1000 := 0;
 	--state machine
-	type state is (pic_mode1, pic_mode2, txt_mode);
-	signal mode : state := pic_mode1;
+	type state is (init, key_mode);
+	signal mode : state := init;
+	--type
+	type picture is array (0 to 10) of l_px_t;
+	signal pic : picture;
 	--key board
 	signal pressed_i : std_logic;
 	signal pressed : std_logic;
 	signal key : integer range 0 to 15;
+	--signal
+	signal player : std_logic := '0';--0:O 1:X
+	signal place_coord : l_coord_t := (0, 0);
+	signal map_used : std_logic_vector(0 to 9) := (others => '0');
 begin
 	lcd_edge : entity work.edge(arch)
 		port map(
@@ -97,72 +104,229 @@ begin
 			pic_data         => pic_data                                                      -- 圖片資料
 		);
 	-- < Picture > -------------------------------------------------------------
-	msi : entity work.msi_icon(syn)
+	-- msi : entity work.msi_icon(syn)
+	-- 	port map(
+	-- 		address => std_logic_vector(to_unsigned(msi_addr, 15)),
+	-- 		clock   => clk,
+	-- 		q       => msi_data_i
+	-- 	);
+	-- msi_data <= white1;
+	msi_data <= red;--unsigned(msi_data_i);
+	O : entity work.O(syn)
 		port map(
-			address => std_logic_vector(to_unsigned(msi_addr, 15)),
+			address => std_logic_vector(to_unsigned(O_addr, 10)),
 			clock   => clk,
-			q       => msi_data_i
+			q       => O_data_i
 		);
-	msi_data <= unsigned(msi_data_i);
-	X_icon : entity work.X4(syn)
+	O_data <= unsigned(O_data_i);
+	X1 : entity work.X(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(X_addr, 10)),
 			clock   => clk,
 			q       => X_data_i
 		);
 	X_data <= unsigned(X_data_i);
-
 	--------------------------------------------------------------------------------
 	process (clk, rst_n)
 	begin
 		if rst_n = '0' then
 			l_clear <= '1';
-			ena_tim <= '1';
+			mode <= init;
 		elsif rising_edge(clk) then
+			l_clear <= '1';
+			bg_color <= pic(1);
+			-- place_coord <= to_coord(l_addr);
+			-- if (place_coord(0) >= 40 and place_coord(0) < 44) or (place_coord(0) >= 84 and place_coord(0) < 88) then
+			-- 	pic(0) <= black;
+			-- elsif ((place_coord(1) >= 40 and place_coord(1) < 44) or (place_coord(1) >= 84 and place_coord(1) < 88)) and place_coord(0) < 128 then
+			-- 	pic(0) <= black;
+			-- end if;
 			case mode is
-				when pic_mode1 =>
+				when init =>
 					ena_tim <= '1';
 					l_clear <= '1';
-					bg_color <= to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
-					msi_addr <= to_addr(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
-
-					if msec>1000 then
-						mode <= pic_mode2;
+					pic(1) <= white;
+					if msec > 400 then
+						mode <= key_mode;
 						ena_tim <= '0';
-					end if; 
-
-					-- if pressed = '1' then
-					-- 	case key is
-					-- 		when 15 => mode <= pic_mode2;
-					-- 		when others => null;
-					-- 	end case;
-					-- end if;
-				when pic_mode2 =>
-					l_clear <= '1';
-					bg_color <= to_data(l_paste(l_addr, red, X_data, (10, 10), 32, 32));
-					X_addr <= to_addr(l_paste(l_addr, red, X_data, (10, 10), 32, 32));
+					end if;
+				when key_mode =>
+					pic(0) <= to_data(l_paste(l_addr, white, white, (0, 0), 128, 160));
 					if pressed = '1' then
 						case key is
-							when 15 => mode <= txt_mode;
+							when 0 =>
+								if map_used(0) = '0' then
+									map_used(0) <= '1';
+									if player = '0' then
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (3, 3), 128, 160));
+										O_addr <= to_addr(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (3, 3), 32, 32));
+										player <= '1';
+									else		
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (3, 3), 128, 128));
+										X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (3, 3), 32, 32));
+										player <= '0';
+									end if;
+								end if;
+							when 1 =>
+								if map_used(1) = '0' then
+									map_used(1) <= '1';
+									if player = '0' then
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (3, 47), 128, 160));
+										O_addr <= to_addr(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (3, 47), 32, 32));
+										player <= '1';
+									else
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (3, 47), 128, 160));
+										X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (3, 47), 32, 32));
+										player <= '0';
+									end if;
+								end if;
+							when 2 =>
+								if map_used(2) = '0' then
+									map_used(2) <= '1';
+									if player = '0' then
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (3, 91), 128, 160));
+										O_addr <= to_addr(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (3, 91), 32, 32));
+										player <= '1';
+									else
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (3, 91), 128, 160));
+										X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (3, 91), 32, 32));
+										player <= '0';
+									end if;
+								end if;
+							when 4 =>
+								if map_used(3) = '0' then
+									map_used(3) <= '1';
+									if player = '0' then
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (47, 3), 128, 160));
+										O_addr <= to_addr(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (47, 3), 32, 32));
+										player <= '1';
+									else
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (47, 3), 128, 160));
+										X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (47, 3), 32, 32));
+										player <= '0';
+									end if;
+								end if;
+							when 5 =>
+								if map_used(4) = '0' then
+									map_used(4) <= '1';
+									if player = '0' then
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (47, 47), 128, 160));
+										O_addr <= to_addr(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (47, 47), 32, 32));
+										player <= '1';
+									else
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (47, 47), 128, 160));
+										X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (47, 47), 32, 32));
+										player <= '0';
+									end if;
+								end if;
+							when 6 =>
+								if map_used(5) = '0' then
+									map_used(5) <= '1';
+									if player = '0' then
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (47, 91), 128, 160));
+										O_addr <= to_addr(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (47, 91), 32, 32));
+										player <= '1';
+									else
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (47, 91), 128, 160));
+										X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (47, 91), 32, 32));
+										player <= '0';
+									end if;
+								end if;
+							when 8 =>
+								if map_used(6) = '0' then
+									map_used(6) <= '1';
+									if player = '0' then
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (91, 3), 128, 160));
+										O_addr <= to_addr(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (91, 3), 32, 32));
+										player <= '1';
+									else
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (91, 3), 128, 160));
+										X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (91, 3), 32, 32));
+										player <= '0';
+									end if;
+								end if;
+							when 9 =>
+								if map_used(7) = '0' then
+									map_used(7) <= '1';
+									if player = '0' then
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (91, 47), 128, 160));
+										O_addr <= to_addr(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (91, 47), 32, 32));
+										player <= '1';
+									else
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (91, 47), 128, 160));
+										X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (91, 47), 32, 32));
+										player <= '0';
+									end if;
+								end if;
+							when 10 =>
+								if map_used(8) = '0' then
+									map_used(8) <= '1';
+									if player = '0' then
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (91, 91), 128, 160));
+										O_addr <= to_addr(l_paste(l_addr, pic(0), l_map(O_data, white, pic(0)), (91, 91), 32, 32));
+										player <= '1';
+									else
+										pic(1) <= to_data(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (91, 91), 128, 160));
+										X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data, white, pic(0)), (91, 91), 32, 32));
+										player <= '0';
+									end if;
+								end if;
+
 							when others => null;
 						end case;
 					end if;
-				when txt_mode =>
+				end case;
 
-					text_data <= "text_data   ";
-					l_clear <= '1';
-					bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, msi_data, (0, 0), 128, 160)), "text_data", (45, 30), green);
-					msi_addr <= to_addr(l_paste(l_addr, red, msi_data, (0, 0), 128, 160));
-					if font_busy = '1' then
-						font_start <= '0';
-					end if;
-					if pressed = '1' then
-						case key is
-							when 15 => mode <= pic_mode1;
-							when others => null;
-						end case;
-					end if;
-			end case;
-		end if;
-	end process;
-end arch;
+					-- case mode is
+					-- 	when pic_mode1 =>
+
+					-- 		l_clear <= '1';
+					-- 		pic(1) <= to_data(l_paste(l_addr, white, O_data, (0, 0), 32, 32));
+					-- 		O_addr <= to_addr(l_paste(l_addr, white, O_data, (0, 0), 32, 32));
+					-- 		pic(1) <= to_data(l_paste(l_addr, pic(1), X_data, (32, 0), 32, 32));
+					-- 		X_addr <= to_addr(l_paste(l_addr, pic(1), X_data, (32, 0), 32, 32));
+					-- 		pic(2) <= pic(1);
+					-- 		if pressed = '1' then
+					-- 			case key is
+					-- 				when 15 => mode <= pic_mode2;
+					-- 				when others => null;
+					-- 			end case;
+					-- 		end if;
+					-- 		-- if msec > 1000 then
+					-- 		-- 	mode <= pic_mode2;
+					-- 		-- 	ena_tim <= '0';
+					-- 		-- end if;
+					-- 	when pic_mode2 =>
+					-- 		l_clear <= '1';
+					-- 		pic(1) <= to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
+					-- 		msi_addr <= to_addr(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
+					-- 		pic(1) <= to_data(l_paste(l_addr,white, l_map(O_data, pic(1), msi_data), (0, 0), 32, 32));
+					-- 		O_addr <= to_addr(l_paste(l_addr, white, l_map(O_data, pic(1), msi_data), (0, 0), 32, 32));
+					-- 		pic(2) <= to_data(l_paste(l_addr, pic(1), l_map(X_data, pic(1), msi_data), (32, 0), 32, 32));
+					-- 		X_addr <= to_addr(l_paste(l_addr, pic(1), l_map(X_data, pic(1), msi_data), (32, 0), 32, 32));
+
+					-- 		if pressed = '1' then
+					-- 			case key is
+					-- 				when 15 => mode <= pic_mode1;
+					-- 				when others => null;
+					-- 			end case;
+					-- 		end if;
+					-- 	when txt_mode =>
+					-- 		mode <= pic_mode1;
+					-- 		-- text_data <= "text_data   ";
+					-- 		-- l_clear <= '1';
+					-- 		-- bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, msi_data, (0, 0), 128, 160)), "text_data", (45, 30), green);
+					-- 		-- msi_addr <= to_addr(l_paste(l_addr, red, msi_data, (0, 0), 128, 160));
+					-- 		-- if font_busy = '1' then
+					-- 		-- 	font_start <= '0';
+					-- 		-- end if;
+					-- 		-- if pressed = '1' then
+					-- 		-- 	case key is
+					-- 		-- 		when 15 => mode <= pic_mode1;
+					-- 		-- 		when others => null;
+					-- 		-- 	end case;
+					-- 		-- end if;
+					-- end case;
+			end if;
+		end process;
+	end arch;

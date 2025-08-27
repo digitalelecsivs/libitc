@@ -52,7 +52,7 @@ architecture arch of lcd_p is
 	type picture is array (0 to 10) of l_px_t;
 	type picture_buffer is array(1 to 9) of integer range 1 to 3;
 	signal pic : picture;
-	signal pic_sel : picture_buffer := (0, 0, 0, 0, 0, 0, 0,0, 0);
+	signal pic_sel : picture_buffer := (3, 3, 3, 3, 3, 3, 3, 3, 3);
 	type inter is array (1 to 9) of l_coord_t;
 	constant coord : inter := ((20, 15), (20, 60), (20, 105), (75, 15), (75, 60), (75, 105), (130, 15), (130, 60), (130, 105));
 	constant coord_pic : inter := ((0, 0), (0, 43), (0, 89), (55, 0), (55, 43), (55, 89), (105, 0), (105, 43), (105, 89));

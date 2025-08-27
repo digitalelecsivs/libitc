@@ -34,6 +34,9 @@ architecture arch of lcd_picture is
 	--state machine
 	type state is (pic_mode1, pic_mode2, txt_mode);
 	signal mode : state := pic_mode1;
+	--type
+	type picture is array (0 to 10) of l_px_t;
+	signal pic : picture;
 	--key board
 	signal pressed_i : std_logic;
 	signal pressed : std_logic;
@@ -104,14 +107,13 @@ begin
 			q       => msi_data_i
 		);
 	msi_data <= unsigned(msi_data_i);
-	X_icon : entity work.test(syn)
+	X_icon : entity work.X2(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(X_addr, 10)),
 			clock   => clk,
 			q       => X_data_i
 		);
 	X_data <= unsigned(X_data_i);
-
 	--------------------------------------------------------------------------------
 	process (clk, rst_n)
 	begin
@@ -119,27 +121,37 @@ begin
 			l_clear <= '1';
 			ena_tim <= '1';
 		elsif rising_edge(clk) then
+			bg_color<= pic(1);
 			case mode is
 				when pic_mode1 =>
 					-- ena_tim <= '1';
 					l_clear <= '1';
-					bg_color <= to_data(l_paste(l_addr, white,msi_data, (0, 0), 128, 160));
+					
+					-- pic(0) <= to_data(l_paste(l_addr, white, circle_data, coord_pic(1), 32, 32));
+					-- circle_addr <= to_addr(l_paste(l_addr, white, circle_data, coord_pic(1), 32, 32));
+					-- pic(1) <= to_data(l_paste(l_addr, pic(0), triangle_data, coord_pic(2), 32, 32));
+					-- triangle_addr <= to_addr(l_paste(l_addr, pic(0), triangle_data, coord_pic(2), 32, 32));
+					
+					pic(0) <= to_data(l_paste(l_addr, white,msi_data, (0, 0), 128, 160));
 					msi_addr <= to_addr(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
+					pic(1) <= to_data(l_paste(l_addr, pic(0),l_map(X_data,white,msi_data), (30, 30), 32, 32));
+					X_addr <= to_addr(l_paste(l_addr, pic(0), l_map(X_data,white,msi_data), (30, 30), 32, 32));
+					
 					-- X_addr <= to_addr(l_paste(l_addr, to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160)), x_data, (0, 0), 128, 160));
-					if msec>1000 then
-						mode <= pic_mode2;
-						ena_tim <= '0';
-					end if; 
+					-- if msec>1000 then
+					-- 	mode <= pic_mode2;
+					-- 	ena_tim <= '0';
+					-- end if; 
 
-					-- if pressed = '1' then
-					-- 	case key is
-					-- 		when 15 => mode <= pic_mode2;
-					-- 		when others => null;
-					-- 	end case;
-					-- end if;
+					if pressed = '1' then
+						case key is
+							when 15 => mode <= pic_mode2;
+							when others => null;
+						end case;
+					end if;
 				when pic_mode2 =>
 					l_clear <= '1';
-					bg_color <= to_data(l_paste(l_addr, white, X_data, (10, 10), 32, 32));
+					pic(1) <= to_data(l_paste(l_addr, white, X_data, (10, 10), 32, 32));
 					X_addr <= to_addr(l_paste(l_addr, white, X_data, (10, 10), 32, 32));
 					if pressed = '1' then
 						case key is
@@ -151,7 +163,7 @@ begin
 
 					text_data <= "text_data   ";
 					l_clear <= '1';
-					bg_color <= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, msi_data, (0, 0), 128, 160)), "text_data", (45, 30), green);
+					pic(1) <= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, msi_data, (0, 0), 128, 160)), "text_data", (45, 30), green);
 					msi_addr <= to_addr(l_paste(l_addr, red, msi_data, (0, 0), 128, 160));
 					if font_busy = '1' then
 						font_start <= '0';
