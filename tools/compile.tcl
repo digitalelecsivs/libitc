@@ -53,24 +53,25 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY circle_cross_1
+	set_global_assignment -name TOP_LEVEL_ENTITY pic_cover1
 
 	# Unit tests
 	# # set_global_assignment -name VHDL_FILE
 	# set_global_assignment -name VHDL_FILE practices/50-choco/LCD_PIC/lcd_p.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_p.vhd
 	# set_global_assignment -name VHDL_FILE practices/50-choco/Circles_and_forks/ox.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/circle_cross_1.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/circle_cross_1.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_cover.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_cover1.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/test.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_test1.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_picture.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/dot/game.vhd
 
-	set_global_assignment -name QIP_FILE practices/114-jol/lcd/ox/X.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/ox/X.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/lcd/ox/O.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/ox/O.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/ox/X.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/ox/X.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/ox/O.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/ox/O.vhd
 
  	# set_global_assignment -name VHDL_FILE practices/50-choco/LCD_PIC/pic/circle_s.vhd
 	# set_global_assignment -name QIP_FILE practices/50-choco/LCD_PIC/pic/circle_s.qip
