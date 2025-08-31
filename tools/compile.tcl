@@ -53,20 +53,23 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY pic_cover1
+	set_global_assignment -name TOP_LEVEL_ENTITY tts_test
 
 	# Unit tests
-	# # set_global_assignment -name VHDL_FILE
 	# set_global_assignment -name VHDL_FILE practices/50-choco/LCD_PIC/lcd_p.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_p.vhd
 	# set_global_assignment -name VHDL_FILE practices/50-choco/Circles_and_forks/ox.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/circle_cross_1.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_cover.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_cover1.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_cover1.vhd	
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/test.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_test1.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_picture.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/dot/game.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_test1.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_test2.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_test.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts.vhd
 
 	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/ox/X.qip
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/ox/X.vhd
@@ -121,7 +124,7 @@ if {$make_assignments} {
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/X2.vhd
 	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/test.qip
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/test.vhd
-	
+
 	# set_global_assignment -name VHDL_FILE practices/50-choco/pic/s9.vhd 
 	# set_global_assignment -name QIP_FILE practices/50-choco/pic/s9.qip
 	# set_global_assignment -name VHDL_FILE practices/50-choco/pic/x.vhd
@@ -316,7 +319,7 @@ if {$make_assignments} {
 	set_global_assignment -name VHDL_FILE lib/seg.vhd
 	set_global_assignment -name VHDL_FILE lib/sw.vhd
 	set_global_assignment -name VHDL_FILE lib/tsl.vhd
-	set_global_assignment -name VHDL_FILE lib/tts.vhd
+	# set_global_assignment -name VHDL_FILE lib/tts.vhd
 	set_global_assignment -name VHDL_FILE lib/pkg/itc.pkg.vhd
 	set_global_assignment -name VHDL_FILE lib/pkg/lcd.pkg.vhd
 	set_global_assignment -name VHDL_FILE lib/util/clk.vhd

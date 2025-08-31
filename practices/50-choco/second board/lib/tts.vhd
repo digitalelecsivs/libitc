@@ -60,7 +60,7 @@ begin
 			data_in  => i2c_in,
 			data_out => open
 		);
-
+			
 	edge_inst_i2c : entity work.edge(arch)
 		port map(
 			clk     => clk,
