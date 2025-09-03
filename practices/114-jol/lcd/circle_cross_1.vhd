@@ -313,15 +313,15 @@ begin
 						l_clear <= '1';
 						bg_color <= pic(10);
 
-						-- place_coord <= to_coord(l_addr);
-						-- if (place_coord(0) >= 40 and place_coord(0) < 44) or (place_coord(0) >= 84 and place_coord(0) < 88) then
-						-- 	pic(0) <= black;
-						-- 	elsif ((place_coord(1) >= 40 and place_coord(1) < 44) or (place_coord(1) >= 84 and place_coord(1) < 88)) and place_coord(0) < 128 then
-						-- 	pic(0) <= black;
-						-- 	else
-						-- 	pic(0) <= white;
-						-- end if;
-						pic(0) <= white;
+						place_coord <= to_coord(l_addr);
+						if (place_coord(0) >= 40 and place_coord(0) < 44) or (place_coord(0) >= 84 and place_coord(0) < 88) then
+							pic(0) <= black;
+							elsif ((place_coord(1) >= 40 and place_coord(1) < 44) or (place_coord(1) >= 84 and place_coord(1) < 88)) and place_coord(0) < 128 then
+							pic(0) <= black;
+							else
+							pic(0) <= white;
+						end if;
+						-- pic(0) <= white;
 						if map_used(0) = '1'then
 							if mapPlace(0) = '0' then
 								pic(1) <= to_data(l_paste(l_addr, pic(0), O1_data, map_coord(0), 32, 32));
