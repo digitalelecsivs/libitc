@@ -24,14 +24,16 @@ architecture arch of tts_test1 is
 	signal busy : std_logic;
 	signal txt : u8_arr_t(0 to max_len - 1);
 	signal len : integer range 0 to max_len;
-
+	signal init_n : Integer range 0 to 3:=0;
 	--key
 	signal pressed, pressed_i : std_logic;
 	signal key : i4_t;
 	signal key_pressed  : i4_t;
-	type state_t is (idle, play, stop);
-	signal state : state_t;
-
+	type state_t is (init ,idle, play, stop);
+	signal state : state_t:=init;
+	--timer
+	signal ena_tim: std_logic;
+	signal msec: integer range 0 to 1000:=0;
 	-- "語音測試一", 10
 	-- tts_data(0 to 9) <= test1;
 	-- tts_len <= 10;
@@ -73,6 +75,14 @@ architecture arch of tts_test1 is
 	);
 
 begin
+	timer_inst: entity work.timer(arch)
+	port map (
+		clk => clk,
+		rst_n => rst_n,
+		ena => ena_tim,
+		load => 0,
+		msec => msec
+	);
 	key_edge: entity work.edge(arch)
 		port map (
 			clk =>clk,
@@ -109,7 +119,7 @@ begin
 	process (rst_n, clk)
 	begin
 		if rst_n = '0' then
-			state <= idle;
+			state <= init;
 			ena <= '0';
 		elsif rising_edge(clk) then
 			dbg_a(0)<=busy;
@@ -129,6 +139,31 @@ begin
 			end if;
 			ena <= '0';
 			case state is
+				when init =>
+					if init_n=0 then
+						ena_tim<='0';
+						txt(0 to 1) <= tts_instant_soft_reset;
+						len <= 2;
+						init_n<=1;
+						ena<='1';
+					elsif init_n=1 then
+						if busy = '1' then 
+							ena <= '0'; 
+							init_n<=2;
+						end if;
+					elsif init_n=2 then
+						if busy = '0' then
+							init_n<=3;
+							ena_tim<='0';
+						end if;
+					elsif init_n=3 then
+						ena_tim<='1';
+						if msec >300 then 
+							state <=idle;
+							init_n<=0;
+							ena_tim<='0';
+						end if; 
+					end if;
 				when idle =>
 					if pressed = '1' then
 						key_pressed <= key;

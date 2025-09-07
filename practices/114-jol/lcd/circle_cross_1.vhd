@@ -506,7 +506,6 @@ begin
 											mapPlace(5) <= '1';
 											player <= '0';
 											X_placed(5) <= '1';
-
 										end if;
 									end if;
 								when 8 =>
@@ -663,6 +662,7 @@ begin
 						else
 							pic(9) <= pic(8);
 						end if;
+
 						if O_win = '1' and X_win = '0'then
 							pic(10) <= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, pic(9), (0, 0), 128, 160)), " Circle win", (140, 50), red);
 						elsif X_win = '1' and O_win = '0' then
@@ -691,4 +691,3 @@ begin
 		end process;
 	end block Main_Process;
 end arch;
---bg_color<= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, msi_data, (0, 0), 128, 160)), "text_data", (45, 30), green);

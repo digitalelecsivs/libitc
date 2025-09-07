@@ -174,7 +174,7 @@ begin
 							if txt_cnt = 0 then
 								i2c_in <= x"06"; -- set MO[2..0] = 110
 							elsif txt_cnt >= 1 and txt_cnt <= 2 then
-								i2c_in <= reset_txt(txt_cnt - 1);
+								i2c_in <=  reset_txt(txt_cnt - 1);
 							elsif txt_cnt = txt_len + 1 then
 								i2c_in <= tts_set_mo;
 							else
