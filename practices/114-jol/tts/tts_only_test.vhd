@@ -10,13 +10,16 @@ entity tts_test2 is
 	port (
 		clk              : in std_logic;
 		rst_n            : in std_logic;
+
 		tts_scl, tts_sda : inout std_logic;
 		tts_mo           : in unsigned(2 downto 0);
 		tts_rst_n        : out std_logic;
+
 		key_row          : in u4r_t;
 		key_col          : out u4r_t;
 		sw               : in u8r_t;
-		seg_led, seg_com : out u8r_t
+		seg_led, seg_com : out u8r_t;
+		dbg_a  			 : out u8r_t
 	);
 end tts_test2;
 
@@ -53,8 +56,8 @@ constant test_end : u8_arr_t(0 to 7) := (
 	signal tts_mod : tts_mod_t;
 
 	constant txt_len_max : integer := 100;
-	signal ena : std_logic;
-	signal busy : std_logic;
+	signal tts_ena : std_logic;
+	signal tts_busy : std_logic;
 	signal txt : u8_arr_t(0 to txt_len_max - 1);
 	signal txt_len : integer range 0 to txt_len_max;
 	signal count : integer range 0 to 6;
@@ -118,8 +121,8 @@ begin
 			tts_sda    => tts_sda,
 			tts_mo     => tts_mo,
 			tts_rst_n  => tts_rst_n,
-			ena        => ena,
-			busy       => busy,
+			ena        => tts_ena,-- ena=1 時，busy=1
+			busy       => tts_busy,
 			stop_speak => open,
 			txt        => txt,
 			txt_len    => txt_len
@@ -127,7 +130,7 @@ begin
 	process (clk, rst_n)
 	begin
 		if rst_n = '0' then
-			ena <= '0';
+			tts_ena <= '0';
 			tts_mod <= idle;
 			stop_flag <= '0';
 			data <= "        ";
@@ -144,12 +147,12 @@ begin
 			end if;
 			case tts_mod is
 				when idle =>
-					ena <= '0';
-					if busy = '0' then
+					tts_ena <= '0';
+					if tts_busy = '0' then
 						tts_mod <= send;
 					end if;
 				when send =>
-					ena <= '1';
+					tts_ena <= '1';
 					if count = 0 then
 						txt(0 to 13) <= one_to_seven;
 						txt_len <= 14;
@@ -187,7 +190,7 @@ begin
 						reset_flag <= '0';
 						data <= "6       ";
 					end if;
-					if busy = '1' then
+					if tts_busy = '1' then
 						tts_mod <= stop;
 					end if;
 					when stop =>
@@ -198,7 +201,7 @@ begin
 					elsif count = 2 and reset_flag = '0' and stop_flag = '0' then
 						count <= 5;
 					end if;
-					ena <= '0';
+					tts_ena <= '0';
 					tts_mod <= idle;
 			end case;
 		end if;

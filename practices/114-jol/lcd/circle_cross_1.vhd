@@ -39,7 +39,7 @@ architecture arch of circle_cross_1 is
 	signal mode : state := game_mode;
 	--type
 	type picture is array (0 to 10) of l_px_t;
-	signal pic : picture;
+
 	--key board
 	signal pressed_i : std_logic;
 	signal pressed : std_logic;
@@ -253,52 +253,53 @@ begin
 	--------------------------------------------------------------------------------
 	OandX_placed_list : block begin
 		O_list <= (
-		O_placed(0) & O_placed(1) & O_placed(2),
-		O_placed(0) & O_placed(4) & O_placed(8),
-		O_placed(0) & O_placed(3) & O_placed(6),
-		O_placed(1) & O_placed(4) & O_placed(7),
-		O_placed(2) & O_placed(4) & O_placed(6),
-		O_placed(2) & O_placed(5) & O_placed(8),
-		O_placed(3) & O_placed(4) & O_placed(5),
-		O_placed(6) & O_placed(7) & O_placed(8)
-		);
+			O_placed(0) & O_placed(1) & O_placed(2),
+			O_placed(0) & O_placed(4) & O_placed(8),
+			O_placed(0) & O_placed(3) & O_placed(6),
+			O_placed(1) & O_placed(4) & O_placed(7),
+			O_placed(2) & O_placed(4) & O_placed(6),
+			O_placed(2) & O_placed(5) & O_placed(8),
+			O_placed(3) & O_placed(4) & O_placed(5),
+			O_placed(6) & O_placed(7) & O_placed(8)
+			);
 		X_list <= (
-		X_placed(0) & X_placed(1) & X_placed(2),
-		X_placed(0) & X_placed(4) & X_placed(8),
-		X_placed(0) & X_placed(3) & X_placed(6),
-		X_placed(1) & X_placed(4) & X_placed(7),
-		X_placed(2) & X_placed(4) & X_placed(6),
-		X_placed(2) & X_placed(5) & X_placed(8),
-		X_placed(3) & X_placed(4) & X_placed(5),
-		X_placed(6) & X_placed(7) & X_placed(8)
-		);
+			X_placed(0) & X_placed(1) & X_placed(2),
+			X_placed(0) & X_placed(4) & X_placed(8),
+			X_placed(0) & X_placed(3) & X_placed(6),
+			X_placed(1) & X_placed(4) & X_placed(7),
+			X_placed(2) & X_placed(4) & X_placed(6),
+			X_placed(2) & X_placed(5) & X_placed(8),
+			X_placed(3) & X_placed(4) & X_placed(5),
+			X_placed(6) & X_placed(7) & X_placed(8)
+			);
 	end block OandX_placed_list;
 	O_win <= '1' when placed >= 5 and(O_list(1) = "111" or O_list(2) = "111"or O_list(3) = "111"or O_list(4) = "111"
-	or O_list(5) = "111"or O_list(6) = "111"or O_list(7) = "111"or O_list(8) = "111")else '0';
+		or O_list(5) = "111"or O_list(6) = "111"or O_list(7) = "111"or O_list(8) = "111")else '0';
 	X_win <= '1' when placed >= 5 and(X_list(1) = "111" or X_list(2) = "111"or X_list(3) = "111"or X_list(4) = "111"
-	or X_list(5) = "111"or X_list(6) = "111"or X_list(7) = "111"or X_list(8) = "111")else '0';
+		or X_list(5) = "111"or X_list(6) = "111"or X_list(7) = "111"or X_list(8) = "111")else '0';
 
 	Main_Process : block begin
 		process (clk, rst_n)
+			variable pic : picture;
 		begin
 			if rst_n = '0' then
 				l_clear <= '1';
 				mode <= init;
 				map_used <= (others => '0');
 				player <= '0';
-				pic <= (others => white);
+				pic := (others => white);
 				placed <= 0;
 				mapPlace <= (others => '0');
 				O_placed <= (others => '0');
 				X_placed <= (others => '0');
 				ena_tim <= '0';
-				elsif rising_edge(clk) then
+			elsif rising_edge(clk) then
 				case mode is
 					when init =>
 						l_clear <= '1';
 						map_used <= (others => '0');
 						player <= '0';
-						pic <= (others => white);
+						pic := (others => white);
 						placed <= 0;
 						mapPlace <= (others => '0');
 						O_placed <= (others => '0');
@@ -315,111 +316,111 @@ begin
 
 						place_coord <= to_coord(l_addr);
 						if (place_coord(0) >= 40 and place_coord(0) < 44) or (place_coord(0) >= 84 and place_coord(0) < 88) then
-							pic(0) <= black;
-							elsif ((place_coord(1) >= 40 and place_coord(1) < 44) or (place_coord(1) >= 84 and place_coord(1) < 88)) and place_coord(0) < 128 then
-							pic(0) <= black;
-							else
-							pic(0) <= white;
+							pic(0) := black;
+						elsif ((place_coord(1) >= 40 and place_coord(1) < 44) or (place_coord(1) >= 84 and place_coord(1) < 88)) and place_coord(0) < 128 then
+							pic(0) := black;
+						else
+							pic(0) := white;
 						end if;
-						-- pic(0) <= white;
+						-- pic(0) := white;
 						if map_used(0) = '1'then
 							if mapPlace(0) = '0' then
-								pic(1) <= to_data(l_paste(l_addr, pic(0), O1_data, map_coord(0), 32, 32));
+								pic(1) := to_data(l_paste(l_addr, pic(0), O1_data, map_coord(0), 32, 32));
 								O1_addr <= to_addr(l_paste(l_addr, pic(0), O1_data, map_coord(0), 32, 32));
 							else
-								pic(1) <= to_data(l_paste(l_addr, pic(0), X1_data, map_coord(0), 32, 32));
+								pic(1) := to_data(l_paste(l_addr, pic(0), X1_data, map_coord(0), 32, 32));
 								X1_addr <= to_addr(l_paste(l_addr, pic(0), X1_data, map_coord(0), 32, 32));
 							end if;
 						else
-							pic(1) <= pic(0);
+							pic(1) := pic(0);
 						end if;
 						if map_used(1) = '1'then
 							if mapPlace(1) = '0' then
-								pic(2) <= to_data(l_paste(l_addr, pic(1), O2_data, map_coord(1), 32, 32));
+								pic(2) := to_data(l_paste(l_addr, pic(1), O2_data, map_coord(1), 32, 32));
 								O2_addr <= to_addr(l_paste(l_addr, pic(1), O2_data, map_coord(1), 32, 32));
 							else
-								pic(2) <= to_data(l_paste(l_addr, pic(1), X2_data, map_coord(1), 32, 32));
+								pic(2) := to_data(l_paste(l_addr, pic(1), X2_data, map_coord(1), 32, 32));
 								X2_addr <= to_addr(l_paste(l_addr, pic(1), X2_data, map_coord(1), 32, 32));
 							end if;
 						else
-							pic(2) <= pic(1);
+							pic(2) := pic(1);
 						end if;
 						if map_used(2) = '1'then
 							if mapPlace(2) = '0' then
-								pic(3) <= to_data(l_paste(l_addr, pic(2), O3_data, map_coord(2), 32, 32));
+								pic(3) := to_data(l_paste(l_addr, pic(2), O3_data, map_coord(2), 32, 32));
 								O3_addr <= to_addr(l_paste(l_addr, pic(2), O3_data, map_coord(2), 32, 32));
 							else
-								pic(3) <= to_data(l_paste(l_addr, pic(2), X3_data, map_coord(2), 32, 32));
+								pic(3) := to_data(l_paste(l_addr, pic(2), X3_data, map_coord(2), 32, 32));
 								X3_addr <= to_addr(l_paste(l_addr, pic(2), X3_data, map_coord(2), 32, 32));
 							end if;
 						else
-							pic(3) <= pic(2);
+							pic(3) := pic(2);
 						end if;
 						if map_used(3) = '1'then
 							if mapPlace(3) = '0' then
-								pic(4) <= to_data(l_paste(l_addr, pic(3), O4_data, map_coord(3), 32, 32));
+								pic(4) := to_data(l_paste(l_addr, pic(3), O4_data, map_coord(3), 32, 32));
 								O4_addr <= to_addr(l_paste(l_addr, pic(3), O4_data, map_coord(3), 32, 32));
 							else
-								pic(4) <= to_data(l_paste(l_addr, pic(3), X4_data, map_coord(3), 32, 32));
+								pic(4) := to_data(l_paste(l_addr, pic(3), X4_data, map_coord(3), 32, 32));
 								X4_addr <= to_addr(l_paste(l_addr, pic(3), X4_data, map_coord(3), 32, 32));
 							end if;
 						else
-							pic(4) <= pic(3);
+							pic(4) := pic(3);
 						end if;
 						if map_used(4) = '1'then
 							if mapPlace(4) = '0' then
-								pic(5) <= to_data(l_paste(l_addr, pic(4), O5_data, map_coord(4), 32, 32));
+								pic(5) := to_data(l_paste(l_addr, pic(4), O5_data, map_coord(4), 32, 32));
 								O5_addr <= to_addr(l_paste(l_addr, pic(4), O5_data, map_coord(4), 32, 32));
 							else
-								pic(5) <= to_data(l_paste(l_addr, pic(4), X5_data, map_coord(4), 32, 32));
+								pic(5) := to_data(l_paste(l_addr, pic(4), X5_data, map_coord(4), 32, 32));
 								X5_addr <= to_addr(l_paste(l_addr, pic(4), X5_data, map_coord(4), 32, 32));
 							end if;
 						else
-							pic(5) <= pic(4);
+							pic(5) := pic(4);
 						end if;
 						if map_used(5) = '1'then
 							if mapPlace(5) = '0' then
-								pic(6) <= to_data(l_paste(l_addr, pic(5), O6_data, map_coord(5), 32, 32));
+								pic(6) := to_data(l_paste(l_addr, pic(5), O6_data, map_coord(5), 32, 32));
 								O6_addr <= to_addr(l_paste(l_addr, pic(5), O6_data, map_coord(5), 32, 32));
 							else
-								pic(6) <= to_data(l_paste(l_addr, pic(5), X6_data, map_coord(5), 32, 32));
+								pic(6) := to_data(l_paste(l_addr, pic(5), X6_data, map_coord(5), 32, 32));
 								X6_addr <= to_addr(l_paste(l_addr, pic(5), X6_data, map_coord(5), 32, 32));
 							end if;
 						else
-							pic(6) <= pic(5);
+							pic(6) := pic(5);
 						end if;
 						if map_used(6) = '1'then
 							if mapPlace(6) = '0' then
-								pic(7) <= to_data(l_paste(l_addr, pic(6), O7_data, map_coord(6), 32, 32));
+								pic(7) := to_data(l_paste(l_addr, pic(6), O7_data, map_coord(6), 32, 32));
 								O7_addr <= to_addr(l_paste(l_addr, pic(6), O7_data, map_coord(6), 32, 32));
 							else
-								pic(7) <= to_data(l_paste(l_addr, pic(6), X7_data, map_coord(6), 32, 32));
+								pic(7) := to_data(l_paste(l_addr, pic(6), X7_data, map_coord(6), 32, 32));
 								X7_addr <= to_addr(l_paste(l_addr, pic(6), X7_data, map_coord(6), 32, 32));
 							end if;
 						else
-							pic(7) <= pic(6);
+							pic(7) := pic(6);
 						end if;
 						if map_used(7) = '1'then
 							if mapPlace(7) = '0' then
-								pic(8) <= to_data(l_paste(l_addr, pic(7), O8_data, map_coord(7), 32, 32));
+								pic(8) := to_data(l_paste(l_addr, pic(7), O8_data, map_coord(7), 32, 32));
 								O8_addr <= to_addr(l_paste(l_addr, pic(7), O8_data, map_coord(7), 32, 32));
 							else
-								pic(8) <= to_data(l_paste(l_addr, pic(7), X8_data, map_coord(7), 32, 32));
+								pic(8) := to_data(l_paste(l_addr, pic(7), X8_data, map_coord(7), 32, 32));
 								X8_addr <= to_addr(l_paste(l_addr, pic(7), X8_data, map_coord(7), 32, 32));
 							end if;
 						else
-							pic(8) <= pic(7);
+							pic(8) := pic(7);
 						end if;
 						if map_used(8) = '1'then
 							if mapPlace(8) = '0' then
-								pic(9) <= to_data(l_paste(l_addr, pic(8), O9_data, map_coord(8), 32, 32));
+								pic(9) := to_data(l_paste(l_addr, pic(8), O9_data, map_coord(8), 32, 32));
 								O9_addr <= to_addr(l_paste(l_addr, pic(8), O9_data, map_coord(8), 32, 32));
 							else
-								pic(9) <= to_data(l_paste(l_addr, pic(8), X9_data, map_coord(8), 32, 32));
+								pic(9) := to_data(l_paste(l_addr, pic(8), X9_data, map_coord(8), 32, 32));
 								X9_addr <= to_addr(l_paste(l_addr, pic(8), X9_data, map_coord(8), 32, 32));
 							end if;
 						else
-							pic(9) <= pic(8);
+							pic(9) := pic(8);
 						end if;
 						--< Key board >------------------------------------------------------------------------------
 						if pressed = '1' then
@@ -558,119 +559,127 @@ begin
 							mode <= result_mode;
 							ena_tim <= '0';
 						else
-							pic(10) <= pic(9);
+							pic(10) := pic(9);
 						end if;
 					when result_mode =>
 						l_clear <= '1';
 						bg_color <= pic(10);
+						place_coord <= to_coord(l_addr);
+						if (place_coord(0) >= 40 and place_coord(0) < 44) or (place_coord(0) >= 84 and place_coord(0) < 88) then
+							pic(0) := black;
+						elsif ((place_coord(1) >= 40 and place_coord(1) < 44) or (place_coord(1) >= 84 and place_coord(1) < 88)) and place_coord(0) < 128 then
+							pic(0) := black;
+						else
+							pic(0) := white;
+						end if;
 						if map_used(0) = '1'then
 							if mapPlace(0) = '0' then
-								pic(1) <= to_data(l_paste(l_addr, pic(0), O1_data, map_coord(0), 32, 32));
+								pic(1) := to_data(l_paste(l_addr, pic(0), O1_data, map_coord(0), 32, 32));
 								O1_addr <= to_addr(l_paste(l_addr, pic(0), O1_data, map_coord(0), 32, 32));
 							else
-								pic(1) <= to_data(l_paste(l_addr, pic(0), X1_data, map_coord(0), 32, 32));
+								pic(1) := to_data(l_paste(l_addr, pic(0), X1_data, map_coord(0), 32, 32));
 								X1_addr <= to_addr(l_paste(l_addr, pic(0), X1_data, map_coord(0), 32, 32));
 							end if;
 						else
-							pic(1) <= pic(0);
+							pic(1) := pic(0);
 						end if;
 						if map_used(1) = '1'then
 							if mapPlace(1) = '0' then
-								pic(2) <= to_data(l_paste(l_addr, pic(1), O2_data, map_coord(1), 32, 32));
+								pic(2) := to_data(l_paste(l_addr, pic(1), O2_data, map_coord(1), 32, 32));
 								O2_addr <= to_addr(l_paste(l_addr, pic(1), O2_data, map_coord(1), 32, 32));
 							else
-								pic(2) <= to_data(l_paste(l_addr, pic(1), X2_data, map_coord(1), 32, 32));
+								pic(2) := to_data(l_paste(l_addr, pic(1), X2_data, map_coord(1), 32, 32));
 								X2_addr <= to_addr(l_paste(l_addr, pic(1), X2_data, map_coord(1), 32, 32));
 							end if;
 						else
-							pic(2) <= pic(1);
+							pic(2) := pic(1);
 						end if;
 						if map_used(2) = '1'then
 							if mapPlace(2) = '0' then
-								pic(3) <= to_data(l_paste(l_addr, pic(2), O3_data, map_coord(2), 32, 32));
+								pic(3) := to_data(l_paste(l_addr, pic(2), O3_data, map_coord(2), 32, 32));
 								O3_addr <= to_addr(l_paste(l_addr, pic(2), O3_data, map_coord(2), 32, 32));
 							else
-								pic(3) <= to_data(l_paste(l_addr, pic(2), X3_data, map_coord(2), 32, 32));
+								pic(3) := to_data(l_paste(l_addr, pic(2), X3_data, map_coord(2), 32, 32));
 								X3_addr <= to_addr(l_paste(l_addr, pic(2), X3_data, map_coord(2), 32, 32));
 							end if;
 						else
-							pic(3) <= pic(2);
+							pic(3) := pic(2);
 						end if;
 						if map_used(3) = '1'then
 							if mapPlace(3) = '0' then
-								pic(4) <= to_data(l_paste(l_addr, pic(3), O4_data, map_coord(3), 32, 32));
+								pic(4) := to_data(l_paste(l_addr, pic(3), O4_data, map_coord(3), 32, 32));
 								O4_addr <= to_addr(l_paste(l_addr, pic(3), O4_data, map_coord(3), 32, 32));
 							else
-								pic(4) <= to_data(l_paste(l_addr, pic(3), X4_data, map_coord(3), 32, 32));
+								pic(4) := to_data(l_paste(l_addr, pic(3), X4_data, map_coord(3), 32, 32));
 								X4_addr <= to_addr(l_paste(l_addr, pic(3), X4_data, map_coord(3), 32, 32));
 							end if;
 						else
-							pic(4) <= pic(3);
+							pic(4) := pic(3);
 						end if;
 						if map_used(4) = '1'then
 							if mapPlace(4) = '0' then
-								pic(5) <= to_data(l_paste(l_addr, pic(4), O5_data, map_coord(4), 32, 32));
+								pic(5) := to_data(l_paste(l_addr, pic(4), O5_data, map_coord(4), 32, 32));
 								O5_addr <= to_addr(l_paste(l_addr, pic(4), O5_data, map_coord(4), 32, 32));
 							else
-								pic(5) <= to_data(l_paste(l_addr, pic(4), X5_data, map_coord(4), 32, 32));
+								pic(5) := to_data(l_paste(l_addr, pic(4), X5_data, map_coord(4), 32, 32));
 								X5_addr <= to_addr(l_paste(l_addr, pic(4), X5_data, map_coord(4), 32, 32));
 							end if;
 						else
-							pic(5) <= pic(4);
+							pic(5) := pic(4);
 						end if;
 						if map_used(5) = '1'then
 							if mapPlace(5) = '0' then
-								pic(6) <= to_data(l_paste(l_addr, pic(5), O6_data, map_coord(5), 32, 32));
+								pic(6) := to_data(l_paste(l_addr, pic(5), O6_data, map_coord(5), 32, 32));
 								O6_addr <= to_addr(l_paste(l_addr, pic(5), O6_data, map_coord(5), 32, 32));
 							else
-								pic(6) <= to_data(l_paste(l_addr, pic(5), X6_data, map_coord(5), 32, 32));
+								pic(6) := to_data(l_paste(l_addr, pic(5), X6_data, map_coord(5), 32, 32));
 								X6_addr <= to_addr(l_paste(l_addr, pic(5), X6_data, map_coord(5), 32, 32));
 							end if;
 						else
-							pic(6) <= pic(5);
+							pic(6) := pic(5);
 						end if;
 						if map_used(6) = '1'then
 							if mapPlace(6) = '0' then
-								pic(7) <= to_data(l_paste(l_addr, pic(6), O7_data, map_coord(6), 32, 32));
+								pic(7) := to_data(l_paste(l_addr, pic(6), O7_data, map_coord(6), 32, 32));
 								O7_addr <= to_addr(l_paste(l_addr, pic(6), O7_data, map_coord(6), 32, 32));
 							else
-								pic(7) <= to_data(l_paste(l_addr, pic(6), X7_data, map_coord(6), 32, 32));
+								pic(7) := to_data(l_paste(l_addr, pic(6), X7_data, map_coord(6), 32, 32));
 								X7_addr <= to_addr(l_paste(l_addr, pic(6), X7_data, map_coord(6), 32, 32));
 							end if;
 						else
-							pic(7) <= pic(6);
+							pic(7) := pic(6);
 						end if;
 						if map_used(7) = '1'then
 							if mapPlace(7) = '0' then
-								pic(8) <= to_data(l_paste(l_addr, pic(7), O8_data, map_coord(7), 32, 32));
+								pic(8) := to_data(l_paste(l_addr, pic(7), O8_data, map_coord(7), 32, 32));
 								O8_addr <= to_addr(l_paste(l_addr, pic(7), O8_data, map_coord(7), 32, 32));
 							else
-								pic(8) <= to_data(l_paste(l_addr, pic(7), X8_data, map_coord(7), 32, 32));
+								pic(8) := to_data(l_paste(l_addr, pic(7), X8_data, map_coord(7), 32, 32));
 								X8_addr <= to_addr(l_paste(l_addr, pic(7), X8_data, map_coord(7), 32, 32));
 							end if;
 						else
-							pic(8) <= pic(7);
+							pic(8) := pic(7);
 						end if;
 						if map_used(8) = '1'then
 							if mapPlace(8) = '0' then
-								pic(9) <= to_data(l_paste(l_addr, pic(8), O9_data, map_coord(8), 32, 32));
+								pic(9) := to_data(l_paste(l_addr, pic(8), O9_data, map_coord(8), 32, 32));
 								O9_addr <= to_addr(l_paste(l_addr, pic(8), O9_data, map_coord(8), 32, 32));
 							else
-								pic(9) <= to_data(l_paste(l_addr, pic(8), X9_data, map_coord(8), 32, 32));
+								pic(9) := to_data(l_paste(l_addr, pic(8), X9_data, map_coord(8), 32, 32));
 								X9_addr <= to_addr(l_paste(l_addr, pic(8), X9_data, map_coord(8), 32, 32));
 							end if;
 						else
-							pic(9) <= pic(8);
+							pic(9) := pic(8);
 						end if;
 
 						if O_win = '1' and X_win = '0'then
-							pic(10) <= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, pic(9), (0, 0), 128, 160)), " Circle win", (140, 50), red);
+							pic(10) := l_paste_txt(l_addr, to_data(l_paste(l_addr, red, pic(9), (0, 0), 128, 160)), " Circle win", (140, 50), red);
 						elsif X_win = '1' and O_win = '0' then
-							pic(10) <= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, pic(9), (0, 0), 128, 160)), " Cross win", (140, 50), blue);
+							pic(10) := l_paste_txt(l_addr, to_data(l_paste(l_addr, red, pic(9), (0, 0), 128, 160)), " Cross win", (140, 50), blue);
 						elsif placed = 9 and O_win = '0' and X_win = '0' then
-							pic(10) <= l_paste_txt(l_addr, to_data(l_paste(l_addr, red, pic(9), (0, 0), 128, 160)), " Tie", (140, 50), green);
+							pic(10) := l_paste_txt(l_addr, to_data(l_paste(l_addr, red, pic(9), (0, 0), 128, 160)), " Tie", (140, 50), green);
 						else
-							pic(10) <= pic(9);
+							pic(10) := pic(9);
 						end if;
 
 						ena_tim <= '1';
@@ -678,7 +687,7 @@ begin
 							l_clear <= '1';
 							map_used <= (others => '0');
 							player <= '0';
-							pic <= (others => white);
+							pic := (others => white);
 							placed <= 0;
 							mapPlace <= (others => '0');
 							O_placed <= (others => '0');

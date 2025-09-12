@@ -29,10 +29,10 @@ architecture arch of tts_test1 is
 	signal pressed, pressed_i : std_logic;
 	signal key : i4_t;
 	signal key_pressed  : i4_t;
-	type state_t is (init ,idle, play, stop);
-	signal state : state_t:=init;
+	type state_t is (idle, play, stop);
+	signal state : state_t:= idle;
 	--timer
-	signal ena_tim: std_logic;
+	signal ena_tim: std_logic:='0';
 	signal msec: integer range 0 to 1000:=0;
 	-- "語音測試一", 10
 	-- tts_data(0 to 9) <= test1;
@@ -86,10 +86,10 @@ begin
 	key_edge: entity work.edge(arch)
 		port map (
 			clk =>clk,
-		rst_n => rst_n,
-		sig_in => pressed_i,
-		rising => pressed,
-		falling => open
+			rst_n => rst_n,
+			sig_in => pressed_i,
+			rising => pressed,
+			falling => open
 		);
 	tts_inst : entity work.tts(arch)
 		generic map(
@@ -119,68 +119,51 @@ begin
 	process (rst_n, clk)
 	begin
 		if rst_n = '0' then
-			state <= init;
+			state <= idle;
 			ena <= '0';
 		elsif rising_edge(clk) then
-			dbg_a(0)<=busy;
-			dbg_a(1)<=ena;
+			dbg_a(4)<=busy;
+			dbg_a(5)<=ena;
 			if state = idle then
-				dbg_a(2)<='0';
-				dbg_a(3)<='1';
-				dbg_a(4)<='1';
+				dbg_a(0)<='0';
+				dbg_a(1)<='1';
+				dbg_a(2)<='1';
 			elsif state = play then
+				dbg_a(0)<='1';
+				dbg_a(1)<='0';
 				dbg_a(2)<='1';
-				dbg_a(3)<='0';
-				dbg_a(4)<='1';
 			elsif state=stop then
-				dbg_a(2)<='1';
-				dbg_a(3)<='1';
-				dbg_a(4)<='0';
+				dbg_a(0)<='1';
+				dbg_a(1)<='1';
+				dbg_a(2)<='0';
 			end if;
 			ena <= '0';
 			case state is
-				when init =>
-					if init_n=0 then
-						ena_tim<='0';
-						txt(0 to 1) <= tts_instant_soft_reset;
-						len <= 2;
-						init_n<=1;
-						ena<='1';
-					elsif init_n=1 then
-						if busy = '1' then 
-							ena <= '0'; 
-							init_n<=2;
-						end if;
-					elsif init_n=2 then
-						if busy = '0' then
-							init_n<=3;
-							ena_tim<='0';
-						end if;
-					elsif init_n=3 then
-						ena_tim<='1';
-						if msec >300 then 
-							state <=idle;
-							init_n<=0;
-							ena_tim<='0';
-						end if; 
-					end if;
 				when idle =>
 					if pressed = '1' then
 						key_pressed <= key;
 						state <= play;
+						dbg_a(7)<=not dbg_a(7);
 					end if;
 				when play =>
-					ena <= '1';
+					
 					case key_pressed is
 						when 0 =>
+							ena <= '1';
 							txt(0 to 5) <= shut;
 							len <= 6;
 						when 1 =>
+							ena <= '1';
 							txt(0 to 4) <= music1;
 							len <= 5;
 						when 2 =>
+							ena <= '1';
 							txt(0 to 33) <= lorry;
 							len <= 34;
+						when 15 =>
+							ena <= '1';	
+							txt(0 to 1) <=tts_instant_soft_reset;
+							len<=2;
 						when others => 
 							ena <= '0'; 
 							state <= idle;
@@ -189,6 +172,7 @@ begin
 						ena <= '0'; 
 						key_pressed <= 5;
 						state <= stop;
+						
 					end if;
 				when stop =>
 					if busy = '0' then

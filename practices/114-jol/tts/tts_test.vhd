@@ -35,7 +35,6 @@
 			x"b8", x"cc", x"2f", x"bf", x"57", x"a6", x"db", x"ad", x"fa", x"b5", x"db", x"b5", x"4c", x"aa", x"6b", x"a9",
 			x"b9", x"ab", x"65"
 		);
-
 		-- "聽講，露西時常做運動，身體健康精神好，露西！哩洗那欸加你搞，身體健康精神好，規律運動不可少，沒事常做健康操，全身
 		-- 運動功效好，喂，同學，歸勒百欸穩懂安抓來安白，杯題阿哇的有擘吼哩哉，咖嘛北鼻當賊來，麼地有135，麼地有246，西
 		-- 哉金裡嗨，搭給當賊來。", 242
@@ -59,7 +58,6 @@
 			x"b8", x"cc", x"b6", x"d9", x"a1", x"41", x"b7", x"66", x"b5", x"b9", x"b7", x"ed", x"b8", x"e9", x"a8", x"d3",
 			x"a1", x"43"
 		);
-
 		-- "啊", 2
 		-- txt(0 to 1) <= ah;
 		-- len <= 2;
@@ -79,18 +77,18 @@
 		);
 
 		signal ena : std_logic;
-		signal busy : std_logic;
+		signal busy, busy_i : std_logic;
 		signal txt : u8_arr_t(0 to max_len - 1);
 		signal len : integer range 0 to max_len;
 
-		signal pressed : std_logic;
+		signal pressed,pressed_i: std_logic;
 		signal key, key_pressed : i4_t;
 
 		type state_t is (idle, send, stop);
 		signal state : state_t;
 
 	begin
-
+	Components : block begin
 		tts_inst: entity work.tts(arch)
 			generic map (
 				txt_len_max => max_len
@@ -107,25 +105,41 @@
 				txt => txt,
 				txt_len => len
 			);
-
+		key_edge: entity work.edge(arch)
+		port map (
+			clk => clk,
+			rst_n => rst_n,
+			sig_in => pressed_i,
+			rising => pressed,
+			falling => open
+		);
+		-- tts_busy_edge: entity work.edge(arch)
+		-- port map (
+		-- 	clk => clk,
+		-- 	rst_n => rst_n,
+		-- 	sig_in => busy,
+		-- 	rising => open,
+		-- 	falling => busy
+		-- );
 		key_inst: entity work.key(arch)
 			port map (
 				clk => clk,
 				rst_n => rst_n,
 				key_row => key_row,
 				key_col => key_col,
-				pressed => pressed,
+				pressed => pressed_i,
 				key => key
 			);
+
+	end block Components;
 		dbg_a(0 to 3 )<= "0111" when state = idle else 
 			"1011" when state = send else 
 			"1101" when state = stop else 
-			"1110";	
-				
+			"1110";		
 		dbg_a(4)<='0' when busy='1' else '1';
 		dbg_a(5)<='0' when ena='1' else '1';
-		dbg_a(6)<= '1';
-		dbg_a(7)<= '1';
+		dbg_a(6)<= tts_mo(1);
+		dbg_a(7)<= tts_mo(0);
 			
 		process (clk, rst_n) begin
 			if rst_n = '0' then
@@ -134,42 +148,28 @@
 				key_pressed<=0;
 				len<=0;
 			elsif rising_edge(clk) then
-				-- default values
 				ena <= '0';
-
 				case state is
 					when idle =>
 						if pressed = '1' then
 							key_pressed <= key;
 							state <= send;
 						end if;
-
 					when send =>
 						ena <= '1'; -- toggle enable
 						case key_pressed is
-							when 0 =>
-								txt(0 to 82) <= song;
-								len <= 83;
-
-							when 1 =>
-								txt(0 to 241) <= what;
-								len <= 242;
-
-							when 2 =>
-								txt(0 to 6) <= ah;
-								len <= 7 ;
-
-							when 3 =>
+							when 14 => 
+								txt(0 to 1) <= tts_instant_soft_reset;
+								len <= 2;
+							when 15 =>
 								txt(0 to 58) <= datasheet_example;
 								len <= 59;
-
 							when others => 
 								ena   <= '0';
 								state <= stop;
 						end case;
 
 						if busy = '1' then -- enable confirmed
-							
 							state <= stop;
 						end if;
 

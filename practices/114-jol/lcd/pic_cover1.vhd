@@ -33,7 +33,7 @@ architecture arch of pic_cover1 is
 	signal mode : state := pic_1;
 	--type
 	type picture is array (0 to 14) of l_px_t;
-	signal pic : picture;
+
 	--key board
 	signal pressed_i : std_logic;
 	signal pressed : std_logic;
@@ -101,6 +101,7 @@ begin
 
 	--------------------------------------------------------------------------------
 	process (clk, rst_n)
+		variable pic : picture;
 	begin
 		if rst_n = '0' then
 			l_clear <= '1';
@@ -124,9 +125,9 @@ begin
 				when pic0 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
 					bg_color <= pic(0);
 					if pressed = '1' then
@@ -139,11 +140,11 @@ begin
 				when pic1 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
+					pic(1) := pic(0);
 					bg_color <= pic(1);
 					if pressed = '1' then
 						case key is
@@ -155,12 +156,12 @@ begin
 				when pic2 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
 					bg_color <= pic(2);
 					if pressed = '1' then
 						case key is
@@ -172,13 +173,13 @@ begin
 				when pic3 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
 					bg_color <= pic(3);
 					if pressed = '1' then
 						case key is
@@ -190,14 +191,14 @@ begin
 				when pic4 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
 					bg_color <= pic(4);
 					if pressed = '1' then
 						case key is
@@ -209,15 +210,15 @@ begin
 				when pic5 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
 					bg_color <= pic(5);
 					if pressed = '1' then
 						case key is
@@ -229,16 +230,16 @@ begin
 				when pic6 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
-					pic(6) <= pic(5);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
+					pic(6) := pic(5);
 
 					bg_color <= pic(6);
 					if pressed = '1' then
@@ -252,17 +253,17 @@ begin
 				when pic7 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
-					pic(6) <= pic(5);
-					pic(7) <= pic(6);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
+					pic(6) := pic(5);
+					pic(7) := pic(6);
 
 					bg_color <= pic(7);
 					if pressed = '1' then
@@ -275,18 +276,18 @@ begin
 				when pic8 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
-					pic(6) <= pic(5);
-					pic(7) <= pic(6);
-					pic(8) <= pic(7);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
+					pic(6) := pic(5);
+					pic(7) := pic(6);
+					pic(8) := pic(7);
 
 					bg_color <= pic(8);
 					if pressed = '1' then
@@ -299,19 +300,19 @@ begin
 				when pic9 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
-					pic(6) <= pic(5);
-					pic(7) <= pic(6);
-					pic(8) <= pic(7);
-					pic(9) <= pic(8);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
+					pic(6) := pic(5);
+					pic(7) := pic(6);
+					pic(8) := pic(7);
+					pic(9) := pic(8);
 
 					bg_color <= pic(9);
 					if pressed = '1' then
@@ -324,20 +325,20 @@ begin
 				when pic10 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
-					pic(6) <= pic(5);
-					pic(7) <= pic(6);
-					pic(8) <= pic(7);
-					pic(9) <= pic(8);
-					pic(10) <= pic(9);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
+					pic(6) := pic(5);
+					pic(7) := pic(6);
+					pic(8) := pic(7);
+					pic(9) := pic(8);
+					pic(10) := pic(9);
 					bg_color <= pic(10);
 					if pressed = '1' then
 						case key is
@@ -349,21 +350,21 @@ begin
 				when pic11 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
-					pic(6) <= pic(5);
-					pic(7) <= pic(6);
-					pic(8) <= pic(7);
-					pic(9) <= pic(8);
-					pic(10) <= pic(9);
-					pic(11) <= pic(10);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
+					pic(6) := pic(5);
+					pic(7) := pic(6);
+					pic(8) := pic(7);
+					pic(9) := pic(8);
+					pic(10) := pic(9);
+					pic(11) := pic(10);
 					bg_color <= pic(11);
 					if pressed = '1' then
 						case key is
@@ -375,22 +376,22 @@ begin
 				when pic12 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
-					pic(6) <= pic(5);
-					pic(7) <= pic(6);
-					pic(8) <= pic(7);
-					pic(9) <= pic(8);
-					pic(10) <= pic(9);
-					pic(11) <= pic(10);
-					pic(12) <= pic(11);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
+					pic(6) := pic(5);
+					pic(7) := pic(6);
+					pic(8) := pic(7);
+					pic(9) := pic(8);
+					pic(10) := pic(9);
+					pic(11) := pic(10);
+					pic(12) := pic(11);
 					bg_color <= pic(12);
 					if pressed = '1' then
 						case key is
@@ -402,23 +403,23 @@ begin
 				when pic13 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
-					pic(6) <= pic(5);
-					pic(7) <= pic(6);
-					pic(8) <= pic(7);
-					pic(9) <= pic(8);
-					pic(10) <= pic(9);
-					pic(11) <= pic(10);
-					pic(12) <= pic(11);
-					pic(13) <= pic(12);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
+					pic(6) := pic(5);
+					pic(7) := pic(6);
+					pic(8) := pic(7);
+					pic(9) := pic(8);
+					pic(10) := pic(9);
+					pic(11) := pic(10);
+					pic(12) := pic(11);
+					pic(13) := pic(12);
 					bg_color <= pic(13);
 					if pressed = '1' then
 						case key is
@@ -430,24 +431,24 @@ begin
 				when pic14 =>
 					l_clear <= '1';
 					if l_addr mod 16 > 7 then
-						pic(0) <= black;
+						pic(0) := black;
 					else
-						pic(0) <= white;
+						pic(0) := white;
 					end if;
-					pic(1) <= pic(0);
-					pic(2) <= pic(1);
-					pic(3) <= pic(2);
-					pic(4) <= pic(3);
-					pic(5) <= pic(4);
-					pic(6) <= pic(5);
-					pic(7) <= pic(6);
-					pic(8) <= pic(7);
-					pic(9) <= pic(8);
-					pic(10) <= pic(9);
-					pic(11) <= pic(10);
-					pic(12) <= pic(11);
-					pic(13) <= pic(12);
-					pic(14) <= pic(13);
+					pic(1) := pic(0);
+					pic(2) := pic(1);
+					pic(3) := pic(2);
+					pic(4) := pic(3);
+					pic(5) := pic(4);
+					pic(6) := pic(5);
+					pic(7) := pic(6);
+					pic(8) := pic(7);
+					pic(9) := pic(8);
+					pic(10) := pic(9);
+					pic(11) := pic(10);
+					pic(12) := pic(11);
+					pic(13) := pic(12);
+					pic(14) := pic(13);
 					bg_color <= pic(14);
 					if pressed = '1' then
 						case key is
