@@ -57,6 +57,7 @@ if {$make_assignments} {
 	
 
 	# Unit tests
+	set_global_assignment -name VHDL_FILE i2c_master.vhd
 	# set_global_assignment -name VHDL_FILE practices/50-choco/LCD_PIC/lcd_p.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_p.vhd
 	# set_global_assignment -name VHDL_FILE practices/50-choco/Circles_and_forks/ox.vhd
