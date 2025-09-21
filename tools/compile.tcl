@@ -53,11 +53,11 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY tts_test
+	set_global_assignment -name TOP_LEVEL_ENTITY tts_com
 	
 
 	# Unit tests
-	set_global_assignment -name VHDL_FILE i2c_master.vhd
+	
 	# set_global_assignment -name VHDL_FILE practices/50-choco/LCD_PIC/lcd_p.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/lcd_p.vhd
 	# set_global_assignment -name VHDL_FILE practices/50-choco/Circles_and_forks/ox.vhd
@@ -72,9 +72,10 @@ if {$make_assignments} {
 	# set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_gpt.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_test.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_com.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/tts/i2c_master.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_stop_test.vhd
-	set_global_assignment -name VHDL_FILE practices/40-noel/tts_test/tts_test.vhd
+	# set_global_assignment -name VHDL_FILE practices/40-noel/tts_test/tts_test.vhd
 	# set_global_assignment -name VHDL_FILE practices/30-dora/tts_Jay/ser/tts_stop.vhd
 # practices\40-noel\tts_stop_test\tts_stop_test.vhd
 	# set_global_assignment -name VHDL_FILE practices/30-dora/tts_Jay/tts_Jay.vhd
