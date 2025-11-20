@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 use work.itc.all;
 
-entity tts1 is
+entity tts is
 	generic (
 		txt_len_max : integer := 16 -- maximum length of text
 	);
@@ -13,17 +13,15 @@ entity tts1 is
 		clk, rst_n : in std_logic;
 		-- tts
 		tts_scl, tts_sda : inout std_logic;
-		tts_mo           : in unsigned(2 downto 0);
-		tts_rst_n        : out std_logic;
 		-- user logic
 		ena     : in std_logic; -- start on enable rising edge
 		busy    : out std_logic;
 		txt     : in u8_arr_t(0 to txt_len_max - 1);
 		txt_len : in integer range 0 to txt_len_max
 	);
-end tts1;
+end tts;
 
-architecture arch of tts1 is
+architecture arch of tts is
 
 	constant tts_addr : unsigned(6 downto 0) := "0100000";
 
@@ -39,17 +37,18 @@ architecture arch of tts1 is
 	signal i2c_done : std_logic;
 	signal tts_done, tts_accepted : std_logic;
 
-	signal txt_cnt : integer range 0 to txt_len_max + 1;
+	signal txt_cnt : integer range 0 to txt_len_max - 1;
 
 	--timer
 	signal msec, load : i32_t;
 	signal timer_ena : std_logic;
 
+	signal tts_start_work : std_logic;
 	--reset
 	constant reset_txt : u8_arr_t(0 to 1) := (x"8f", x"03");
 begin
 
-	tts_rst_n <= rst_n;
+	-- tts_rst_n <= rst_n;
 
 	i2c_inst : entity work.i2c(arch)
 		generic map(
@@ -85,14 +84,14 @@ begin
 			falling => open
 		);
 
-	edge_inst_mo0 : entity work.edge(arch)
-		port map(
-			clk     => clk,
-			rst_n   => rst_n,
-			sig_in  => tts_mo(0),
-			rising  => tts_done,
-			falling => tts_accepted
-		);
+	-- edge_inst_mo0 : entity work.edge(arch)
+	-- 	port map(
+	-- 		clk     => clk,
+	-- 		rst_n   => rst_n,
+	-- 		sig_in  => tts_mo(0),
+	-- 		rising  => tts_done,
+	-- 		falling => tts_accepted
+	-- 	);
 	timer_inst : entity work.timer(arch)
 		port map(
 			clk   => clk,
@@ -104,59 +103,52 @@ begin
 	process (clk, rst_n) begin
 		if rst_n = '0' then
 			txt_cnt <= 0;
-			busy <= '1';
+			busy <= '0';
 			state <= idle;
+			timer_ena <= '1';
+			tts_start_work <= '0';
 		elsif rising_edge(clk) then
-
-			case state is
-				when idle =>
-					if start = '1' then
-						busy <= '1';
-						i2c_in <= tts_set_mo; -- send first byte
-						i2c_ena <= '1';
-						state <= send;
-					else
-						busy <= '0';
-						i2c_ena <= '0';
-					end if;
-
-				when send =>
-					-- i2c_ena <= '1';
-					if i2c_done = '1' then -- interface is ready for next byte
-						if txt_cnt = 0 then
-							i2c_in <= x"06"; -- set MO[2..0] = 110
-						elsif txt_cnt >= 1 and txt_cnt <= txt_len then
-							i2c_in <= txt(txt_cnt - 1);
-						elsif txt_cnt = txt_len + 1 then
-							i2c_in <= tts_set_mo;
+			if msec > 500 then
+				timer_ena <= '0';
+				tts_start_work <= '1';
+			else tts_start_work <= '0';
+			end if;
+			if tts_start_work = '1' then
+				case state is
+					when idle =>
+						if start = '1' then
+							busy <= '1';
+							i2c_in <= txt(txt_cnt);
+							txt_cnt <= txt_cnt + 1;
+							i2c_ena <= '1';
+							state <= send;
 						else
-							i2c_in <= x"07"; -- set MO[2..0] = 111
+							busy <= '0';
 						end if;
-
-						if txt_cnt = txt_len + 2 then
+					when send =>
+						i2c_in <= txt(txt_cnt);
+						if txt_cnt < txt_len'high then
+							txt_cnt <= txt_cnt + 1;
+						else
 							txt_cnt <= 0;
 							state <= send_stop;
-						else
-							txt_cnt <= txt_cnt + 1;
 						end if;
-					end if;
-
-				when send_stop =>
-					if i2c_accepted = '1' then -- last byte sent to interface
-						i2c_ena <= '0';
-					end if;
-
-					-- if i2c_done = '1' and tts_accepted = '1' then -- last byte transmission complete
-					if i2c_done = '1' then -- last byte transmission complete
-						state <= idle;
-					end if;
-					
-				when wait_speech =>
-					if tts_done = '1' then
-						state <= idle;
-					end if;
-			end case;
-
+						busy <= '1';
+					when send_stop =>
+						if i2c_done = '1' then -- last byte sent to interface
+							i2c_ena <= '0';
+							timer_ena <= '1';
+							state <= wait_speech;
+						end if;
+						busy <= '1';
+					when wait_speech =>
+						if msec > 500 then
+							timer_ena <= '0';
+							busy <= '0';
+							state <= idle;
+						end if;
+				end case;
+			end if;
 		end if;
 	end process;
 

@@ -117,7 +117,9 @@ package itc is
 		x"b9", x"73", x"a4", x"40", x"a4", x"47", x"a4", x"54", x"a5", x"7c", x"a4",
 		x"ad", x"a4", x"bb", x"a4", x"43", x"a4", x"4b", x"a4", x"45", x"a4", x"51"
 	);
-
+	constant num : u8_arr_t(0 to 13) := (
+		x"30", x"31", x"32", x"33", x"34", x"35", x"36", x"37", x"38", x"39", x"A4", x"51", x"A6", x"CA"
+	);	--0  	 1		2	   3	  4 	 5 		6 	   7 	  8 	 9 		   十			 百
 	--------------------------------------------------------------------------------
 	-- common functions
 	--------------------------------------------------------------------------------
@@ -160,6 +162,7 @@ package itc is
 	function to_string(num, num_max, base, length : integer) return string;
 	function to_string(num, num_max, base, length : integer) return u8_arr_t;
 	function to_big(txt: integer) return u8_arr_t;
+	-- function dot_pos(x,y: integer) return u8_arr_t;
 --to_unsigned ( integer , length )
 --to_signed	  ( integer , length )
 --to_integer  ( unsigned/signed )
@@ -362,63 +365,128 @@ package body itc is
 
 			return result;
 		end function;
-
-	function to_big(txt : integer range 0 to 99) return u8_arr_t is
-		variable res : u8_arr_t(0 to 5);
+	function to_big(txt : integer range 0 to 999) return u8_arr_t is
+		variable res : u8_arr_t(0 to 6);
+		variable bit_2: integer range 0 to 9;
+		variable bit_1: integer range 0 to 9;
+		variable bit_0: integer range 0 to 9;
 		begin
-			if txt rem 10 = 0 then
-				if txt > 10 then
-					res(0) :=big5((txt / 10)*2);
-					res(1) :=big5((txt / 10)*2 + 1);
-					res(2) :=big5(20);
-					res(3) :=big5(21);
-					res(4) :=x"83";
-					res(5) :=x"00";
-					return res ;
-				elsif txt = 10 then
-					res(0) :=big5(20);
-					res(1) :=big5(21);
-					res(2) :=x"83";
-					res(3) :=x"00";
-					res(4) :=x"83";
-					res(5) :=x"00";
-					return res ;
-				else
-					res(0) := big5(0);
-					res(1) := big5(1);
-					res(2) :=x"83";
-					res(3) :=x"00";
-					res(4) :=x"83";
-					res(5) :=x"00";
-					return res ;
-				end if;
-			else
-				if txt /10 = 1 then
-					res(0) :=big5(20);
-					res(1) :=big5(21);
-					res(2) :=big5((txt rem 10)*2);
-					res(3) :=big5((txt rem 10)*2 + 1);
-					res(4) :=x"83";
-					res(5) :=x"00";
-					return res ;
-				elsif txt /10 > 1 then
-					res(0) :=big5((txt / 10)*2);
-					res(1) :=big5((txt / 10)*2 + 1);
-					res(2) :=big5(20);
-					res(3) :=big5(21);
-					res(4) :=big5((txt rem 10)*2);
-					res(5) :=big5((txt rem 10)*2 + 1);
-					return res ;
-				else
-					res(0) :=big5(txt * 2);
-					res(1) :=big5(txt * 2 + 1);
-					res(2) :=x"83";
-					res(3) :=x"00";
-					res(4) :=x"83";
-					res(5) :=x"00";
-				return res ;
-				end if;
+			bit_2 := txt / 100 ;
+			bit_1 := (txt rem 100 )/ 10;
+			bit_0 := txt rem 10;
+			
+			if bit_2 = 0 and bit_1 = 0 and bit_0 >= 0 then --_ _ n
+				res(0) :=x"20";			res(1) :=x"20";		res(2) :=x"20";	
+				res(3) :=x"20";			res(4) :=x"20";		res(5) :=x"20";
+				res(6) :=num(bit_0);	return res ;	
+			elsif bit_2 = 0 and bit_1 = 1 and bit_0 = 0 then --_ _十_
+				res(0) :=x"20";			res(1) :=x"20";		res(2) :=x"20";			
+				res(3) :=x"20";			res(4) :=num(10);	res(5) :=num(11);
+				res(6) :=x"20";			return res ;
+			elsif bit_2 = 0 and bit_1 = 1 and bit_0 > 0 then --_ _十n
+				res(0) :=x"20";			res(1) :=x"20";		res(2) :=x"20";
+				res(3) :=x"20";			res(4) :=num(10);	res(5) :=num(11);
+				res(6) :=num(bit_0);	return res ;	
+			elsif bit_2 = 0 and bit_1 > 1 and bit_0 = 0 then --_ n十_ 
+				res(0) :=x"20";			res(1) :=x"20";		res(2) :=x"20";			
+				res(3) :=num(bit_1);	res(4) :=num(10);	res(5) :=num(11);
+				res(6) :=x"20";			return res ;
+			elsif bit_2 = 0 and bit_1 > 1 and bit_0 > 0 then --_ n十n
+				res(0) :=x"20";			res(1) :=x"20";		res(2) :=x"20";
+				res(3) :=num(bit_1);	res(4) :=num(10);	res(5) :=num(11);
+				res(6) :=num(bit_0);	return res ;	
+			elsif bit_2 > 0 and bit_1 = 0 and bit_0 = 0 then --n百_ _
+				res(0) :=num(bit_2);	res(1) :=num(12);	res(2) :=num(13);		
+				res(3) :=x"20";			res(4) :=x"20";		res(5) :=x"20";
+				res(6) :=x"20";			return res ;
+			elsif bit_2 > 0 and bit_1 = 0 and bit_0 > 0 then --n百零 n
+				res(0) :=num(bit_2);	res(1) :=num(12);	res(2) :=num(13);		
+				res(3) :=num(0);		res(4) :=x"20";		res(5) :=x"20";
+				res(6) :=num(bit_0);	return res ;
+			elsif bit_2 > 0 and bit_1 > 0 and bit_0 = 0 then --n百n十_
+				res(0) :=num(bit_2);	res(1) :=num(12);	res(2) :=num(13);		
+				res(3) :=num(bit_1);	res(4) :=num(10);	res(5) :=num(11);
+				res(6) :=x"20";			return res ;
+			elsif bit_2 > 0 and bit_1 > 0 and bit_0 > 0 then --n百n十_
+				res(0) :=num(bit_2);	res(1) :=num(12);	res(2) :=num(13);		
+				res(3) :=num(bit_1);	res(4) :=num(10);	res(5) :=num(11);
+				res(6) :=num(bit_0);	return res ;
+			else res:=(others=>x"20");
+				return res;
 			end if;
 		end function;
+	function str_len(s : string) return integer is
+		variable n : integer := 0;
+	begin
+		for i in s'range loop
+			exit when s(i) = character'val(0);  -- 假設用 ASCII 0 當 terminator
+			n := n + 1;
+		end loop;
+			return n;
+		end function;
+
+	-- function dot_pos(x,y: integer range 0 to 7) return u8_arr_t is
+	-- 		variable dot_map : u8_arr_t(0 to 7):=(others => (others=>'0'));
+	-- 	begin
+	-- 		dot_map(y)(x) <=  1;
+	-- 	end function;
+
+	-- function to_big(txt : integer range 0 to 99) return u8_arr_t is
+	-- 	variable res : u8_arr_t(0 to 5);
+	-- 	begin
+	-- 		if txt rem 10 = 0 then
+	-- 			if txt > 10 then
+	-- 				res(0) :=big5((txt / 10)*2);
+	-- 				res(1) :=big5((txt / 10)*2 + 1);
+	-- 				res(2) :=big5(20);
+	-- 				res(3) :=big5(21);
+	-- 				res(4) :=x"83";
+	-- 				res(5) :=x"00";
+	-- 				return res ;
+	-- 			elsif txt = 10 then
+	-- 				res(0) :=big5(20);
+	-- 				res(1) :=big5(21);
+	-- 				res(2) :=x"83";
+	-- 				res(3) :=x"00";
+	-- 				res(4) :=x"83";
+	-- 				res(5) :=x"00";
+	-- 				return res ;
+	-- 			else
+	-- 				res(0) := big5(0);
+	-- 				res(1) := big5(1);
+	-- 				res(2) :=x"83";
+	-- 				res(3) :=x"00";
+	-- 				res(4) :=x"83";
+	-- 				res(5) :=x"00";
+	-- 				return res ;
+	-- 			end if;
+	-- 		else
+	-- 			if txt /10 = 1 then
+	-- 				res(0) :=big5(20);
+	-- 				res(1) :=big5(21);
+	-- 				res(2) :=big5((txt rem 10)*2);
+	-- 				res(3) :=big5((txt rem 10)*2 + 1);
+	-- 				res(4) :=x"83";
+	-- 				res(5) :=x"00";
+	-- 				return res ;
+	-- 			elsif txt /10 > 1 then
+	-- 				res(0) :=big5((txt / 10)*2);
+	-- 				res(1) :=big5((txt / 10)*2 + 1);
+	-- 				res(2) :=big5(20);
+	-- 				res(3) :=big5(21);
+	-- 				res(4) :=big5((txt rem 10)*2);
+	-- 				res(5) :=big5((txt rem 10)*2 + 1);
+	-- 				return res ;
+	-- 			else
+	-- 				res(0) :=big5(txt * 2);
+	-- 				res(1) :=big5(txt * 2 + 1);
+	-- 				res(2) :=x"83";
+	-- 				res(3) :=x"00";
+	-- 				res(4) :=x"83";
+	-- 				res(5) :=x"00";
+	-- 			return res ;
+	-- 			end if;
+	-- 		end if;
+	-- 	end function;
 
 end package body;

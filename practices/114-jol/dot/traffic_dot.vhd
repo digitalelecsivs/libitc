@@ -10,7 +10,7 @@ entity traffic_dot is
 		clk, rst_n                  : in std_logic;
 		dot_red, dot_green, dot_com : out u8r_t;
 		seg_led, seg_com            : out u8r_t;
-		dbg_a                       : out std_logic_vector(0 to 5)
+		dbg_a                       : out u8r_t
 	);
 end traffic_dot;
 --type u8r_arr_t is array (integer range <>) of u8r_t;
@@ -166,8 +166,8 @@ begin
 			end if;
 		end if;
 	end process;
-	dbg_a <= "010100" when mode = greenlight else
-		"100010"when mode = redlight else
-		"010001"when mode = yellowlight1 else
-		"001010"when mode = yellowlight2 else (others => '0');
+	dbg_a <= not "01001000" when mode = greenlight else
+		"10000100"when mode = redlight else
+		"01000010"when mode = yellowlight1 else
+		"00100100"when mode = yellowlight2 else (others => '0');
 end arch;
