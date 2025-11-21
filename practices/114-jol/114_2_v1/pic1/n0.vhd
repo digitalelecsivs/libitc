@@ -4,7 +4,7 @@
 -- MODULE: altsyncram 
 
 -- ============================================================
--- File Name: A.vhd
+-- File Name: n0.vhd
 -- Megafunction Name(s):
 -- 			altsyncram
 --
@@ -39,17 +39,17 @@ USE ieee.std_logic_1164.all;
 LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
 
-ENTITY A IS
+ENTITY n0 IS
 	PORT
 	(
 		address		: IN STD_LOGIC_VECTOR (9 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
 		q		: OUT STD_LOGIC_VECTOR (23 DOWNTO 0)
 	);
-END A;
+END n0;
 
 
-ARCHITECTURE SYN OF a IS
+ARCHITECTURE SYN OF n0 IS
 
 	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (23 DOWNTO 0);
 
@@ -61,7 +61,7 @@ BEGIN
 		address_aclr_a => "NONE",
 		clock_enable_input_a => "BYPASS",
 		clock_enable_output_a => "BYPASS",
-		init_file => "A.mif",
+		init_file => "n0.mif",
 		intended_device_family => "Cyclone III",
 		lpm_hint => "ENABLE_RUNTIME_MOD=NO",
 		lpm_type => "altsyncram",
@@ -103,7 +103,7 @@ END SYN;
 -- Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 -- Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
 -- Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
--- Retrieval info: PRIVATE: MIFfilename STRING "A.mif"
+-- Retrieval info: PRIVATE: MIFfilename STRING "n0.mif"
 -- Retrieval info: PRIVATE: NUMWORDS_A NUMERIC "1024"
 -- Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "0"
 -- Retrieval info: PRIVATE: RegAddr NUMERIC "1"
@@ -118,7 +118,7 @@ END SYN;
 -- Retrieval info: CONSTANT: ADDRESS_ACLR_A STRING "NONE"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_INPUT_A STRING "BYPASS"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
--- Retrieval info: CONSTANT: INIT_FILE STRING "A.mif"
+-- Retrieval info: CONSTANT: INIT_FILE STRING "n0.mif"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone III"
 -- Retrieval info: CONSTANT: LPM_HINT STRING "ENABLE_RUNTIME_MOD=NO"
 -- Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
@@ -135,9 +135,9 @@ END SYN;
 -- Retrieval info: CONNECT: @address_a 0 0 10 0 address 0 0 10 0
 -- Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: q 0 0 24 0 @q_a 0 0 24 0
--- Retrieval info: GEN_FILE: TYPE_NORMAL A.vhd TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL A.inc FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL A.cmp TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL A.bsf FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL A_inst.vhd FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL n0.vhd TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL n0.inc FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL n0.cmp TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL n0.bsf FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL n0_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: altera_mf
