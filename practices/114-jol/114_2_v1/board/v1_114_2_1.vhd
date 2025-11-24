@@ -37,7 +37,7 @@ architecture arch of v1_114_2 is
 	type state_3 is (init, ensure, del_sel, del_data, del_esc, dot_change, data_dot_init, IO_change, lcd_txt);--第二層=>mode10
 	type state_4 is (init, sel_client, txi_data, data_cls, waiting);--第二層=>mode11
 	type state_tx is (idle, send);--傳輸data的狀態機
-	type state_dot is (init, move, data_state, change);--刪除資料的資料處理流程的狀態機
+	type state_dot is (init, move, change);--刪除資料的資料處理流程的狀態機
 	signal mode_t : state_t := init;
 	signal mode_m : state_m := mode00;
 	signal mode_1 : state_1 := init;
@@ -928,22 +928,43 @@ begin
 														when 5 => -- 上 
 															if dot_y < 7 then
 																dot_y <= dot_y + 1;
-																mode_dot <= data_state;
+																mode_dot <= change;
+																--記錄下一個點的狀態
+																if data_r(dot_y + 1)(dot_x) = '1' and data_g(dot_y + 1)(dot_x) = '1' then
+																	orange_dot_next <= '1';
+																elsif data_r(dot_y + 1)(dot_x) = '0' and data_g(dot_y + 1)(dot_x) = '1' then
+																	orange_dot_next <= '0';
+																end if;
 															end if;
 														when 8 => -- 左
 															if dot_x > 0 then
 																dot_x <= dot_x - 1;
-																mode_dot <= data_state;
+																mode_dot <= change;
+																if data_r(dot_y)(dot_x - 1) = '1' and data_g(dot_y)(dot_x - 1) = '1' then
+																	orange_dot_next <= '1';
+																elsif data_r(dot_y)(dot_x - 1) = '0' and data_g(dot_y)(dot_x - 1) = '1' then
+																	orange_dot_next <= '0';
+																end if;
 															end if;
 														when 9 => -- 下
 															if dot_y > 0 then
 																dot_y <= dot_y - 1;
-																mode_dot <= data_state;
+																mode_dot <= change;
+																if data_r(dot_y - 1)(dot_x) = '1' and data_g(dot_y - 1)(dot_x) = '1' then
+																	orange_dot_next <= '1';
+																elsif data_r(dot_y - 1)(dot_x) = '0' and data_g(dot_y - 1)(dot_x) = '1' then
+																	orange_dot_next <= '0';
+																end if;
 															end if;
 														when 10 => -- 右
 															if dot_x < 7 then
 																dot_x <= dot_x + 1;
-																mode_dot <= data_state;
+																mode_dot <= change;
+																if data_r(dot_y)(dot_x + 1) = '1' and data_g(dot_y)(dot_x + 1) = '1' then
+																	orange_dot_next <= '1';
+																elsif data_r(dot_y)(dot_x + 1) = '0' and data_g(dot_y)(dot_x + 1) = '1' then
+																	orange_dot_next <= '0';
+																end if;
 															end if;
 														when 14 => mode_3 <= del_esc;
 														when 15 => mode_3 <= del_data;
@@ -951,30 +972,15 @@ begin
 													end case;
 
 												end if;
-											when data_state =>
-												--紀錄下一個點的狀態(有資料or無資料)
-												if data_r(dot_y)(dot_x) = '1' and data_g(dot_y)(dot_x) = '1' then
-													orange_dot_next <= '1';
-												elsif data_r(dot_y)(dot_x) = '0' and data_g(dot_y)(dot_x) = '1' then
-													orange_dot_next <= '0';
-												end if;
-												ena_tim <= '1';
-												if msec > 20 then
-													ena_tim <= '0';
-													mode_dot <= change;
-												end if;
 											when change =>
-												--改變下一個點
 												data_g(dot_y)(dot_x) <= '0';
 												data_r(dot_y)(dot_x) <= '1';
-												--恢復下一個點
 												data_g(temp_y)(temp_x) <= '1';
 												if orange_dot = '1' then
 													data_r(temp_y)(temp_x) <= '1';
 												elsif orange_dot = '0' then
 													data_r(temp_y)(temp_x) <= '0';
 												end if;
-												--把下一個點的狀態記成現在的點的狀態
 												orange_dot <= orange_dot_next;
 												temp_x <= dot_x;
 												temp_y <= dot_y;
@@ -983,19 +989,19 @@ begin
 									when del_esc =>
 										mode_3 <= ensure;
 									when del_data =>
-										if orange_dot = '1' then --現在(dot_y,dot_x)的點如果有資料
+										if orange_dot = '1' then
 											for i in 1 to 8 loop
-												if i = 8 then --最後一位補空格
+												if i = 8 then
 													data_set(dot_x)(i) <= ' ';
-												elsif i > dot_y and i < 8 then--從後往前補資料
+												elsif i > dot_y and i < 8 then
 													data_set(dot_x)(i) <= data_set(dot_x)(i + 1);
 												end if;
 											end loop;
-											data_len(dot_x) <= data_len(dot_x) - 1;--長度-1
-											orange_dot <= '0';--狀態改變=> 當再次移開時會變綠色
+											data_len(dot_x) <= data_len(dot_x) - 1;
+											orange_dot <= '0';
 											mode_dot <= move;
 											mode_3 <= del_sel;
-										elsif orange_dot = '0' then--如果沒有資料 =>甚麼都不做回歸原地del_sel狀態
+										elsif orange_dot = '0' then
 											mode_dot <= move;
 											mode_3 <= del_sel;
 										end if;
@@ -1006,7 +1012,6 @@ begin
 							when mode11 =>
 								case mode_4 is
 									when init =>
-										--I/O init
 										seg_data <= "        ";
 										data_r <= (others => (others => '0'));
 										data_g <= (others => (others => '0'));
@@ -1017,7 +1022,7 @@ begin
 											ena_tim <= '0';
 											mode_4 <= sel_client;
 										end if;
-									when sel_client =>--選擇client
+									when sel_client =>
 										data_r <= (others => (others => '0'));
 										data_g <= (others => (others => '0'));
 										client_num <= to_integer (sw (3 to 5));
@@ -1110,7 +1115,7 @@ begin
 											end if;
 											ena_tim <= '1';
 										end if;
-									when txi_data =>--傳資料的狀態機
+									when txi_data =>
 										case mode_tx is
 											when idle =>
 												if tx_busy = '0' then
@@ -1132,11 +1137,11 @@ begin
 												end if;
 										end case;
 
-									when data_cls =>--當資料傳完後，對應client的data_set清空，長度歸零
+									when data_cls =>
 										data_set(client_num) <= (others => character'val(32));
 										data_len(client_num) <= 0;
 										mode_4 <= waiting;
-									when waiting =>--顯示 TX OK
+									when waiting =>
 										l_clear <= '1';
 										bg_color <= pic(3);
 										pic(0) := to_data(l_paste(l_addr, white, T_data, map_coord(2), 32, 32));

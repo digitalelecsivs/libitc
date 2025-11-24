@@ -86,14 +86,18 @@ if {$make_assignments} {
 	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n9.qip
 	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n9.vhd
 
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/F.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/F.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/O.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/O.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/R.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/R.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/X.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/X.vhd
+	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aF.qip
+	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aF.vhd
+	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aO.qip
+	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aO.vhd
+	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aR.qip
+	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aR.vhd
+	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aX.qip
+	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aX.vhd
+	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aT.qip
+	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aT.vhd
+	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aK.qip
+	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aK.vhd
 
 	# 第一題
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_1/v1_114_1_a.vhd

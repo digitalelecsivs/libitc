@@ -1,5 +1,6 @@
 import sys
 
+from PySide6 import QtGui
 from PySide6.QtCore import QIODevice
 from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
 from PySide6.QtUiTools import QUiLoader
@@ -69,6 +70,8 @@ class SerialTool:
             if self.serial.open(QIODevice.ReadWrite):
                 self.ui.btn_link.setText("已連線")
                 self.ui.btn_link.setStyleSheet("background-color: lightgreen;")
+                msg = b"\x02" + "connect".encode("ascii") + b"\x03"
+                self.serial.write(msg)
             else:
                 self.ui.btn_link.setText("連線失敗")
         else:
@@ -86,22 +89,46 @@ class SerialTool:
         if msg == "":
             return
 
-        data = b'\x02' + msg.encode('ascii') + b'\x03'
+        data = b"\x02" + msg.encode("ascii") + b"\x03"
+
+        try:
+            print(msg)
+        except Exception as e:
+            print(data)
+
         self.serial.write(data)
 
     def read_data(self):
         """顯示接收到的資料"""
         data = self.serial.readAll().data()
-        try:
-            text = data.decode("ascii", errors="ignore")
-        except:
-            text = str(data)
+        # text = data.decode("ascii", errors="ignore")
+        text = data.decode("latin1")
 
-        self.ui.text2.append(text)
+        # 除了控制字元
+        # filtered = "".join(ch for ch in text if ord(ch) >= 32)
+
+        # a-z A-Z
+        # filtered = "".join(ch for ch in text if "a" <= ch <= "z" or "A" <= ch <= "Z")
+
+        # a-z
+        # filtered = "".join(ch for ch in text if "a" <= ch <= "z")
+
+        # A-Z
+        # filtered = "".join(ch for ch in text if "A" <= ch <= "Z")
+        
+        # A-Z a-z 0-9
+        filtered = ''.join(
+            ch for ch in text
+            if ch.isalnum() and ch.encode('latin1')[0] < 128
+        )
+
+        if filtered.strip() != "" and len(filtered) < 9:
+            self.ui.text2.append(filtered)
+            self.ui.text2.moveCursor(QtGui.QTextCursor.End)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     tool = SerialTool()
     tool.ui.show()
     sys.exit(app.exec())
-
