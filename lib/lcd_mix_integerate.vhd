@@ -30,10 +30,9 @@ architecture arch of lcd_mix is
 	signal color : l_px_t;
 	signal wr_ena : std_logic;
 	signal start_draw : std_logic;
-	signal l_addr, l_addr_1 : l_addr_t;
+	signal l_addr, l_addr_1, l_addr_n : l_addr_t;
 	signal l_data : l_px_t;
 	signal q, q_1, q_n : std_logic_vector(0 downto 0);
-	signal l_addr_n : integer range 0 to 105_152;
 
 	-- 狀態機： 'draw_picture' 狀態已被移除
 	type status_t is (idle, draw_txt, clear_screen);
@@ -83,7 +82,7 @@ begin
 		);
 	Font_Num_Aph_inst : entity work.Font_aph_num(syn)
 		port map(
-			address => std_logic_vector(to_unsigned(l_addr_n, 17)),
+			address => std_logic_vector(to_unsigned(l_addr_mix, 17)),
 			clock   => clk,
 			q       => q_n
 		);
@@ -119,24 +118,22 @@ begin
 
 			case status is
 				when idle =>
-					font_busy <= '0';
-					wr_ena <= '0';
 					if start_draw = '1' and clear = '0' then
+						wr_ena <= '1';
 						font_busy <= '1';
+						lcd_x <= x;
+						lcd_y <= y;
 						status <= draw_txt;
-						-- 重置所有計數器
-						count <= 0;
-						data_x <= 0;
-						data_y <= 0;
-						-- 取得第一個字元的顏色
-						color <= text_color_array(1);
-
 					elsif clear = '1' then
 						wr_ena <= '1';
 						font_busy <= '1';
 						addr <= 0;
 						status <= clear_screen;
+					else
+						wr_ena <= '0';
+						font_busy <= '0';
 					end if;
+
 				when draw_txt =>
 					if font_mode = 0 then
 						if (clear = '1') then
@@ -266,21 +263,19 @@ begin
 							end if;
 						end if;
 					end if;
-
 				when clear_screen =>
 					-- 此狀態現在用於「清除」或「顯示圖片」
 					-- 它會掃描整個 VRAM，addr 會從 0 跑到 addr'high
 					font_busy <= '1';
-					wr_ena <= '1';
 					if addr = addr'high then
 						addr <= 0;
 						font_busy <= '0';
 						status <= idle;
-						wr_ena <= '0';
 					else
 						addr <= addr + 1;
 					end if;
 					l_addr <= addr;
+
 					-- 'draw_picture' 狀態已移除
 
 				when others =>
@@ -290,12 +285,11 @@ begin
 	end process;
 	q <= q_1 when font_mode = 0 else q_n;
 	l_addr_1 <= 1056 * data_y + data_x + first_px_1 when font_mode = 0 else 0;
-	l_addr_n <= 2016 * data_y + data_x + first_px_N;
+	l_addr_n <= 2016 * data_y + data_x + first_px_N when font_mode = 1 or font_mode = 2 else 0;
 	first_px_1 <= 950 when (text_data(count + 1) = 'd') and (text_data(count + 2) = 'C') else (character'pos(text_data(count + 1)) - 32) * 10 + lcd_x;
-	first_px_N <= 129 when character'pos(text_data(count + 1)) = 52 else
+	first_px <= 129 when character'pos(text_data(count + 1)) = 52 else
 		(character'pos(text_data(count + 1)) - 48) * 32 when (character'pos(text_data(count + 1)) >= 48) and (character'pos(text_data(count + 1)) <= 57) else
-		(character'pos(text_data(count + 1)) - 54) * 32 when (character'pos(text_data(count + 1)) >= 65) and (character'pos(text_data(count + 1)) <= 92) else
-		(character'pos(text_data(count + 1)) - 60) * 32 when (character'pos(text_data(count + 1)) >= 97) and (character'pos(text_data(count + 1)) <= 122)else
-		32 * 10;
+		(character'pos(text_data(count + 1)) - 56) * 32 when (character'pos(text_data(count + 1)) >= 6) and (character'pos(text_data(count + 1)) <= 92) else
+		(character'pos(text_data(count + 1)) - 60) * 32 when (character'pos(text_data(count + 1)) >= 97) and (character'pos(text_data(count + 1)) <= 122)else 32 * 10;
 
 end arch;

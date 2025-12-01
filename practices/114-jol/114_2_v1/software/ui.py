@@ -1,10 +1,10 @@
 import sys
 
 from PySide6 import QtGui
-from PySide6.QtCore import QIODevice
-from PySide6.QtSerialPort import QSerialPort, QSerialPortInfo
+from PySide6.QtCore import QIODevice, Qt
+from PySide6.QtSerialPort import QSerialPort
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QApplication
 
 
 class SerialTool:
@@ -13,15 +13,16 @@ class SerialTool:
         # 引入.ui
         self.ui = QUiLoader().load("practices/114-jol/114_2_v1/software/ui.ui")
 
+        # --- Serial Port ---
         self.serial = QSerialPort()
         self.serial.setPortName("COM4")
         self.serial.setBaudRate(115200)
         self.serial.setDataBits(QSerialPort.Data8)
         self.serial.setParity(QSerialPort.NoParity)
         self.serial.setStopBits(QSerialPort.OneStop)
-
         self.serial.readyRead.connect(self.read_data)
 
+        # --- 數字鍵 ---
         numbers = {
             self.ui.btn_n0: "0",
             self.ui.btn_n1: "1",
@@ -36,41 +37,47 @@ class SerialTool:
         }
 
         for btn, num in numbers.items():
+            btn.setFocusPolicy(Qt.NoFocus)
             btn.clicked.connect(lambda _, n=num: self.add_text(n))
-        # 清除按鈕
+
+        self.ui.btn_cls.setFocusPolicy(Qt.NoFocus)
         self.ui.btn_cls.clicked.connect(self.clear_text)
-
-        # 返回鍵 (刪除一格)
+        self.ui.btn_return.setFocusPolicy(Qt.NoFocus)
         self.ui.btn_return.clicked.connect(self.backspace)
-
-        # 連線
+        self.ui.btn_link.setFocusPolicy(Qt.NoFocus)
         self.ui.btn_link.clicked.connect(self.connect_serial)
-
-        # 送出
+        self.ui.btn_send.setFocusPolicy(Qt.NoFocus)
         self.ui.btn_send.clicked.connect(self.send_data)
-
-        # 關閉程式
+        self.ui.btn_close.setFocusPolicy(Qt.NoFocus)
         self.ui.btn_close.clicked.connect(self.ui.close)
 
+    # --- 數字鍵輸入 ---
     def add_text(self, s):
-        """數字按下 → 填入 text1"""
-        self.ui.text1.insertPlainText(s)
+        focused = QApplication.focusWidget()
+        if focused in (self.ui.text1, self.ui.text2):
+            focused.insertPlainText(s)
+        else:
+            self.ui.text2.insertPlainText(s)
+            self.ui.text2.setFocus()
 
     def clear_text(self):
-        """清除傳送框"""
-        self.ui.text1.clear()
+        focused = QApplication.focusWidget()
+        if focused in (self.ui.text1, self.ui.text2):
+            focused.clear()
 
     def backspace(self):
-        """刪除最後一個字"""
-        text = self.ui.text1.toPlainText()
-        self.ui.text1.setPlainText(text[:-1])
+        focused = QApplication.focusWidget()
+        if focused in (self.ui.text1, self.ui.text2):
+            text = focused.toPlainText()
+            focused.setPlainText(text[:-1])
 
+    # --- 串口連線 ---
     def connect_serial(self):
         if not self.serial.isOpen():
             if self.serial.open(QIODevice.ReadWrite):
                 self.ui.btn_link.setText("已連線")
                 self.ui.btn_link.setStyleSheet("background-color: lightgreen;")
-                msg = b"\x02" + "connect".encode("ascii") + b"\x03"
+                msg = b"\x02connect\x03"
                 self.serial.write(msg)
             else:
                 self.ui.btn_link.setText("連線失敗")
@@ -79,52 +86,52 @@ class SerialTool:
             self.ui.btn_link.setText("連線")
             self.ui.btn_link.setStyleSheet("")
 
+    # --- 傳送資料 ---
     def send_data(self):
-        """送出 text1 → 串口 (STX + ASCII文字 + ETX)"""
         if not self.serial.isOpen():
-            self.ui.text2.append("尚未連線")
+            self.ui.text3.append("尚未連線")
             return
 
-        msg = self.ui.text1.toPlainText()
-        if msg == "":
+        # 取得筆數
+        num_text = self.ui.text1.toPlainText().strip()
+        if not num_text.isdigit():
+            self.ui.text3.append("❌ 筆數錯誤")
+            return
+        count = int(num_text)
+
+        # 取得傳送訊息
+        msg_text = self.ui.text2.toPlainText().strip()
+        # 用空白分割
+        parts = msg_text.replace(",", " ").split()
+        # 過濾成兩位數字字串
+        filtered = [p for p in parts if len(p) == 2 and p.isdigit()]
+
+        if len(filtered) != count:
+            self.ui.text3.append(
+                f"❌ 資料筆數與輸入筆數不符\n輸入筆數：{count}, 實際資料：{filtered}"
+            )
             return
 
-        data = b"\x02" + msg.encode("ascii") + b"\x03"
+        # 組成 ASCII 字串封包
+        packet_str = f"{count} " + " ".join(filtered)
+        packet_bytes = b"\x02" + packet_str.encode("ascii") + b"\x03"
 
-        try:
-            print(msg)
-        except Exception as e:
-            print(data)
+        self.ui.text3.append(f"✔ 傳送封包 (ASCII)：{packet_bytes}")
+        self.serial.write(packet_bytes)
 
-        self.serial.write(data)
-
+    # --- 接收資料 ---
     def read_data(self):
-        """顯示接收到的資料"""
         data = self.serial.readAll().data()
-        # text = data.decode("ascii", errors="ignore")
-        text = data.decode("latin1")
+        try:
+            text = data.decode("latin1")
+        except:
+            text = str(data)
 
-        # 除了控制字元
-        # filtered = "".join(ch for ch in text if ord(ch) >= 32)
+        filtered = "".join(ch for ch in text if ch.isalnum() or ch.isspace())
 
-        # a-z A-Z
-        # filtered = "".join(ch for ch in text if "a" <= ch <= "z" or "A" <= ch <= "Z")
-
-        # a-z
-        # filtered = "".join(ch for ch in text if "a" <= ch <= "z")
-
-        # A-Z
-        # filtered = "".join(ch for ch in text if "A" <= ch <= "Z")
-        
-        # A-Z a-z 0-9
-        filtered = ''.join(
-            ch for ch in text
-            if ch.isalnum() and ch.encode('latin1')[0] < 128
-        )
-
-        if filtered.strip() != "" and len(filtered) < 9:
-            self.ui.text2.append(filtered)
-            self.ui.text2.moveCursor(QtGui.QTextCursor.End)
+        if filtered.strip() != "":
+            self.ui.text3.append(filtered)
+            self.ui.text3.moveCursor(QtGui.QTextCursor.End)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity txt_paste is
+entity pic_rotate is
 	port (
 		clk                                                     : in std_logic;
 		rst_n                                                   : in std_logic;
@@ -14,13 +14,13 @@ entity txt_paste is
 		key_row : in u4r_t;
 		key_col : out u4r_t
 	);
-end txt_paste;
+end pic_rotate;
 
-architecture arch of txt_paste is
+architecture arch of pic_rotate is
 	signal l_addr : l_addr_t;
-	signal msi_addr : l_addr_t;
-	signal msi_data_i : std_logic_vector(23 downto 0);
-	signal msi_data : l_px_t;
+	signal msi_addr, n9_addr : l_addr_t;
+	signal msi_data_i, n9_data_i : std_logic_vector(23 downto 0);
+	signal msi_data, n9_data : l_px_t;
 	signal x : integer range -127 to 127 := 30;
 	signal y : integer range -159 to 159 := 30;
 	signal font_start, font_busy, font_busy_i, l_clear : std_logic;
@@ -81,7 +81,6 @@ begin
 				font_busy        => font_busy_i,
 				text_size        => 1,
 				text_data        => text_data,
-				text_count       => open,
 				addr             => l_addr,
 				text_color       => green,
 				bg_color         => bg_color,
@@ -92,11 +91,17 @@ begin
 				lcd_ss_n         => lcd_ss_n,
 				lcd_dc           => lcd_dc,
 				lcd_bl           => lcd_bl,
-				lcd_rst_n        => lcd_rst_n,
-				con              => '0',
-				pic_data         => pic_data
+				lcd_rst_n        => lcd_rst_n
+
 			);
 	end block Components;
+	Num9 : entity work.big9(syn)
+		port map(
+			address => std_logic_vector(to_unsigned(n9_addr, 14)),
+			clock   => clk,
+			q       => n9_data_i
+		);
+	n9_data <= unsigned(n9_data_i);
 	msi_icon_inst : entity work.msi_icon(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(msi_addr, 15)),
@@ -116,56 +121,39 @@ begin
 				key_times <= 0;
 				text_data <= (others => character'val(32));
 			elsif rising_edge(clk) then
-				-- bg_color <= to_data(l_paste(l_addr, blue, msi_data, (0, 0), 128, 160));
-				-- msi_addr <= to_addr(l_paste(l_addr, blue, msi_data, (0, 0), 128, 160));
 
-				if l_addr mod 16 > 7 then
-					bg_color <= black;
-				else
-					bg_color <= white;
-				end if;
-				ena_tim <= '1';
-				if msec = 500 then
-					ena_tim <= '0';
-					l_clear <= '0';
-					font_start <= '1';
-				end if;
-				if pressed = '1' then
+				case key is
+					when 8 =>
+						bg_color <= to_data(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128));
+						n9_addr <= l_mirror(to_addr(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128)), 0, 128, 128);
+					when 9 =>
+						bg_color <= to_data(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128));
+						n9_addr <= l_mirror(to_addr(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128)), 1, 128, 128);
+					when 10 =>
+						bg_color <= to_data(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128));
+						n9_addr <= l_mirror(to_addr(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128)), 2, 128, 128);
+					when 11 =>
+						bg_color <= to_data(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128));
+						n9_addr <= l_mirror(to_addr(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128)), 3, 128, 128);
+					when 12 =>
+						bg_color <= to_data(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128));
+						n9_addr <= l_rotate(to_addr(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128)), 0, 128, 128);
+					when 13 =>
+						bg_color <= to_data(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128));
+						n9_addr <= l_rotate(to_addr(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128)), 1, 128, 128);
 
-					case key is
-						when 0 => text_data <= ("A" & text_data(1 to 11));
-						when 1 => text_data <= ("B" & text_data(1 to 11));
-						when 2 => text_data <= ("C" & text_data(1 to 11));
-						when 3 => text_data <= ("D" & text_data(1 to 11));
-						when 4 => text_data <= ("E" & text_data(1 to 11));
-						when 5 => text_data <= ("F" & text_data(1 to 11));
-						when 6 => text_data <= ("G" & text_data(1 to 11));
-						when 7 => text_data <= ("H" & text_data(1 to 11));
-						when 8 => text_data <= ("I" & text_data(1 to 11));
-						when 9 => text_data <= ("J" & text_data(1 to 11));
-						when 10 => text_data <= ("K" & text_data(1 to 11));
-						when 11 => text_data <= ("L" & text_data(1 to 11));
-						when 12 => text_data <= ("M" & text_data(1 to 11));
-						when 13 => text_data <= ("N" & text_data(1 to 11));
-						when 14 => text_data <= ("O" & text_data(1 to 11));
-						when 15 => text_data <= (" " & text_data(1 to 11));
-						when others => null;
-					end case;
-					key_times <= key_times + 1;
-				end if;
+					when 14 =>
+						bg_color <= to_data(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128));
+						n9_addr <= l_rotate(to_addr(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128)), 2, 128, 128);
 
-				if font_busy = '1' then
-					font_start <= '0';
-					if key_times = 12 then
-						y <= y + 16;
-						key_times <= 0;
-						text_data <= (others => character'val(32));
-						if y >= 160 then
-							y <= 0;
-							text_data <= (others => character'val(32));
-						end if;
-					end if;
-				end if;
+					when 15 =>
+						bg_color <= to_data(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128));
+						n9_addr <= l_rotate(to_addr(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128)), 3, 128, 128);
+					when others =>
+						bg_color <= to_data(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128));
+						n9_addr <= l_rotate(to_addr(l_paste(l_addr, blue, l_map(n9_data, black, magenta), (0, 0), 128, 128)), 0, 128, 128);
+
+				end case;
 
 			end if;
 		end process;

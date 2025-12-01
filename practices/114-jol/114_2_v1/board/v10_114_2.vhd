@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity v1_114_2 is
+entity v10_114_2 is
 	port (
 		-- sys
 		clk   : in std_logic;
@@ -26,9 +26,9 @@ entity v1_114_2 is
 		dbg_b : out u8r_t; -- dbg
 		dbg_a : out u8r_t
 	);
-end v1_114_2;
+end v10_114_2;
 
-architecture arch of v1_114_2 is
+architecture arch of v10_114_2 is
 	--state machine
 	type state_t is (init, Main);--總狀態機
 	type state_m is (mode00, mode01, mode10, mode11);--第一層=>總狀態機的Main
@@ -71,8 +71,7 @@ architecture arch of v1_114_2 is
 	signal text_size : integer range 1 to 12;
 	signal text_color_array : l_px_arr_t(1 to 12) := (others => blue);
 	signal bg_color : l_px_t;
-	signal pic_data : l_px_t;
-
+	signal font_mode : integer range 0 to 2;
 	--seg
 	signal seg_data : string(1 to 8) := (others => ' ');
 	signal dot : u8r_t := (others => '0');
@@ -105,6 +104,7 @@ architecture arch of v1_114_2 is
 	signal data_array : data_array_t(0 to 9) := (n0_data, n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data);
 	signal addr_array : addr_array_t(0 to 9) := (n0_addr, n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr);
 
+	signal init_flag : std_logic := '0';
 	signal OF_flag : std_logic := '0';
 	signal buz_flag : std_logic := '0';
 	signal rgb_flag : std_logic := '0';
@@ -166,29 +166,27 @@ begin
 				rising  => pressed,
 				falling => open
 			);
-		lcd_mix_inst : entity work.lcd_mix(arch)--lcd => 控制圖片和文字的元件
+		lcd_mix_inst : entity work.lcd_mix(arch)
 			port map(
 				clk              => clk,
 				rst_n            => rst_n,
-				x                => x,                -- 文字x軸
-				y                => y,                -- 文字y軸
-				font_start       => font_start,       -- 文字更新(取正緣)
-				font_busy        => font_busy_i,      -- 當畫面正在更新時，font_busy='1'
-				text_size        => text_size,        -- 字體大小
-				text_data        => text_data,        -- 文字資料
-				addr             => l_addr,           -- 偵錯用 --可以用來貼圖
-				text_color       => white,            -- 字體顏色(只能改單行)(若要使用需改gen_font.vhd(有註記))(若沒用到隨便填一顏色即可)
-				bg_color         => bg_color,         -- 背景顏色
-				text_color_array => text_color_array, -- 字體顏色(同一行依位元改變)(text_color_array:l_px_arr_t(1 to 12);)
-				clear            => l_clear,          -- '1' 時清除
-				lcd_sclk         => lcd_sclk,         -- 腳位
-				lcd_mosi         => lcd_mosi,         -- 腳位
-				lcd_ss_n         => lcd_ss_n,         -- 腳位
-				lcd_dc           => lcd_dc,           -- 腳位
-				lcd_bl           => lcd_bl,           -- 腳位
-				lcd_rst_n        => lcd_rst_n,        -- 腳位
-				con              => '0',              -- 選擇文字或圖片
-				pic_data         => pic_data          -- 圖片資料
+				x                => x,
+				y                => y,
+				font_start       => font_start,
+				font_busy        => font_busy_i,
+				text_size        => text_size,
+				text_data        => text_data,
+				font_mode        => 0,
+				addr             => l_addr,
+				bg_color         => bg_color,
+				text_color_array => text_color_array,
+				clear            => l_clear,
+				lcd_sclk         => lcd_sclk,
+				lcd_mosi         => lcd_mosi,
+				lcd_ss_n         => lcd_ss_n,
+				lcd_dc           => lcd_dc,
+				lcd_bl           => lcd_bl,
+				lcd_rst_n        => lcd_rst_n
 			);
 		edge_font : entity work.edge(arch)--lcd 文字更新的busy旗標-- 抓結束的ck，讓font_start重置
 			port map(
@@ -380,10 +378,10 @@ begin
 		not("0100") when mode_2 = sel_client else
 		not("0010") when mode_2 = IO_init else
 		not("0001") when mode_2 = rxi_cls else not("0000");
-		dbg_a(4 to 7) <= not("1000") when mode_2 = rxi_data else
-		not("0100") when mode_2 = rxi_check else
-		not("0010") when mode_2 = rxi_save else
-		not("0001") when mode_2 = lcd_change else not("0000");
+		dbg_a(4 to 7) <= not("1000") when mode_3 = ensure else
+		not("0100") when mode_3 = del_sel else
+		not("0010") when mode_3 = del_data else
+		not("0001") when mode_3 = del_esc else not("0000");
 		dbg_b(0 to 3) <= not("1000") when mode_3 = init else
 		not("0100") when mode_3 = ensure else
 		not("0010") when mode_3 = del_sel else
@@ -526,6 +524,7 @@ begin
 											seg_data <= ".READY. ";
 										end if;
 								end case;
+
 							when mode01 =>
 								case mode_2 is
 									when init =>
@@ -841,7 +840,12 @@ begin
 												when others => null;
 											end case;
 										end if;
+									when others => init_flag <= '1';
 								end case;
+								if init_flag = '1' then
+									init_flag <= '0';
+									mode_2 <= init;
+								end if;
 							when mode10 =>
 								case mode_3 is
 									when init =>
@@ -851,6 +855,9 @@ begin
 										rgb <= (others => '0');
 										data_g <= (others => (others => '0'));
 										data_r <= (others => (others => '0'));
+										l_clear <= '1';
+										bg_color <= white;
+										seg_data <= "        ";
 										if pressed = '1' then
 											case key is
 												when 15 =>
@@ -868,6 +875,8 @@ begin
 												when 11 => mode_3 <= data_dot_init;
 													dot_x <= 7;
 													dot_y <= 7;
+													temp_x <= 7;
+													temp_y <= 7;
 												when others => null;
 											end case;
 										end if;
@@ -901,22 +910,23 @@ begin
 											mode_3 <= del_sel;
 											mode_dot <= init;
 										end if;
+
 									when del_sel =>
 										case mode_dot is
 											when init =>
 												--初始化紅點
 												dot_x <= 7;
 												dot_y <= 7;
-												--紀錄原本紅點的狀態(有資料or無資料)
-												if data_r(dot_y)(dot_x) = '1' and data_g(dot_y)(dot_x) = '1' then
+												--紀錄現在紅點的狀態(有資料or無資料)
+												if data_r(dot_y)(dot_x) = '1'  then
 													orange_dot <= '1';
-												elsif data_r(dot_y)(dot_x) = '0' and data_g(dot_y)(dot_x) = '1' then
+												elsif data_r(dot_y)(dot_x) = '0' then
 													orange_dot <= '0';
 												end if;
 
 												--移動
 												ena_tim <= '1';
-												if msec > 50 then
+												if msec > 100 then
 													ena_tim <= '0';
 													mode_dot <= move;
 													data_r(dot_y)(dot_x) <= '1';
@@ -949,7 +959,6 @@ begin
 														when 15 => mode_3 <= del_data;
 														when others => null;
 													end case;
-
 												end if;
 											when data_state =>
 												--紀錄下一個點的狀態(有資料or無資料)
@@ -959,7 +968,7 @@ begin
 													orange_dot_next <= '0';
 												end if;
 												ena_tim <= '1';
-												if msec > 20 then
+												if msec > 10 then
 													ena_tim <= '0';
 													mode_dot <= change;
 												end if;
@@ -967,7 +976,7 @@ begin
 												--改變下一個點
 												data_g(dot_y)(dot_x) <= '0';
 												data_r(dot_y)(dot_x) <= '1';
-												--恢復下一個點
+												--恢復上一個點
 												data_g(temp_y)(temp_x) <= '1';
 												if orange_dot = '1' then
 													data_r(temp_y)(temp_x) <= '1';
@@ -1017,7 +1026,7 @@ begin
 											ena_tim <= '0';
 											mode_4 <= sel_client;
 										end if;
-									when sel_client =>--選擇client
+									when sel_client => --選擇client
 										data_r <= (others => (others => '0'));
 										data_g <= (others => (others => '0'));
 										client_num <= to_integer (sw (3 to 5));
@@ -1110,7 +1119,7 @@ begin
 											end if;
 											ena_tim <= '1';
 										end if;
-									when txi_data =>--傳資料的狀態機
+									when txi_data => --傳資料的狀態機
 										case mode_tx is
 											when idle =>
 												if tx_busy = '0' then
@@ -1132,11 +1141,11 @@ begin
 												end if;
 										end case;
 
-									when data_cls =>--當資料傳完後，對應client的data_set清空，長度歸零
+									when data_cls => --當資料傳完後，對應client的data_set清空，長度歸零
 										data_set(client_num) <= (others => character'val(32));
 										data_len(client_num) <= 0;
 										mode_4 <= waiting;
-									when waiting =>--顯示 TX OK
+									when waiting => --顯示 TX OK
 										l_clear <= '1';
 										bg_color <= pic(3);
 										pic(0) := to_data(l_paste(l_addr, white, T_data, map_coord(2), 32, 32));

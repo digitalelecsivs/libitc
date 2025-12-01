@@ -29,47 +29,20 @@ if {$make_assignments} {
 	# OSC1, nRST
 	set_location_assignment PIN_149 -to clk
 	set_location_assignment PIN_145 -to rst_n
-# 第二題board_a 腳位分配
-	# I/O裝置： 
-	# 		SW、keyboard、seg、dot、lcd、buzzer、led_rgy、rgb_led、uart
-
+# board_1 40Q
 	set_global_assignment -name DEVICE EP3C40Q240C8
-	
-	# BUZZER
+	# # BUZZER
 	set_location_assignment PIN_226 -to buz
-	
-	# LED_{R,G,Y}
+
+	# # LED_{R,G,Y}
 	set_location_assignment PIN_223 -to led_r
 	set_location_assignment PIN_219 -to led_g
 	set_location_assignment PIN_217 -to led_y
-	
-	# RGB_{R,G,B}
+
+	# # RGB_{R,G,B}
 	set_location_assignment PIN_214 -to rgb[0]
 	set_location_assignment PIN_203 -to rgb[1]
 	set_location_assignment PIN_201 -to rgb[2]
-	
-	# SW_{1..8}
-	set_location_assignment PIN_69 -to sw[0]
-	set_location_assignment PIN_63 -to sw[1]
-	set_location_assignment PIN_56 -to sw[2]
-	set_location_assignment PIN_52 -to sw[3]
-	set_location_assignment PIN_50 -to sw[4]
-	set_location_assignment PIN_46 -to sw[5]
-	set_location_assignment PIN_44 -to sw[6]
-	set_location_assignment PIN_41 -to sw[7]
-
-	# pinlist 39 43 45 49 , 51 55 57 68
-	# KEY_COL{1..4}
-	set_location_assignment PIN_49 -to key_row[0] 
-	set_location_assignment PIN_45 -to key_row[1] 
-	set_location_assignment PIN_43 -to key_row[2]
-	set_location_assignment PIN_39 -to key_row[3]
-	# KEY_ROW{1..4}
-	set_location_assignment PIN_68 -to key_col[0]
-	set_location_assignment PIN_57 -to key_col[1]
-	set_location_assignment PIN_55 -to key_col[2]
-	set_location_assignment PIN_51 -to key_col[3]
-	# I/O版上的絲印是反的 The silkscreen on I/O board is reversed 
 
 	# SEG{1,2}_{A..DOT}
 	set_location_assignment PIN_230 -to seg_led[0]
@@ -80,6 +53,7 @@ if {$make_assignments} {
 	set_location_assignment PIN_207 -to seg_led[5]
 	set_location_assignment PIN_202 -to seg_led[6]
 	set_location_assignment PIN_200 -to seg_led[7]
+
 	# SEG2_S{1..4}, SEG1_S{1..4}
 	set_location_assignment PIN_9 -to seg_com[0]
 	set_location_assignment PIN_18 -to seg_com[1]
@@ -89,16 +63,52 @@ if {$make_assignments} {
 	set_location_assignment PIN_13 -to seg_com[5]
 	set_location_assignment PIN_21 -to seg_com[6]
 	set_location_assignment PIN_37 -to seg_com[7]
-	
-	
+ 
+	#keyboard 
+	# # pinlist 39 43 45 49 , 51 55 57 68
+	set_location_assignment PIN_49 -to key_row[0] 
+	set_location_assignment PIN_45 -to key_row[1] 
+	set_location_assignment PIN_43 -to key_row[2]
+	set_location_assignment PIN_39 -to key_row[3]
+	set_location_assignment PIN_68 -to key_col[0]
+	set_location_assignment PIN_57 -to key_col[1]
+	set_location_assignment PIN_55 -to key_col[2]
+	set_location_assignment PIN_51 -to key_col[3]
+	# I/O版上的絲印是反的 The silkscreen on I/O board is reversed 
+
+	# # SW_{1..8}
+	set_location_assignment PIN_69 -to sw[0]
+	set_location_assignment PIN_63 -to sw[1]
+	set_location_assignment PIN_56 -to sw[2]
+	set_location_assignment PIN_52 -to sw[3]
+	set_location_assignment PIN_50 -to sw[4]
+	set_location_assignment PIN_46 -to sw[5]
+	set_location_assignment PIN_44 -to sw[6]
+	set_location_assignment PIN_41 -to sw[7]
+
+	# # SCL1, SDA1, MO{2..0}, RES
+	set_location_assignment PIN_144 -to tts_scl
+	set_location_assignment PIN_143 -to tts_sda
+	set_location_assignment PIN_142 -to tts_mo[2]
+	set_location_assignment PIN_139 -to tts_mo[1]
+	set_location_assignment PIN_137 -to tts_mo[0]
+	set_location_assignment PIN_135 -to tts_rst_n
+
+	# SCL, SDA
+	set_location_assignment PIN_134 -to tsl_scl
+	set_location_assignment PIN_133 -to tsl_sda
+
 	# LCD_{CLK,DAT,RES,DC,CS,BL}
+	#1
 	set_location_assignment PIN_166 -to lcd_sclk 
 	set_location_assignment PIN_164 -to lcd_mosi
 	set_location_assignment PIN_161 -to lcd_rst_n
 	set_location_assignment PIN_160 -to lcd_dc 
 	set_location_assignment PIN_159 -to lcd_ss_n
 	set_location_assignment PIN_146 -to lcd_bl
-
+	# DATA
+	set_location_assignment PIN_146 -to dht_data
+	
 	# DOT_G{4,3,2,1,5,6,7,8} (G stands for red)
 	set_location_assignment PIN_106 -to dot_red[0]
 	set_location_assignment PIN_94 -to dot_red[1]
@@ -129,8 +139,15 @@ if {$make_assignments} {
 	set_location_assignment PIN_100 -to dot_com[6]
 	set_location_assignment PIN_112 -to dot_com[7]
 
+	# # PWM{1..2}, IN{1,2,3,4}
 
-
+	set_location_assignment PIN_132 -to mot_ena[1]
+	set_location_assignment PIN_131 -to mot_ena[0]
+	set_location_assignment PIN_128 -to mot_ch[2]
+	set_location_assignment PIN_127 -to mot_ch[3]
+	set_location_assignment PIN_126 -to mot_ch[0]
+	set_location_assignment PIN_118 -to mot_ch[1]
+	
 	# Debug ports
 	# pinlist 196 194 188 186 184 177 173 169
 	#		  197 195 189 187 185 183 176 171     
@@ -149,9 +166,9 @@ if {$make_assignments} {
 	set_location_assignment PIN_185 -to dbg_b[4]
 	set_location_assignment PIN_183 -to dbg_b[5]
 	set_location_assignment PIN_176 -to dbg_b[6]
-	set_location_assignment PIN_239 -to dbg_b[7]
-
-	# UART_{TX,RX} (green, white)
+	set_location_assignment PIN_171 -to dbg_b[7]
+	
+	# # UART_{TX,RX} (green, white)
 	set_location_assignment PIN_231 -to uart_rx
 	set_location_assignment PIN_232 -to uart_tx
 	# Commit assignments

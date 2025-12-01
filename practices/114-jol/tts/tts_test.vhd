@@ -41,6 +41,32 @@ architecture arch of tts_test is
 	constant test1 : u8_arr_t(0 to 9) := (
 	x"bb", x"79", x"ad", x"b5", x"b4", x"fa", x"b8", x"d5", x"a4", x"40"
 	);
+
+	--.wave S 40H 88H 03H FDH 00H 05H P
+	constant wave_1001 : u8_arr_t(0 to 5) := (
+	x"40", x"88", x"03", x"E9", x"00", x"01"
+	);
+	constant wave_1002 : u8_arr_t(0 to 5) := (
+	x"40", x"88", x"03", x"EA", x"00", x"01"
+	);
+	constant wave_1003 : u8_arr_t(0 to 5) := (
+	x"40", x"88", x"03", x"EB", x"00", x"01"
+	);
+
+	constant pause : u8_arr_t(0 to 2) := (
+	x"40", x"8F" ,x"00"
+	);
+	constant start : u8_arr_t(0 to 2) := (
+	x"40", x"8F" ,x"01"
+	);
+	-- S 40H 8FH 02H P
+	-- S 40H 8FH 03H P
+	constant skip : u8_arr_t(0 to 2) := (
+	x"40", x"8F" ,x"02"
+	);
+	constant reset : u8_arr_t(0 to 2) := (
+	x"40", x"8F" ,x"03"
+	);
 begin
 	tts_rst_n <= rst_n;
 	tts_inst : entity work.tts(arch)
@@ -110,8 +136,16 @@ begin
 							txt_len <= 10;
 							tts_ena <= '1';
 						when 1 =>
-							txt(0 to 11) <= num;
-							txt_len <= 12;
+							txt(0 to 5) <= wave_1001;
+							txt_len <= 6;
+							tts_ena <= '1';
+						when 2 =>
+							txt(0 to 5) <= wave_1002;
+							txt_len <= 6;
+							tts_ena <= '1';
+						when 3 =>
+							txt(0 to 5) <= wave_1003;
+							txt_len <= 6;
 							tts_ena <= '1';
 						when others => 
 							tts_ena <= '0'; 

@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity v1_114_2 is
+entity v11_114_2 is
 	port (
 		-- sys
 		clk   : in std_logic;
@@ -26,9 +26,9 @@ entity v1_114_2 is
 		dbg_b : out u8r_t; -- dbg
 		dbg_a : out u8r_t
 	);
-end v1_114_2;
+end v11_114_2;
 
-architecture arch of v1_114_2 is
+architecture arch of v11_114_2 is
 	--state machine
 	type state_t is (init, Main);--總狀態機
 	type state_m is (mode00, mode01, mode10, mode11);--第一層=>總狀態機的Main
@@ -37,7 +37,7 @@ architecture arch of v1_114_2 is
 	type state_3 is (init, ensure, del_sel, del_data, del_esc, dot_change, data_dot_init, IO_change, lcd_txt);--第二層=>mode10
 	type state_4 is (init, sel_client, txi_data, data_cls, waiting);--第二層=>mode11
 	type state_tx is (idle, send);--傳輸data的狀態機
-	type state_dot is (init, move, change);--刪除資料的資料處理流程的狀態機
+	type state_dot is (init, move, data_state, change);--刪除資料的資料處理流程的狀態機
 	signal mode_t : state_t := init;
 	signal mode_m : state_m := mode00;
 	signal mode_1 : state_1 := init;
@@ -62,6 +62,7 @@ architecture arch of v1_114_2 is
 	type picture is array (integer range <>) of l_px_t;
 	type l_coord_arr is array (0 to 11) of l_coord_t;
 	type str_array is array (integer range <>) of string(1 to 8);
+	type txt_array is array (integer range <>) of string(1 to 4);
 
 	--lcd
 	signal x : integer range -127 to 127 := 0;
@@ -69,10 +70,9 @@ architecture arch of v1_114_2 is
 	signal font_start, font_busy, font_busy_i, l_clear : std_logic;
 	signal text_data : string(1 to 12) := (others => character'val(32));
 	signal text_size : integer range 1 to 12;
-	signal text_color_array : l_px_arr_t(1 to 12) := (others => blue);
+	signal text_color_array : l_px_arr_t(1 to 12) := (others => black);
 	signal bg_color : l_px_t;
-	signal pic_data : l_px_t;
-
+	signal font_mode : integer range 0 to 2;
 	--seg
 	signal seg_data : string(1 to 8) := (others => ' ');
 	signal dot : u8r_t := (others => '0');
@@ -105,6 +105,7 @@ architecture arch of v1_114_2 is
 	signal data_array : data_array_t(0 to 9) := (n0_data, n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data);
 	signal addr_array : addr_array_t(0 to 9) := (n0_addr, n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr);
 
+	signal init_flag : std_logic := '0';
 	signal OF_flag : std_logic := '0';
 	signal buz_flag : std_logic := '0';
 	signal rgb_flag : std_logic := '0';
@@ -116,6 +117,12 @@ architecture arch of v1_114_2 is
 	signal temp_y : integer range 0 to 7;
 	signal txt_cnt : integer range 0 to 8 := 0;
 	signal map_coord : l_coord_arr := ((10, 0), (10, 32), (10, 64), (10, 96), (63, 0), (63, 32), (63, 64), (63, 96), (116, 0), (116, 32), (116, 64), (116, 96));
+	signal txt_RX : string(1 to 4) := "  RX";
+	signal txt_TX : string(1 to 4) := "  TX";
+	signal txt_OF : string(1 to 4) := " OF ";
+	signal txt_OF1 : string(1 to 4) := " OF1";
+	signal txt_OK : string(1 to 4) := " OK ";
+
 begin
 	-- Component -------------------------------------------------------------------------------------------------------------------------
 	components : block begin
@@ -166,29 +173,27 @@ begin
 				rising  => pressed,
 				falling => open
 			);
-		lcd_mix_inst : entity work.lcd_mix(arch)--lcd => 控制圖片和文字的元件
+		lcd_mix_inst : entity work.lcd_mix(arch)
 			port map(
 				clk              => clk,
 				rst_n            => rst_n,
-				x                => x,                -- 文字x軸
-				y                => y,                -- 文字y軸
-				font_start       => font_start,       -- 文字更新(取正緣)
-				font_busy        => font_busy_i,      -- 當畫面正在更新時，font_busy='1'
-				text_size        => text_size,        -- 字體大小
-				text_data        => text_data,        -- 文字資料
-				addr             => l_addr,           -- 偵錯用 --可以用來貼圖
-				text_color       => white,            -- 字體顏色(只能改單行)(若要使用需改gen_font.vhd(有註記))(若沒用到隨便填一顏色即可)
-				bg_color         => bg_color,         -- 背景顏色
-				text_color_array => text_color_array, -- 字體顏色(同一行依位元改變)(text_color_array:l_px_arr_t(1 to 12);)
-				clear            => l_clear,          -- '1' 時清除
-				lcd_sclk         => lcd_sclk,         -- 腳位
-				lcd_mosi         => lcd_mosi,         -- 腳位
-				lcd_ss_n         => lcd_ss_n,         -- 腳位
-				lcd_dc           => lcd_dc,           -- 腳位
-				lcd_bl           => lcd_bl,           -- 腳位
-				lcd_rst_n        => lcd_rst_n,        -- 腳位
-				con              => '0',              -- 選擇文字或圖片
-				pic_data         => pic_data          -- 圖片資料
+				x                => x,
+				y                => y,
+				font_start       => font_start,
+				font_busy        => font_busy_i,
+				text_size        => text_size,
+				text_data        => text_data,
+				font_mode        => font_mode,
+				addr             => l_addr,
+				bg_color         => bg_color,
+				text_color_array => text_color_array,
+				clear            => l_clear,
+				lcd_sclk         => lcd_sclk,
+				lcd_mosi         => lcd_mosi,
+				lcd_ss_n         => lcd_ss_n,
+				lcd_dc           => lcd_dc,
+				lcd_bl           => lcd_bl,
+				lcd_rst_n        => lcd_rst_n
 			);
 		edge_font : entity work.edge(arch)--lcd 文字更新的busy旗標-- 抓結束的ck，讓font_start重置
 			port map(
@@ -250,127 +255,127 @@ begin
 			mode11 when sw(6 to 7) = "11"else mode00;
 	end block Input_def;
 	--  Picture  -------------------------------------------------------------------------------------------------------------------------
-	Pictures : block begin--圖片的元件和設定
-		aphK : entity work.aK(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(K_addr, 10)),
-				clock   => clk,
-				q       => K_data_i
-			);
-		K_data <= unsigned(K_data_i);
-		aphT : entity work.aT(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(T_addr, 10)),
-				clock   => clk,
-				q       => T_data_i
-			);
-		T_data <= unsigned(T_data_i);
-		aphR : entity work.aR(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(R_addr, 10)),
-				clock   => clk,
-				q       => R_data_i
-			);
-		R_data <= unsigned(R_data_i);
-		aphX : entity work.aX(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(X_addr, 10)),
-				clock   => clk,
-				q       => X_data_i
-			);
-		X_data <= unsigned(X_data_i);
-		aphO : entity work.aO(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(O_addr, 10)),
-				clock   => clk,
-				q       => O_data_i
-			);
-		O_data <= unsigned(O_data_i);
-		aphF : entity work.aF(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(F_addr, 10)),
-				clock   => clk,
-				q       => F_data_i
-			);
-		F_data <= unsigned(F_data_i);
-		OF1 : entity work.n1(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(OF_addr, 10)),
-				clock   => clk,
-				q       => OF_data_i
-			);
-		OF_data <= unsigned(OF_data_i);
-		Num0 : entity work.n0(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(0), 10)),
-				clock   => clk,
-				q       => n0_data_i
-			);
-		data_array(0) <= unsigned(n0_data_i);
-		Num1 : entity work.n1(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(1), 10)),
-				clock   => clk,
-				q       => n1_data_i
-			);
-		data_array(1) <= unsigned(n1_data_i);
-		Num2 : entity work.n2(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(2), 10)),
-				clock   => clk,
-				q       => n2_data_i
-			);
-		data_array(2) <= unsigned(n2_data_i);
-		Num3 : entity work.n3(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(3), 10)),
-				clock   => clk,
-				q       => n3_data_i
-			);
-		data_array(3) <= unsigned(n3_data_i);
-		Num4 : entity work.n4(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(4), 10)),
-				clock   => clk,
-				q       => n4_data_i
-			);
-		data_array(4) <= unsigned(n4_data_i);
-		Num5 : entity work.n5(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(5), 10)),
-				clock   => clk,
-				q       => n5_data_i
-			);
-		data_array(5) <= unsigned(n5_data_i);
-		Num6 : entity work.n6(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(6), 10)),
-				clock   => clk,
-				q       => n6_data_i
-			);
-		data_array(6) <= unsigned(n6_data_i);
-		Num7 : entity work.n7(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(7), 10)),
-				clock   => clk,
-				q       => n7_data_i
-			);
-		data_array(7) <= unsigned(n7_data_i);
-		Num8 : entity work.n8(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(8), 10)),
-				clock   => clk,
-				q       => n8_data_i
-			);
-		data_array(8) <= unsigned(n8_data_i);
-		Num9 : entity work.n9(syn)
-			port map(
-				address => std_logic_vector(to_unsigned(addr_array(9), 10)),
-				clock   => clk,
-				q       => n9_data_i
-			);
-		data_array(9) <= unsigned(n9_data_i);
-	end block Pictures;
+	-- Pictures : block begin--圖片的元件和設定
+	-- 	aphK : entity work.aK(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(K_addr, 10)),
+	-- 			clock   => clk,
+	-- 			q       => K_data_i
+	-- 		);
+	-- 	K_data <= unsigned(K_data_i);
+	-- 	aphT : entity work.aT(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(T_addr, 10)),
+	-- 			clock   => clk,
+	-- 			q       => T_data_i
+	-- 		);
+	-- 	T_data <= unsigned(T_data_i);
+	-- 	aphR : entity work.aR(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(R_addr, 10)),
+	-- 			clock   => clk,
+	-- 			q       => R_data_i
+	-- 		);
+	-- 	R_data <= unsigned(R_data_i);
+	-- 	aphX : entity work.aX(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(X_addr, 10)),
+	-- 			clock   => clk,
+	-- 			q       => X_data_i
+	-- 		);
+	-- 	X_data <= unsigned(X_data_i);
+	-- 	aphO : entity work.aO(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(O_addr, 10)),
+	-- 			clock   => clk,
+	-- 			q       => O_data_i
+	-- 		);
+	-- 	O_data <= unsigned(O_data_i);
+	-- 	aphF : entity work.aF(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(F_addr, 10)),
+	-- 			clock   => clk,
+	-- 			q       => F_data_i
+	-- 		);
+	-- 	F_data <= unsigned(F_data_i);
+	-- 	OF1 : entity work.n1(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(OF_addr, 10)),
+	-- 			clock   => clk,
+	-- 			q       => OF_data_i
+	-- 		);
+	-- 	OF_data <= unsigned(OF_data_i);
+	-- 	Num0 : entity work.n0(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(0), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n0_data_i
+	-- 		);
+	-- 	data_array(0) <= unsigned(n0_data_i);
+	-- 	Num1 : entity work.n1(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(1), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n1_data_i
+	-- 		);
+	-- 	data_array(1) <= unsigned(n1_data_i);
+	-- 	Num2 : entity work.n2(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(2), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n2_data_i
+	-- 		);
+	-- 	data_array(2) <= unsigned(n2_data_i);
+	-- 	Num3 : entity work.n3(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(3), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n3_data_i
+	-- 		);
+	-- 	data_array(3) <= unsigned(n3_data_i);
+	-- 	Num4 : entity work.n4(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(4), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n4_data_i
+	-- 		);
+	-- 	data_array(4) <= unsigned(n4_data_i);
+	-- 	Num5 : entity work.n5(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(5), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n5_data_i
+	-- 		);
+	-- 	data_array(5) <= unsigned(n5_data_i);
+	-- 	Num6 : entity work.n6(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(6), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n6_data_i
+	-- 		);
+	-- 	data_array(6) <= unsigned(n6_data_i);
+	-- 	Num7 : entity work.n7(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(7), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n7_data_i
+	-- 		);
+	-- 	data_array(7) <= unsigned(n7_data_i);
+	-- 	Num8 : entity work.n8(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(8), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n8_data_i
+	-- 		);
+	-- 	data_array(8) <= unsigned(n8_data_i);
+	-- 	Num9 : entity work.n9(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(9), 10)),
+	-- 			clock   => clk,
+	-- 			q       => n9_data_i
+	-- 		);
+	-- 	data_array(9) <= unsigned(n9_data_i);
+	-- end block Pictures;
 	-- dbg & test ------------------------------------------------------------------------------------------------------------------------
 	dbg_test : block begin
 		-- type state_2 is (init, sel_client, IO_init, rxi_cls, rxi_data, rxi_check, rxi_save, lcd_change, IO_change, lcd_txt);--第二層=>mode01
@@ -381,9 +386,9 @@ begin
 		not("0010") when mode_2 = IO_init else
 		not("0001") when mode_2 = rxi_cls else not("0000");
 		dbg_a(4 to 7) <= not("1000") when mode_2 = rxi_data else
-		not("0100") when mode_2 = rxi_check else
-		not("0010") when mode_2 = rxi_save else
-		not("0001") when mode_2 = lcd_change else not("0000");
+		not("0100") when mode_2 = rxi_save else
+		not("0010") when mode_2 = lcd_change else
+		not("0001") when mode_2 = lcd_txt else not("0000");
 		dbg_b(0 to 3) <= not("1000") when mode_3 = init else
 		not("0100") when mode_3 = ensure else
 		not("0010") when mode_3 = del_sel else
@@ -526,6 +531,7 @@ begin
 											seg_data <= ".READY. ";
 										end if;
 								end case;
+
 							when mode01 =>
 								case mode_2 is
 									when init =>
@@ -590,14 +596,6 @@ begin
 												end if;
 											end loop;
 										end loop;
-										l_clear <= '1';
-										bg_color <= pic(1);
-
-										pic(0) := to_data(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										R_addr <= to_addr(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										pic(1) := to_data(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
-										X_addr <= to_addr(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
-
 										ena_tim <= '1';
 										if msec > 50 then
 											ena_tim <= '1';
@@ -617,14 +615,41 @@ begin
 												when others => null;
 											end case;
 										end if;
-
 										--顯示RX
-										l_clear <= '1';
-										bg_color <= pic(1);
-										pic(0) := to_data(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										R_addr <= to_addr(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										pic(1) := to_data(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
-										X_addr <= to_addr(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
+										if msec >= 20 then
+											ena_tim <= '0';
+											l_clear <= '0';
+											font_start <= '1';
+											font_mode <= 2;
+										end if;
+										if txt_cnt = 0 then
+											x <= 0;
+											y <= 0;
+											text_data(1 to 4) <= "  RX";
+											text_data(5 to 12) <= (others => character'val(32));
+										end if;
+										if txt_cnt = 1 then
+											x <= 0;
+											y <= 53 * 2;
+											text_data(1 to 4) <= "    ";
+											text_data(5 to 12) <= (others => character'val(32));
+										end if;
+										if txt_cnt = 2 then
+											x <= 0;
+											y <= 53 * 2;
+											text_data(1 to 4) <= "    ";
+											text_data(5 to 12) <= (others => character'val(32));
+										end if;
+										if font_busy = '1' then
+											font_start <= '0';
+											if txt_cnt <= 2 then
+												txt_cnt <= txt_cnt + 1;
+											else
+												txt_cnt <= 0;
+											end if;
+											ena_tim <= '1';
+										end if;
+
 									when rxi_data => --整理rx_data
 										data_buffer(1 to rx_len) <= rx_data(1 to rx_len); --暫存資料
 										if rx_len <= 4 and rx_len >= 1 then
@@ -642,13 +667,6 @@ begin
 										else
 											mode_2 <= rxi_cls;
 										end if;
-										--顯示RX
-										l_clear <= '1';
-										bg_color <= pic(1);
-										pic(0) := to_data(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										R_addr <= to_addr(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										pic(1) := to_data(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
-										X_addr <= to_addr(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
 									when rxi_check =>
 									when rxi_save => -- 儲存資料到data_set中
 										if OF_flag = '1' then
@@ -673,13 +691,6 @@ begin
 											ena_tim <= '0';
 											mode_2 <= IO_change;
 										end if;
-
-										l_clear <= '1';
-										bg_color <= pic(1);
-										pic(0) := to_data(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										R_addr <= to_addr(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										pic(1) := to_data(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
-										X_addr <= to_addr(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
 									when IO_change =>
 										seg_data <= "CLT" & character'val(client_num + 49) & ".00" & character'val(data_len(client_num) + 48);
 										data_g <= (others => (others => '1'));
@@ -696,48 +707,51 @@ begin
 										if msec > 50 then
 											ena_tim <= '0';
 											mode_2 <= lcd_change;
+											msec_flag <= '1';
 										end if;
 									when lcd_change =>
-										l_clear <= '1';
-										bg_color <= pic(8);
-
-										pic(0) := to_data(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										R_addr <= to_addr(l_paste(l_addr, white, R_data, map_coord(2), 32, 32));
-										pic(1) := to_data(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
-										X_addr <= to_addr(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
-										pic(2) := to_data(l_paste(l_addr, pic(1), O_data, map_coord(9), 32, 32));
-										O_addr <= to_addr(l_paste(l_addr, pic(1), O_data, map_coord(9), 32, 32));
-										pic(3) := to_data(l_paste(l_addr, pic(2), F_data, map_coord(10), 32, 32));
-										F_addr <= to_addr(l_paste(l_addr, pic(2), F_data, map_coord(10), 32, 32));
-
-										if OF_flag = '1' then
-											pic(4) := to_data(l_paste(l_addr, pic(3), OF_data, map_coord(11), 32, 32));
-											OF_addr <= to_addr(l_paste(l_addr, pic(3), OF_data, map_coord(11), 32, 32));
-										elsif OF_flag = '0' then
-											pic(4) := pic(3);
+										if msec_flag = '1' then
+											ena_tim <= '1';
+											msec_flag <= '0';
 										end if;
-										for i in 1 to 4 loop
-											if OF_flag <= '1' then
-
-												data_num := character'pos(data_set(client_num)(data_len(client_num) - rx_len + OF_num + i));
-												if i <= rx_len - OF_num then
-													pic(4 + i) := to_data(l_paste(l_addr, pic(3 + i), data_array(data_num), map_coord(3 + i), 32, 32));
-													addr_array(data_num) <= to_addr(l_paste(l_addr, pic(3 + i), data_array(data_num), map_coord(3 + i), 32, 32));
-												else
-													pic(4 + i) := pic(3 + i);
-												end if;
-											elsif OF_flag <= '0' then
-												data_num := character'pos(data_set(client_num)(data_len(client_num) - rx_len + i));
-												if i <= rx_len then
-													pic(4 + i) := to_data(l_paste(l_addr, pic(3 + i), data_array(data_num - 48), map_coord(3 + i), 32, 32));
-													addr_array(data_num) <= to_addr(l_paste(l_addr, pic(3 + i), data_array(data_num), map_coord(3 + i), 32, 32));
-												else
-													pic(4 + i) := pic(3 + i);
-												end if;
+										if msec > 20 then
+											l_clear <= '0';
+											font_mode <= 2;
+											font_start <= '1';
+										end if;
+										if txt_cnt = 0 then
+											x <= 0;
+											y <= 53 * 0;
+											text_data(1 to 4) <= "  RX";
+										end if;
+										if txt_cnt = 1 then
+											x <= 0;
+											y <= 53 * 1;
+											text_data(1 to rx_len) <= data_buffer(1 to rx_len);
+											font_start <= '1';
+										end if;
+										if txt_cnt = 2 then
+											x <= 0;
+											y <= 53 * 2;
+											if OF_flag = '1' then
+												text_data(1 to 4) <= " OF1";
+											elsif OF_flag = '0' then
+												text_data(1 to 4) <= " OF ";
 											end if;
-										end loop;
+											font_start <= '1';
+										end if;
+
+										if font_busy = '1' then
+											font_start <= '0';
+											if txt_cnt <= 2 then
+												txt_cnt <= txt_cnt + 1;
+											else
+												txt_cnt <= 0;
+											end if;
+											ena_tim <= '1';
+										end if;
 										ena_tim <= '1';
-										if msec > 2000 then
+										if msec > 3000 then
 											ena_tim <= '0';
 											l_clear <= '1';
 											bg_color <= white;
@@ -753,6 +767,7 @@ begin
 											ena_tim <= '0';
 											l_clear <= '0';
 											font_start <= '1';
+											font_mode <= 0;
 										end if;
 										if txt_cnt = 0 then
 											x <= 0;
@@ -841,7 +856,12 @@ begin
 												when others => null;
 											end case;
 										end if;
+									when others => null;
 								end case;
+								if init_flag = '1' then
+									init_flag <= '0';
+									mode_2 <= init;
+								end if;
 							when mode10 =>
 								case mode_3 is
 									when init =>
@@ -851,6 +871,9 @@ begin
 										rgb <= (others => '0');
 										data_g <= (others => (others => '0'));
 										data_r <= (others => (others => '0'));
+										l_clear <= '1';
+										bg_color <= white;
+										seg_data <= "        ";
 										if pressed = '1' then
 											case key is
 												when 15 =>
@@ -868,6 +891,8 @@ begin
 												when 11 => mode_3 <= data_dot_init;
 													dot_x <= 7;
 													dot_y <= 7;
+													temp_x <= 7;
+													temp_y <= 7;
 												when others => null;
 											end case;
 										end if;
@@ -901,22 +926,23 @@ begin
 											mode_3 <= del_sel;
 											mode_dot <= init;
 										end if;
+
 									when del_sel =>
 										case mode_dot is
 											when init =>
 												--初始化紅點
 												dot_x <= 7;
 												dot_y <= 7;
-												--紀錄原本紅點的狀態(有資料or無資料)
-												if data_r(dot_y)(dot_x) = '1' and data_g(dot_y)(dot_x) = '1' then
+												--紀錄現在紅點的狀態(有資料or無資料)
+												if data_r(dot_y)(dot_x) = '1' then
 													orange_dot <= '1';
-												elsif data_r(dot_y)(dot_x) = '0' and data_g(dot_y)(dot_x) = '1' then
+												elsif data_r(dot_y)(dot_x) = '0' then
 													orange_dot <= '0';
 												end if;
 
 												--移動
 												ena_tim <= '1';
-												if msec > 50 then
+												if msec > 100 then
 													ena_tim <= '0';
 													mode_dot <= move;
 													data_r(dot_y)(dot_x) <= '1';
@@ -928,59 +954,52 @@ begin
 														when 5 => -- 上 
 															if dot_y < 7 then
 																dot_y <= dot_y + 1;
-																mode_dot <= change;
-																--記錄下一個點的狀態
-																if data_r(dot_y + 1)(dot_x) = '1' and data_g(dot_y + 1)(dot_x) = '1' then
-																	orange_dot_next <= '1';
-																elsif data_r(dot_y + 1)(dot_x) = '0' and data_g(dot_y + 1)(dot_x) = '1' then
-																	orange_dot_next <= '0';
-																end if;
+																mode_dot <= data_state;
 															end if;
 														when 8 => -- 左
 															if dot_x > 0 then
 																dot_x <= dot_x - 1;
-																mode_dot <= change;
-																if data_r(dot_y)(dot_x - 1) = '1' and data_g(dot_y)(dot_x - 1) = '1' then
-																	orange_dot_next <= '1';
-																elsif data_r(dot_y)(dot_x - 1) = '0' and data_g(dot_y)(dot_x - 1) = '1' then
-																	orange_dot_next <= '0';
-																end if;
+																mode_dot <= data_state;
 															end if;
 														when 9 => -- 下
 															if dot_y > 0 then
 																dot_y <= dot_y - 1;
-																mode_dot <= change;
-																if data_r(dot_y - 1)(dot_x) = '1' and data_g(dot_y - 1)(dot_x) = '1' then
-																	orange_dot_next <= '1';
-																elsif data_r(dot_y - 1)(dot_x) = '0' and data_g(dot_y - 1)(dot_x) = '1' then
-																	orange_dot_next <= '0';
-																end if;
+																mode_dot <= data_state;
 															end if;
 														when 10 => -- 右
 															if dot_x < 7 then
 																dot_x <= dot_x + 1;
-																mode_dot <= change;
-																if data_r(dot_y)(dot_x + 1) = '1' and data_g(dot_y)(dot_x + 1) = '1' then
-																	orange_dot_next <= '1';
-																elsif data_r(dot_y)(dot_x + 1) = '0' and data_g(dot_y)(dot_x + 1) = '1' then
-																	orange_dot_next <= '0';
-																end if;
+																mode_dot <= data_state;
 															end if;
 														when 14 => mode_3 <= del_esc;
 														when 15 => mode_3 <= del_data;
 														when others => null;
 													end case;
-
+												end if;
+											when data_state =>
+												--紀錄下一個點的狀態(有資料or無資料)
+												if data_r(dot_y)(dot_x) = '1' and data_g(dot_y)(dot_x) = '1' then
+													orange_dot_next <= '1';
+												elsif data_r(dot_y)(dot_x) = '0' and data_g(dot_y)(dot_x) = '1' then
+													orange_dot_next <= '0';
+												end if;
+												ena_tim <= '1';
+												if msec > 10 then
+													ena_tim <= '0';
+													mode_dot <= change;
 												end if;
 											when change =>
+												--改變下一個點
 												data_g(dot_y)(dot_x) <= '0';
 												data_r(dot_y)(dot_x) <= '1';
+												--恢復上一個點
 												data_g(temp_y)(temp_x) <= '1';
 												if orange_dot = '1' then
 													data_r(temp_y)(temp_x) <= '1';
 												elsif orange_dot = '0' then
 													data_r(temp_y)(temp_x) <= '0';
 												end if;
+												--把下一個點的狀態記成現在的點的狀態
 												orange_dot <= orange_dot_next;
 												temp_x <= dot_x;
 												temp_y <= dot_y;
@@ -989,19 +1008,19 @@ begin
 									when del_esc =>
 										mode_3 <= ensure;
 									when del_data =>
-										if orange_dot = '1' then
+										if orange_dot = '1' then --現在(dot_y,dot_x)的點如果有資料
 											for i in 1 to 8 loop
-												if i = 8 then
+												if i = 8 then --最後一位補空格
 													data_set(dot_x)(i) <= ' ';
-												elsif i > dot_y and i < 8 then
+												elsif i > dot_y and i < 8 then--從後往前補資料
 													data_set(dot_x)(i) <= data_set(dot_x)(i + 1);
 												end if;
 											end loop;
-											data_len(dot_x) <= data_len(dot_x) - 1;
-											orange_dot <= '0';
+											data_len(dot_x) <= data_len(dot_x) - 1;--長度-1
+											orange_dot <= '0';--狀態改變=> 當再次移開時會變綠色
 											mode_dot <= move;
 											mode_3 <= del_sel;
-										elsif orange_dot = '0' then
+										elsif orange_dot = '0' then--如果沒有資料 =>甚麼都不做回歸原地del_sel狀態
 											mode_dot <= move;
 											mode_3 <= del_sel;
 										end if;
@@ -1012,6 +1031,7 @@ begin
 							when mode11 =>
 								case mode_4 is
 									when init =>
+										--I/O init
 										seg_data <= "        ";
 										data_r <= (others => (others => '0'));
 										data_g <= (others => (others => '0'));
@@ -1022,7 +1042,7 @@ begin
 											ena_tim <= '0';
 											mode_4 <= sel_client;
 										end if;
-									when sel_client =>
+									when sel_client => --選擇client
 										data_r <= (others => (others => '0'));
 										data_g <= (others => (others => '0'));
 										client_num <= to_integer (sw (3 to 5));
@@ -1042,6 +1062,7 @@ begin
 											ena_tim <= '0';
 											l_clear <= '0';
 											font_start <= '1';
+											font_mode <= 0;
 										end if;
 										if txt_cnt = 0 then
 											x <= 0;
@@ -1115,7 +1136,7 @@ begin
 											end if;
 											ena_tim <= '1';
 										end if;
-									when txi_data =>
+									when txi_data => --傳資料的狀態機
 										case mode_tx is
 											when idle =>
 												if tx_busy = '0' then
@@ -1137,21 +1158,51 @@ begin
 												end if;
 										end case;
 
-									when data_cls =>
+									when data_cls => --當資料傳完後，對應client的data_set清空，長度歸零
 										data_set(client_num) <= (others => character'val(32));
 										data_len(client_num) <= 0;
 										mode_4 <= waiting;
-									when waiting =>
-										l_clear <= '1';
-										bg_color <= pic(3);
-										pic(0) := to_data(l_paste(l_addr, white, T_data, map_coord(2), 32, 32));
-										T_addr <= to_addr(l_paste(l_addr, white, T_data, map_coord(2), 32, 32));
-										pic(1) := to_data(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
-										X_addr <= to_addr(l_paste(l_addr, pic(0), X_data, map_coord(3), 32, 32));
-										pic(2) := to_data(l_paste(l_addr, pic(1), O_data, map_coord(9), 32, 32));
-										O_addr <= to_addr(l_paste(l_addr, pic(1), O_data, map_coord(9), 32, 32));
-										pic(3) := to_data(l_paste(l_addr, pic(2), K_data, map_coord(10), 32, 32));
-										K_addr <= to_addr(l_paste(l_addr, pic(2), K_data, map_coord(10), 32, 32));
+									when waiting => --顯示 TX OK
+										seg_data <= "CLT" & character'val(client_num + 49) & ".00" & character'val(data_len(client_num) + 48);
+										l_clear <= '0';
+										bg_color <= white;
+										font_mode <= 2;
+										if msec_flag = '1' then
+											ena_tim <= '1';
+											msec_flag <= '0';
+										end if;
+										if msec > 20 then
+											l_clear <= '0';
+											font_mode <= 2;
+											font_start <= '1';
+										end if;
+										if txt_cnt = 0 then
+											x <= 0;
+											y <= 53 * 0;
+											text_data(1 to 4) <= txt_TX;
+										end if;
+										if txt_cnt = 1 then
+											x <= 0;
+											y <= 53 * 1;
+											text_data(1 to 4) <= "    ";
+											font_start <= '1';
+										end if;
+										if txt_cnt = 2 then
+											x <= 0;
+											y <= 53 * 2;
+											text_data(1 to 4) <= txt_OK;
+											font_start <= '1';
+										end if;
+
+										if font_busy = '1' then
+											font_start <= '0';
+											if txt_cnt <= 2 then
+												txt_cnt <= txt_cnt + 1;
+											else
+												txt_cnt <= 0;
+											end if;
+											ena_tim <= '1';
+										end if;
 										if pressed = '1' then
 											case key is
 												when 15 =>

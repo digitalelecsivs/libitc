@@ -53,53 +53,64 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY v1_114_2
+	set_global_assignment -name TOP_LEVEL_ENTITY v20_114_2
+	
+	# testfile
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_rotate.vhd
+	# # set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_test.vhd
+	# # set_global_assignment -name VHDL_FILE practices/114-jol/test/dot_try.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/txt_test.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/txtest_font_aph_num.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_paste.vhd
+	# # set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_rotate.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/picture/pic_icon/msi_icon.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/picture/pic_icon/msi_icon.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/big9.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/big9.qip
 	
 
-	# Unit tests
+
 	# 第二題
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v1_114_2.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v1_114_2.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/test/buzzer.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/circle_cross_1.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/dot/game.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v10_114_2.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v11_114_2.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v2/board/v20_114_2.vhd
+	
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n0.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n0.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n1.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n1.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n2.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n2.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n3.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n3.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n4.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n4.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n5.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n5.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n6.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n6.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n7.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n7.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n8.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n8.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n9.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n9.vhd
 
-	set_global_assignment -name MIF_FILE practices/114-jol/114_2_v1/pic/font.mif
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n0.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n0.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n1.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n1.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n2.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n2.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n3.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n3.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n4.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n4.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n5.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n5.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n6.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n6.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n7.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n7.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n8.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n8.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n9.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n9.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aF.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aF.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aO.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aO.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aR.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aR.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aX.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aX.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aT.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aT.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aK.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aK.vhd
 
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aF.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aF.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aO.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aO.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aR.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aR.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aX.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aX.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aT.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aT.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aK.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aK.vhd
-
-	# 第一題
+	# # # 第一題
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v2/board_1/v2_114_1_a.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_1/v1_114_1_a.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_2/v1_114_1_b.vhd
 
@@ -124,8 +135,14 @@ if {$make_assignments} {
 
 	## Components
 	set_global_assignment -name VHDL_FILE lib/lcd_mix.vhd
+	# set_global_assignment -name VHDL_FILE lib/lcd_mix_num_3_3.vhd
+	# set_global_assignment -name VHDL_FILE lib/lcd_mix_num_4_3.vhd
 	set_global_assignment -name VHDL_FILE lib/font/Font.vhd
 	set_global_assignment -name QIP_FILE lib/font/Font.qip
+	# set_global_assignment -name VHDL_FILE lib/font/Font_numeric.vhd
+	# set_global_assignment -name QIP_FILE lib/font/Font_numeric.qip
+	set_global_assignment -name VHDL_FILE lib/font/Font_aph_num.vhd
+	set_global_assignment -name QIP_FILE lib/font/Font_aph_num.qip
 	set_global_assignment -name VHDL_FILE lib/dht.vhd
 	set_global_assignment -name VHDL_FILE lib/dot.vhd
 	set_global_assignment -name VHDL_FILE lib/key.vhd

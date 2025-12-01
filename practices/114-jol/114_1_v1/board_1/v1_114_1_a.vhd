@@ -53,8 +53,7 @@ architecture arch of v1_114_1_a is
 	signal text_size : integer range 1 to 12;
 	signal text_color_array : l_px_arr_t(1 to 12) := (others => blue);
 	signal bg_color : l_px_t;
-	signal pic_data : l_px_t;
-
+	signal font_mode : integer range 0 to 2;
 	--tts
 	constant max_len : integer := 34;
 	signal tts_ena : std_logic;
@@ -66,6 +65,8 @@ architecture arch of v1_114_1_a is
 	type picture is array (0 to 10) of l_px_t;
 	type l_coord_arr is array (0 to 8) of l_coord_t;
 	type cnt_arr is array (0 to 2) of integer range 0 to 999;
+	type data_arr is array(integer range <>) of l_px_t;
+	type addr_arr is array(integer range <>) of l_addr_t;
 
 	--timer
 	signal ena_tim : std_logic := '1';
@@ -103,6 +104,8 @@ architecture arch of v1_114_1_a is
 	signal trigger : std_logic;
 	signal key_state : unsigned(1 to 9) := (others => '1');
 	signal map_coord : l_coord_arr := ((0, 0), (0, 43), (0, 85), (53, 0), (53, 43), (53, 85), (106, 0), (106, 43), (106, 85));
+	signal data_array : data_arr(0 to 8) := (n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data);
+	signal addr_array : addr_arr(0 to 8) := (n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr);
 
 	-- constant tts
 	constant link_success : u8_arr_t(0 to 11) := (--系統連線成功
@@ -199,29 +202,27 @@ begin
 				rising  => pressed,
 				falling => pressed_f
 			);
-		lcd_mix_inst : entity work.lcd_mix(arch)--lcd => 控制圖片和文字的元件
+		lcd_mix_inst : entity work.lcd_mix(arch)
 			port map(
 				clk              => clk,
 				rst_n            => rst_n,
-				x                => x,                -- 文字x軸
-				y                => y,                -- 文字y軸
-				font_start       => font_start,       -- 文字更新(取正緣)
-				font_busy        => font_busy_i,      -- 當畫面正在更新時，font_busy='1'
-				text_size        => text_size,        -- 字體大小
-				text_data        => text_data,        -- 文字資料
-				addr             => l_addr,           -- 偵錯用 --可以用來貼圖
-				text_color       => white,            -- 字體顏色(只能改單行)(若要使用需改gen_font.vhd(有註記))(若沒用到隨便填一顏色即可)
-				bg_color         => bg_color,         -- 背景顏色
-				text_color_array => text_color_array, -- 字體顏色(同一行依位元改變)(text_color_array:l_px_arr_t(1 to 12);)
-				clear            => l_clear,          -- '1' 時清除
-				lcd_sclk         => lcd_sclk,         -- 腳位
-				lcd_mosi         => lcd_mosi,         -- 腳位
-				lcd_ss_n         => lcd_ss_n,         -- 腳位
-				lcd_dc           => lcd_dc,           -- 腳位
-				lcd_bl           => lcd_bl,           -- 腳位
-				lcd_rst_n        => lcd_rst_n,        -- 腳位
-				con              => '0',              -- 選擇文字或圖片
-				pic_data         => pic_data          -- 圖片資料
+				x                => x,
+				y                => y,
+				font_start       => font_start,
+				font_busy        => font_busy_i,
+				text_size        => text_size,
+				text_data        => text_data,
+				font_mode        => font_mode,
+				addr             => l_addr,
+				bg_color         => bg_color,
+				text_color_array => text_color_array,
+				clear            => l_clear,
+				lcd_sclk         => lcd_sclk,
+				lcd_mosi         => lcd_mosi,
+				lcd_ss_n         => lcd_ss_n,
+				lcd_dc           => lcd_dc,
+				lcd_bl           => lcd_bl,
+				lcd_rst_n        => lcd_rst_n
 			);
 		edge_font : entity work.edge(arch)--lcd 文字更新的busy旗標-- 抓結束的ck，讓font_start重置
 			port map(
@@ -348,7 +349,7 @@ begin
 	end block dbg_test;
 	-- INPUT def -------------------------------------------------------------------------------------------------------------------------
 	Input_def : block begin--指撥開關的輸入設定
-		mode_t <= enable_mode when sw(5) = '1' else
+		mode_t <= enable_mode when sw(5) = '0' else
 			mode00 when sw(6 to 7) = "00" else
 			mode01 when sw(6 to 7) = "01" else
 			mode10 when sw(6 to 7) = "10" else
@@ -358,67 +359,67 @@ begin
 	Pictures : block begin--圖片的元件和設定
 		Num1 : entity work.n1(syn)
 			port map(
-				address => std_logic_vector(to_unsigned(n1_addr, 12)),
+				address => std_logic_vector(to_unsigned(addr_array(0), 12)),
 				clock   => clk,
 				q       => n1_data_i
 			);
-		n1_data <= unsigned(n1_data_i);
+		data_array(0) <= unsigned(n1_data_i);
 		Num2 : entity work.n2(syn)
 			port map(
-				address => std_logic_vector(to_unsigned(n2_addr, 12)),
+				address => std_logic_vector(to_unsigned(addr_array(1), 12)),
 				clock   => clk,
 				q       => n2_data_i
 			);
-		n2_data <= unsigned(n2_data_i);
+		data_array(1) <= unsigned(n2_data_i);
 		Num3 : entity work.n3(syn)
 			port map(
-				address => std_logic_vector(to_unsigned(n3_addr, 12)),
+				address => std_logic_vector(to_unsigned(addr_array(2), 12)),
 				clock   => clk,
 				q       => n3_data_i
 			);
-		n3_data <= unsigned(n3_data_i);
+		data_array(2) <= unsigned(n3_data_i);
 		Num4 : entity work.n4(syn)
 			port map(
-				address => std_logic_vector(to_unsigned(n4_addr, 12)),
+				address => std_logic_vector(to_unsigned(addr_array(3), 12)),
 				clock   => clk,
 				q       => n4_data_i
 			);
-		n4_data <= unsigned(n4_data_i);
+		data_array(3) <= unsigned(n4_data_i);
 		Num5 : entity work.n5(syn)
 			port map(
-				address => std_logic_vector(to_unsigned(n5_addr, 12)),
+				address => std_logic_vector(to_unsigned(addr_array(4), 12)),
 				clock   => clk,
 				q       => n5_data_i
 			);
-		n5_data <= unsigned(n5_data_i);
+		data_array(4) <= unsigned(n5_data_i);
 		Num6 : entity work.n6(syn)
 			port map(
-				address => std_logic_vector(to_unsigned(n6_addr, 12)),
+				address => std_logic_vector(to_unsigned(addr_array(5), 12)),
 				clock   => clk,
 				q       => n6_data_i
 			);
-		n6_data <= unsigned(n6_data_i);
+		data_array(5) <= unsigned(n6_data_i);
 		Num7 : entity work.n7(syn)
 			port map(
-				address => std_logic_vector(to_unsigned(n7_addr, 12)),
+				address => std_logic_vector(to_unsigned(addr_array(6), 12)),
 				clock   => clk,
 				q       => n7_data_i
 			);
-		n7_data <= unsigned(n7_data_i);
+		data_array(6) <= unsigned(n7_data_i);
 		Num8 : entity work.n8(syn)
 			port map(
-				address => std_logic_vector(to_unsigned(n8_addr, 12)),
+				address => std_logic_vector(to_unsigned(addr_array(7), 12)),
 				clock   => clk,
 				q       => n8_data_i
 			);
-		n8_data <= unsigned(n8_data_i);
+		data_array(7) <= unsigned(n8_data_i);
 		Num9 : entity work.n9(syn)
 			port map(
-				address => std_logic_vector(to_unsigned(n9_addr, 12)),
+				address => std_logic_vector(to_unsigned(addr_array(8), 12)),
 				clock   => clk,
 				q       => n9_data_i
 			);
-		n9_data <= unsigned(n9_data_i);
+		data_array(8) <= unsigned(n9_data_i);
 	end block Pictures;
 	-- Main Process ----------------------------------------------------------------------------------------------------------------------
 	Main_Process : block begin
@@ -530,52 +531,23 @@ begin
 									end case;
 								end if;
 								--數字圖片 疊圖--
-								if key_state(1) = '1'then-- s1對應的圖片消失or出現
-									pic(0) := to_data(l_paste(l_addr, white, n1_data, map_coord(0), 42, 53));
-									n1_addr <= to_addr(l_paste(l_addr, white, n1_data, map_coord(0), 42, 53));
-								else pic(0) := white;
-								end if;
-								if key_state(2) = '1'then-- s2對應的圖片消失or出現
-									pic(1) := to_data(l_paste(l_addr, pic(0), n2_data, map_coord(1), 42, 53));
-									n2_addr <= to_addr(l_paste(l_addr, pic(0), n2_data, map_coord(1), 42, 53));
-								else pic(1) := pic(0);
-								end if;
-								if key_state(3) = '1'then-- s3對應的圖片消失or出現
-									pic(2) := to_data(l_paste(l_addr, pic(1), n3_data, map_coord(2), 42, 53));
-									n3_addr <= to_addr(l_paste(l_addr, pic(1), n3_data, map_coord(2), 42, 53));
-								else pic(2) := pic(1);
-								end if;
-								if key_state(4) = '1'then-- s4對應的圖片消失or出現
-									pic(3) := to_data(l_paste(l_addr, pic(2), n4_data, map_coord(3), 42, 53));
-									n4_addr <= to_addr(l_paste(l_addr, pic(2), n4_data, map_coord(3), 42, 53));
-								else pic(3) := pic(2);
-								end if;
-								if key_state(5) = '1'then-- s5對應的圖片消失or出現
-									pic(4) := to_data(l_paste(l_addr, pic(3), n5_data, map_coord(4), 42, 53));
-									n5_addr <= to_addr(l_paste(l_addr, pic(3), n5_data, map_coord(4), 42, 53));
-								else pic(4) := pic(3);
-								end if;
-								if key_state(6) = '1'then-- s6對應的圖片消失or出現
-									pic(5) := to_data(l_paste(l_addr, pic(4), n6_data, map_coord(5), 42, 53));
-									n6_addr <= to_addr(l_paste(l_addr, pic(4), n6_data, map_coord(5), 42, 53));
-								else pic(5) := pic(4);
-								end if;
-								if key_state(7) = '1'then-- s7對應的圖片消失or出現
-									pic(6) := to_data(l_paste(l_addr, pic(5), n7_data, map_coord(6), 42, 53));
-									n7_addr <= to_addr(l_paste(l_addr, pic(5), n7_data, map_coord(6), 42, 53));
-								else pic(6) := pic(5);
-								end if;
-								if key_state(8) = '1'then-- s8對應的圖片消失or出現
-									pic(7) := to_data(l_paste(l_addr, pic(6), n8_data, map_coord(7), 42, 53));
-									n8_addr <= to_addr(l_paste(l_addr, pic(6), n8_data, map_coord(7), 42, 53));
-								else pic(7) := pic(6);
-								end if;
-								if key_state(9) = '1'then-- s9對應的圖片消失or出現
-									pic(8) := to_data(l_paste(l_addr, pic(7), n9_data, map_coord(8), 42, 53));
-									n9_addr <= to_addr(l_paste(l_addr, pic(7), n9_data, map_coord(8), 42, 53));
-								else pic(8) := pic(7);
-								end if;
-
+								for i in 0 to 8 loop
+									if i = 0 then
+										if key_state(i + 1) = '0' then
+											pic(i) := white;
+										elsif key_state(i + 1) = '1' then
+											pic(i) := to_data(l_paste(l_addr, white, data_array(i), map_coord(i), 42, 53));
+											addr_array(i) <= to_addr(l_paste(l_addr, white, data_array(i), map_coord(i), 42, 53));
+										end if;
+									elsif i > 0 then
+										if key_state(i + 1) = '0' then
+											pic(i) := pic(i - 1);
+										elsif key_state(i + 1) = '1' then
+											pic(i) := to_data(l_paste(l_addr, pic(i - 1), data_array(i), map_coord(i), 42, 53));
+											addr_array(i) <= to_addr(l_paste(l_addr, pic(i - 1), data_array(i), map_coord(i), 42, 53));
+										end if;
+									end if;
+								end loop;
 							when txt_mode =>
 								if pressed = '1' then
 									case key is
@@ -593,14 +565,14 @@ begin
 
 								if txt_cnt = 0 then
 									x <= 0;
-									y <= 5;
+									y <= 0;
 									text_size <= 1;
 									text_data(1 to 7) <= "CPLD ID";
 									text_data(8 to 12) <= (others => character'val(32));
 								end if;
 								if txt_cnt = 1 then
 									x <= 0;
-									y <= 35;
+									y <= 40;
 									text_size <= 1;
 									text_data(1 to 4) <= "MODE";
 									text_data(5 to 12) <= (others => character'val(32));
@@ -608,7 +580,7 @@ begin
 								end if;
 								if txt_cnt = 2 then
 									x <= 0;
-									y <= 65;
+									y <= 80;
 									text_size <= 1;
 									text_data(1 to 7) <= "trieso:";
 									text_data(8 to 12) <= (others => character'val(32));

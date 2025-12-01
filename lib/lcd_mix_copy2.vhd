@@ -50,6 +50,7 @@ architecture arch of lcd_mix is
 	signal l_data_i : std_logic_vector(23 downto 0);
 	signal con_h, con_l : std_logic;
 
+	--constant aa : l_px_arr_t(1 to 12) := (null, red, null, red, null, red, null, green, null, green, null, null); --單行顏色(12位元)
 begin
 	edge_inst : entity work.edge(arch)
 		port map(
@@ -88,6 +89,12 @@ begin
 			clock   => clk,
 			q       => q
 		);
+	-- bongo_inst : entity work.bongo(syn)
+	-- 	port map(
+	-- 		address => std_logic_vector(to_unsigned(l_addr, 15)),
+	-- 		clock   => clk,
+	-- 		q       => l_data_i
+	-- 	);
 	process (clk, rst_n)
 	begin
 		if con = '0' then
@@ -110,7 +117,9 @@ begin
 		elsif rising_edge(clk) then
 			if con_h = '1' or con_l = '1' then
 				l_addr <= 0;
+				-- pic_addr <= 0;
 			end if;
+			-- if con = '0' then --文字
 			if character'pos(text_data(count + 1)) = 87 then
 				lcd_x <= 1;
 			else
@@ -145,7 +154,11 @@ begin
 					elsif (pixel_count_x < text_size) then
 						if pixel_count_y < text_size then
 							pixel_count_y <= pixel_count_y + 1;
+							-- if under_line='1' then
+							-- 	l_addr <= data_x * text_size + pixel_count_x + x + 128 * (data_y+2 * text_size + pixel_count_y + y ) + (count * 11 * text_size);
+							-- else
 							l_addr <= data_x * text_size + pixel_count_x + x + 128 * (data_y * text_size + pixel_count_y + y) + (count * 10 * text_size);
+							-- end if;
 						else
 							pixel_count_y <= 0;
 							pixel_count_x <= pixel_count_x + 1;
@@ -172,7 +185,11 @@ begin
 						end if;
 						color <= text_color_array(count + 1); -- 依位元改變對應顏色										
 					end if;
-					if ((data_x * text_size + text_count + x + (count * 10 * text_size)) > 150) or ((data_y * text_size + text_count + y) > 159) or ((data_y * text_size + text_count + y) < 0) or (data_x * text_size + text_count + x + (count * 10)) < 0 then
+					
+					if ((data_x * text_size + pixel_count_x + x + (count * 10 * text_size)) > 127) or
+						((data_y * text_size + pixel_count_y + y) > 159) or
+						((data_y * text_size + pixel_count_y + y) < 0) or
+						((data_x * text_size + pixel_count_x + x + (count * 10 * text_size)) < 0) then
 						wr_ena <= '0';
 					else
 						wr_ena <= '1';
@@ -188,7 +205,7 @@ begin
 						addr <= addr + 1;
 					end if;
 					l_addr <= addr;
-				when draw_picture =>
+				when draw_picture => -- 不會用到
 					l_addr <= addr;
 					if addr < addr'high then
 						if wr_ena = '0' then
@@ -206,10 +223,26 @@ begin
 				when others =>
 					status <= idle;
 			end case;
-
+			-- elsif con = '1' then --圖片
+			-- 	l_addr <= addr;
+			-- 	if addr < l_px_cnt - 1 then
+			-- 		if wr_ena = '0' then
+			-- 			wr_ena <= '1';
+			-- 		else
+			-- 			font_busy <= '1';
+			-- 			wr_ena <= '0';
+			-- 			addr <= addr + 1;
+			-- 		end if;
+			-- 	else
+			-- 		font_busy <= '0';
+			-- 		wr_ena <= '0';
+			-- 	end if;
+			-- end if;
 		end if;
 	end process;
 	l_addr_p <= 1056 * data_y + data_x + first_px;
 	text_count <= count + 1;
 	first_px <= 950 when (text_data(count + 1) = 'd') and (text_data(count + 2) = 'C') else (character'pos(text_data(count + 1)) - 32) * 10 + lcd_x;
+	-- l_addr <= 128 * (data_y + y) + data_x + x - 2 + (count * 11) when status /= clear_screen else addr;
+	--l_addr <= data_x * text_size + d + x + 128 * (data_y * text_size + d + y) + (count * 11);
 end arch;

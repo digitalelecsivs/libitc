@@ -9,20 +9,19 @@ entity dot_try is
 		-- sys
 		clk, rst_n : in std_logic;
 		-- dot
-		dot_red, dot_green, dot_com : out u8r_t;
+		dot_red, dot_green, dot_com : out u8r_t
 		-- sw 
-		sw : in u8r_t
+		-- sw : in u8r_t
 	);
 end dot_try;
 
 architecture arch of dot_try is
 
 	signal data_r, data_g : u8r_arr_t(0 to 7);
-
-	signal x_pos : integer range 0 to 7 := 0;
-	signal y_pos : integer range 0 to 7 := 7;
-	signal clk_pos : std_logic;
-
+	signal trigger_i : std_logic;
+	signal trigger : std_logic;
+	signal dot_y, dot_x : integer range 0 to 7 := 0;
+	signal temp_y, temp_x : integer range 0 to 7 := 0;
 begin
 
 	dot_inst : entity work.dot(arch)
@@ -38,44 +37,44 @@ begin
 			data_r    => data_r,
 			data_g    => data_g
 		);
-
 	clk_inst : entity work.clk(arch)
 		generic map(
-			freq => 2
+			freq => 5
 		)
 		port map(
 			clk_in  => clk,
 			rst_n   => rst_n,
-			clk_out => clk_pos
+			clk_out => trigger_i
 		);
 
-	process (clk_pos, rst_n) begin
+	edge_inst : entity work.edge(arch)
+		port map(
+			clk     => clk,
+			rst_n   => rst_n,
+			sig_in  => trigger_i,
+			rising  => trigger,
+			falling => open
+		);
+
+	process (clk, rst_n) begin
 		if rst_n = '0' then
-			x_pos <= 0;
-			y_pos <= 7;
-		elsif rising_edge(clk_pos) then
-			data_g <= (others => (others => '0'));
-			if x_pos = x_pos'high then
-				x_pos <= 0;
-				if y_pos = y_pos'low then
-					y_pos <= 7;
+
+		elsif rising_edge(clk) then
+
+			data_g <= (others => (others => '1'));
+			
+			if trigger = '1' then
+				temp_x <= dot_x;
+				temp_y <= dot_y;
+				if dot_x = 7 then
+					dot_y <= dot_y + 1;
+					dot_x <= 0;
 				else
-					y_pos <= y_pos - 1;
+					dot_x <= dot_x + 1;
 				end if;
-			else
-				x_pos <= x_pos + 1;
+				data_r(dot_y)(dot_x) <= '1';
+				data_r(temp_y)(temp_x) <= '0';
 			end if;
-			data_g(y_pos)(x_pos) <= '1';
-			-- data_r <= (others => (others => '0'));
-			-- data_g <= (others => (others => '0'));
-
-			-- if sw(0) = '1' then
-			-- 	data_g(y_pos)(x_pos) <= '1';
-			-- end if;
-
-			-- if sw(1) = '1' then
-			-- 	data_r(y_pos)(x_pos) <= '1';
-			-- end if;
 		end if;
 	end process;
 
