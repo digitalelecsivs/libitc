@@ -1,0 +1,126 @@
+---< 計數值 00:00 ~ tim_min:tim_sec >-------------------------------------------------------------------------------------------------
+if trig_flag = '1' then
+    if trigger = '1' then
+        if cnt_c(m_sel) < 59 and cnt_l(m_sel) < tim_min then
+            cnt_c(m_sel) := cnt_c(m_sel) + 1;
+        elsif cnt_l(m_sel) < tim_min and cnt_c(m_sel) = 59 then
+            cnt_c(m_sel) := 0;
+            cnt_l(m_sel) := cnt_l(m_sel) + 1;
+        elsif cnt_l(m_sel) = tim_min and cnt_c(m_sel) < tim_sec then
+            cnt_c(m_sel) := cnt_c(m_sel) + 1;
+        elsif cnt_l(m_sel) = tim_min and cnt_c(m_sel) = tim_sec then
+            cnt_c(m_sel) := tim_sec;
+            cnt_l(m_sel) := tim_min;
+        end if;
+    end if;
+end if;
+---< 圖片座標 >-----------------------------------------------------------------------------------------------------------------------
+
+3*3 signal map_coord : l_coord_arr := ((0, 0), (0, 43), (0, 85), (53, 0), (53, 43), (53, 85), (106, 0), (106, 43), (106, 85));
+4*3 signal map_coord : l_coord_arr := ((10, 0), (10, 32), (10, 64), (10, 96), (63, 0), (63, 32), (63, 64), (63, 96), (116, 0), (116, 32), (116, 64), (116, 96));
+	
+---< mode00的1~9大數字 >--------------------------------------------------------------------------------------------------------------
+
+<if-else-endif>用文字的方式呈現
+if msec >= 20 then
+    ena_tim <= '0';
+    l_clear <= '0';
+    font_mode <= 1;
+    font_start <= '1';
+end if;
+if txt_cnt = 0 then
+    x <= 8;
+    y <= 4;
+    if key_state(1) = '1' then
+        text_data(1) <= '1';
+    elsif key_state(1) = '0' then
+        text_data(1) <= ' ';
+    end if;
+    if key_state(2) = '1' then
+        text_data(2) <= '2';
+    elsif key_state(2) = '0' then
+        text_data(2) <= ' ';
+    end if;
+    if key_state(3) = '1' then
+        text_data(3) <= '3';
+    elsif key_state(3) = '0' then
+        text_data(3) <= ' ';
+    end if;
+    text_data(6 to 12) <= (others => character'val(32));
+end if;
+if txt_cnt = 1 then
+    x <= 8;
+    y <= 53 * 1 + 4;
+    if key_state(4) = '1' then
+        text_data(1) <= '4';
+    elsif key_state(4) = '0' then
+        text_data(1) <= ' ';
+    end if;
+    if key_state(5) = '1' then
+        text_data(2) <= '5';
+    elsif key_state(5) = '0' then
+        text_data(2) <= ' ';
+    end if;
+    if key_state(6) = '1' then
+        text_data(3) <= '6';
+    elsif key_state(6) = '0' then
+        text_data(3) <= ' ';
+    end if;
+    text_data(6 to 12) <= (others => character'val(32));
+end if;
+if txt_cnt = 2 then
+    x <= 8;
+    y <= 53 * 2 + 4;
+    if key_state(7) = '1' then
+        text_data(1) <= '7';
+    elsif key_state(7) = '0' then
+        text_data(1) <= ' ';
+    end if;
+    if key_state(8) = '1' then
+        text_data(2) <= '8';
+    elsif key_state(8) = '0' then
+        text_data(2) <= ' ';
+    end if;
+    if key_state(9) = '1' then
+        text_data(3) <= '9';
+    elsif key_state(9) = '0' then
+        text_data(3) <= ' ';
+    end if;
+    text_data(6 to 12) <= (others => character'val(32));
+end if;
+if font_busy = '1' then
+    font_start <= '0';
+    if txt_cnt <= 2 then
+        txt_cnt <= txt_cnt + 1;
+    else
+        txt_cnt <= 0;
+    end if;
+    ena_tim <= '1';
+end if;
+
+<for-loop>用圖片的方式呈現 
+signal data_array : data_arr(0 to 8) := (n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data);
+signal addr_array : addr_arr(0 to 8) := (n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr);
+signal n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr : l_addr_t;
+signal n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data : l_px_t;
+signal n1_data_i, n2_data_i, n3_data_i, n4_data_i, n5_data_i, n6_data_i, n7_data_i, n8_data_i, n9_data_i : std_logic_vector(23 downto 0);
+	
+l_clear <= '1';
+bg_color <= pic(8);
+for i in 0 to 8 loop
+    if i = 0 then
+        if key_state(i + 1) = '0' then
+            pic(i) := white;
+        elsif key_state(i + 1) = '1' then
+            pic(i) := to_data(l_paste(l_addr, white, data_array(i), map_coord(i), 42, 53));
+            addr_array(i) <= to_addr(l_paste(l_addr, white, data_array(i), map_coord(i), 42, 53));
+        end if;
+    elsif i > 0 then
+        if key_state(i + 1) = '0' then
+            pic(i) := pic(i - 1);
+        elsif key_state(i + 1) = '1' then
+            pic(i) := to_data(l_paste(l_addr, pic(i - 1), data_array(i), map_coord(i), 42, 53));
+            addr_array(i) <= to_addr(l_paste(l_addr, pic(i - 1), data_array(i), map_coord(i), 42, 53));
+        end if;
+    end if;
+end loop;

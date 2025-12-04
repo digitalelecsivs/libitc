@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity v11_114_2 is
+entity v20_114_2 is
 	port (
 		-- sys
 		clk   : in std_logic;
@@ -26,14 +26,14 @@ entity v11_114_2 is
 		dbg_b : out u8r_t; -- dbg
 		dbg_a : out u8r_t
 	);
-end v11_114_2;
+end v20_114_2;
 
-architecture arch of v11_114_2 is
+architecture arch of v20_114_2 is
 	--state machine
 	type state_t is (init, Main);--總狀態機
 	type state_m is (mode00, mode01, mode10, mode11);--第一層=>總狀態機的Main
 	type state_1 is (init, rxi_connect, ready);--第一層=>總狀態機的init
-	type state_2 is (init, sel_client, IO_init, rxi_cls, rxi_data, rxi_check, rxi_save, lcd_change, IO_change, lcd_txt);--第二層=>mode01
+	type state_2 is (init, sel_client, IO_init, rxi_cls, rxi_data, rxi_check, rxi_save, show_rx_data, lcd_change, IO_change, lcd_txt);--第二層=>mode01
 	type state_3 is (init, ensure, del_sel, del_data, del_esc, dot_change, data_dot_init, IO_change, lcd_txt);--第二層=>mode10
 	type state_4 is (init, sel_client, txi_data, data_cls, waiting);--第二層=>mode11
 	type state_tx is (idle, send);--傳輸data的狀態機
@@ -53,7 +53,7 @@ architecture arch of v11_114_2 is
 	--type def
 	type picture is array (integer range <>) of l_px_t;
 	type l_coord_arr is array (0 to 11) of l_coord_t;
-	type str_array is array (integer range <>) of string(1 to 8);
+
 	type txt_array is array (integer range <>) of string(1 to 4);
 
 	--lcd
@@ -80,71 +80,52 @@ architecture arch of v11_114_2 is
 	--uart
 	signal rx_start, rx_done, tx_mode : std_logic;
 	signal tx_ena, tx_busy, rx_busy, rx_err, tx_ena_e : std_logic;
-	signal tx_data, rx_data : string(1 to 12);
-	signal tx_len, rx_len : integer range 1 to 12;
+	constant txt_len_max : integer := 24;
+	signal tx_len, rx_len : integer range 1 to txt_len_max;
+	signal tx_data, rx_data : string(1 to txt_len_max);
+	type str_array is array (integer range <>) of string(1 to txt_len_max);
 
 	--timer
 	signal ena_tim : std_logic := '1';
-	signal msec : integer range 0 to 3000 := 0;
+	signal msec : integer range 0 to 4000 := 0;
+	signal ena_tim_lcd : std_logic := '1';
+	signal msec_lcd : integer range 0 to 4000 := 0;
 
 	--user signal
 	signal client_num : integer range 0 to 7 := 0;
-	signal data_buffer : string(1 to 8) := (others => character'val(32));
-	signal data_set : str_array(0 to 7) := (others => (others => character'val(32)));
+	signal data_buffer : string(1 to txt_len_max) := (others => character'val(32));
+	signal data_set : str_array(0 to 7) := (others => (others => ' '));
 	signal data_len : i4_arr_t(0 to 7) := (others => 0);
 	signal orange_dot_next : std_logic := '0'; -- 0:沒有資料 1:有資料 --下一個點 
 	signal orange_dot : std_logic := '0'; -- 0:沒有資料 1:有資料 --現在的點
 
-	signal sw_d : std_logic_vector(0 to 1);
 	signal init_flag : std_logic := '0';
 	signal OF_flag : std_logic := '0';
 	signal buz_flag : std_logic := '0';
 	signal rgb_flag : std_logic := '0';
+	signal led_flag : std_logic := '0';
 	signal connect_flag : std_logic := '0';
 	signal msec_flag : std_logic := '0';
-	signal dot_flag : std_logic := '0';
+	signal lcd_flag : std_logic := '0';
 	signal dot_x : integer range 0 to 7;
 	signal dot_y : integer range 0 to 7;
 	signal temp_x : integer range 0 to 7;
 	signal temp_y : integer range 0 to 7;
 	signal txt_cnt : integer range 0 to 8 := 0;
 	signal map_coord : l_coord_arr := ((10, 0), (10, 32), (10, 64), (10, 96), (63, 0), (63, 32), (63, 64), (63, 96), (116, 0), (116, 32), (116, 64), (116, 96));
-	signal txt_RX : string(1 to 4) := "  RX";
+	signal txt_RX : string(1 to 4) := "RX  ";
 	signal txt_TX : string(1 to 4) := "  TX";
 	signal txt_OF : string(1 to 4) := " OF ";
 	signal txt_OF1 : string(1 to 4) := " OF1";
 	signal txt_OK : string(1 to 4) := " OK ";
-	-- signal cnt_i : integer range 0 to 8;
-	-- signal cnt_j : integer range 0 to 8;
+	signal rgb_cnt : integer range 0 to 3;
+	signal led_cnt : integer range 0 to 2;
+	signal lcd_cnt : integer range 0 to 3;
 
 begin
 	-- Component -------------------------------------------------------------------------------------------------------------------------
 	components : block begin
-		debounce2 : entity work.debounce(arch)
-			generic map(
-				stable_time => 10
-			)
-			port map(
-				-- system
-				clk   => clk,
-				rst_n => rst_n,
-				-- user logic
-				sig_in  => sw(6),  -- input signal to be debounced
-				sig_out => sw_d(0) -- debounced signal
-			);
-		debounce1 : entity work.debounce(arch)
-			generic map(
-				stable_time => 10
-			)
-			port map(
-				-- system
-				clk   => clk,
-				rst_n => rst_n,
-				-- user logic
-				sig_in  => sw(7),  -- input signal to be debounced
-				sig_out => sw_d(1) -- debounced signal
-			);
-		dot_inst : entity work.dot(arch)
+		dot_inst : entity work.dot(arch)--顯示資料的數據
 			generic map(
 				common_anode => '0'
 			)
@@ -174,7 +155,15 @@ begin
 				load  => 0,
 				msec  => msec
 			);
-		key_inst : entity work.key(arch)
+		timer_lcd_inst : entity work.timer(arch)--計時器
+			port map(
+				clk   => clk,
+				rst_n => rst_n,
+				ena   => ena_tim_lcd,
+				load  => 0,
+				msec  => msec_lcd
+			);
+		key_inst : entity work.key(arch)--按鍵輸入
 			port map(
 				clk     => clk,
 				rst_n   => rst_n,
@@ -191,7 +180,7 @@ begin
 				rising  => pressed,
 				falling => open
 			);
-		lcd_mix_inst : entity work.lcd_mix(arch)
+		lcd_mix_inst : entity work.lcd_mix(arch)--lcd輸出元件
 			port map(
 				clk              => clk,
 				rst_n            => rst_n,
@@ -223,7 +212,7 @@ begin
 			);
 		uart_txt : entity work.uart_txt(arch)--uart傳輸，wifi連接用
 			generic map(
-				txt_len_max => 12,
+				txt_len_max => txt_len_max,
 				baud        => 115200 -- data link baud rate in bits/second
 			)
 			port map(
@@ -272,10 +261,8 @@ begin
 			mode10 when sw(6 to 7) = "10" else
 			mode11 when sw(6 to 7) = "11"else mode00;
 	end block Input_def;
-
 	-- dbg & test ------------------------------------------------------------------------------------------------------------------------
 	dbg_test : block begin
-
 		dbg_a(0 to 3) <= not("1000") when mode_2 = init else
 		not("0100") when mode_2 = sel_client else
 		not("0010") when mode_2 = IO_init else
@@ -293,30 +280,24 @@ begin
 	end block dbg_test;
 	-- Main Process ----------------------------------------------------------------------------------------------------------------------
 	Main_Process : block
-		-- 接收資料的資料結構
-		-- signal client_num : integer range 0 to 7 := 0;
-		-- signal data_buffer : string(1 to 8) := (others => character'val(32));
-		-- signal data_set : str_array(1 to 8) := (others => (others => character'val(32)));
-		-- signal data_len : i4_arr_t(0 to 7) := (others => 0);
-		-- signal  OF_num : integer range 0 to 7 := 0;
-		-- signal OF_flag : std_logic := '0';
-		-- signal buz_flag : std_logic := '0';
-		-- signal rgb_flag : std_logic := '0';
 	begin
 		process (clk, rst_n)
 			variable OF_num : integer range 0 to 7 := 0;--檢查溢位數量
 			variable data_num : integer range 0 to 9 := 0;--作為圖片的引數(index)
 			variable pic : picture(0 to 11);
-			variable cnt_i : integer range 0 to 8;
-			variable cnt_j : integer range 0 to 8;
+			variable rx_length : integer range 0 to 8;
+			-- variable cnt : integer range 0 to 8;
+			variable cnt_i : integer range 0 to 8 := 0;
+			variable cnt_j : integer range 0 to 8 := 0;
 		begin
 			if rst_n = '0' then
 				--led & buz
-				led_r <= '0';
+				led_r <= '1';
 				led_g <= '0';
 				led_y <= '0';
 				rgb <= (others => '0');
-
+				rgb_cnt <= 0;
+				led_cnt <= 0;
 				--seg
 				seg_data <= "        ";
 
@@ -347,10 +328,11 @@ begin
 				--flag
 				OF_flag <= '0';
 				rgb_flag <= '0';
+				led_flag <= '0';
 				buz_flag <= '0';
 				connect_flag <= '0';
 				msec_flag <= '0';
-
+				lcd_flag <= '0';
 				--timer
 				ena_tim <= '0';
 
@@ -377,19 +359,61 @@ begin
 
 						--在初始化時，要求的IO變化
 						ena_tim <= '1';
-						rgb <= (others => '1' and rgb_flag);
 						if (msec/500)mod 2 = 0 then
 							rgb_flag <= '1';
 						else
+							if rgb_flag = '1' and rgb_cnt + 1 /= 4 then
+								rgb_cnt <= rgb_cnt + 1;
+							end if;
 							rgb_flag <= '0';
 						end if;
-						if msec > 3000 then
+						if (msec/1000)mod 2 = 0 then
+							led_flag <= '1';
+						else
+							if led_flag = '1' and led_cnt + 1 /= 3 then
+								led_cnt <= led_cnt + 1;
+							end if;
+							led_flag <= '0';
+						end if;
+						case led_cnt is
+							when 0 =>
+								led_r <= '1';
+								led_g <= '0';
+								led_y <= '0';
+							when 1 =>
+								led_r <= '0';
+								led_g <= '1';
+								led_y <= '0';
+							when 2 =>
+								led_r <= '0';
+								led_g <= '0';
+								led_y <= '1';
+							when others =>
+								led_r <= '0';
+								led_g <= '0';
+								led_y <= '0';
+						end case;
+						if rgb_flag = '1' then
+							case rgb_cnt is
+								when 0 =>
+									rgb <= "100";
+								when 1 =>
+									rgb <= "010";
+								when 2 =>
+									rgb <= "001";
+								when 3 =>
+									rgb <= "111";
+								when others =>
+									rgb <= "000";
+							end case;
+						end if;
+						if msec > 4000 then
 							ena_tim <= '0';
 							mode_t <= Main;
 						end if;
 					when Main =>
-						case sw_d is
-							when "00" =>
+						case mode_m is
+							when mode00 =>
 								case mode_1 is
 									when init =>
 										led_r <= '0';
@@ -429,7 +453,7 @@ begin
 										end if;
 								end case;
 
-							when "01" =>
+							when mode01 =>
 								case mode_2 is
 									when init =>
 										--I/O init
@@ -481,8 +505,6 @@ begin
 										end if;
 										l_clear <= '1';-- 清除lcd
 										bg_color <= white;
-										cnt_i := 0;
-										cnt_j := 0;
 									when IO_init =>
 										seg_data <= "CLT" & character'val(client_num + 49) & ".00" & character'val(data_len(client_num) + 48);
 										data_g <= (others => (others => '1'));
@@ -491,6 +513,7 @@ begin
 										else
 											data_r(cnt_j)(cnt_i) <= '0';
 										end if;
+
 										if cnt_j < 7 then
 											cnt_j := cnt_j + 1;
 										else
@@ -500,13 +523,17 @@ begin
 											else
 												cnt_i := 0;
 												cnt_j := 0;
-												mode_2 <= rxi_cls;
-												data_buffer <= (others => character'val(32));
 											end if;
+										end if;
+										ena_tim <= '1';
+										if msec > 20 then
+											ena_tim <= '0';
+											mode_2 <= rxi_cls;
+											data_buffer <= (others => character'val(32));
 										end if;
 									when rxi_cls => --接收rx_done => 清除data_buffer
 										if rx_done = '1' then
-											data_buffer <= (others => character'val(32));
+											rx_length := (character'pos(rx_data(1)) - 48);
 											mode_2 <= rxi_data;--整理rx_data
 										end if;
 										if pressed = '1' then
@@ -518,6 +545,7 @@ begin
 											end case;
 										end if;
 										--顯示RX
+										ena_tim <= '1';
 										if msec >= 20 then
 											ena_tim <= '0';
 											l_clear <= '0';
@@ -532,7 +560,7 @@ begin
 										end if;
 										if txt_cnt = 1 then
 											x <= 0;
-											y <= 53 * 2;
+											y <= 53 * 1;
 											text_data(1 to 4) <= "    ";
 											text_data(5 to 12) <= (others => character'val(32));
 										end if;
@@ -554,35 +582,41 @@ begin
 
 									when rxi_data => --整理rx_data
 										data_buffer(1 to rx_len) <= rx_data(1 to rx_len); --暫存資料
-										if rx_len <= 4 and rx_len >= 1 then
-											if data_len(client_num) + rx_len <= 8 then --沒溢位
+										if rx_length <= 4 and rx_length >= 1 then
+											if data_len(client_num) + rx_length <= 8 then --沒溢位
 												OF_flag <= '0'; --設旗標
 												OF_num := 0; --設溢位位數
-												data_len(client_num) <= data_len(client_num) + rx_len;--設定現在client的資料長度
+												data_len(client_num) <= data_len(client_num) + rx_length;--設定現在client的資料長度
 												mode_2 <= rxi_save; --儲存資料
-											elsif data_len(client_num) + rx_len > 8 then--有溢位
+											elsif data_len(client_num) + rx_length > 8 then--有溢位
 												OF_flag <= '1'; --設旗標
-												OF_num := data_len(client_num) + rx_len - 8;--設溢位位數
+												OF_num := data_len(client_num) + rx_length - 8;--設溢位位數
 												data_len(client_num) <= 8;--設定現在client的資料長度
 												mode_2 <= rxi_save; --儲存資料
 											end if;
+											-- index <= 0;
 										else
 											mode_2 <= rxi_cls;
 										end if;
 									when rxi_check =>
 									when rxi_save => -- 儲存資料到data_set中
-										if OF_flag = '1' then
-											if rx_len <= 4 and rx_len >= 1 then
-												if cnt_i < rx_len - OF_num then
-													data_set(client_num)(data_len(client_num) - (rx_len - OF_num) + cnt_i + 1) <= data_buffer(cnt_i + 1);
+										if OF_flag = '0' then
+											if rx_length <= 4 and rx_length >= 1 then
+												if cnt_i < rx_length then
+													data_set(client_num)((data_len(client_num) - rx_length) * 3 + 3 * cnt_i + 1) <= data_buffer(3 * cnt_i + 1 + 2);
+													data_set(client_num)((data_len(client_num) - rx_length) * 3 + 3 * cnt_i + 2) <= data_buffer(3 * cnt_i + 2 + 2);
+													data_set(client_num)((data_len(client_num) - rx_length) * 3 + 3 * cnt_i + 3) <= data_buffer(3 * cnt_i + 3 + 2);
 												end if;
 											end if;
-										elsif OF_flag = '0' then
-											if rx_len <= 4 and rx_len >= 1 then
-												if cnt_i < rx_len then
-													data_set(client_num)(data_len(client_num) - rx_len + cnt_i + 1) <= data_buffer(cnt_i + 1);
+										elsif OF_flag = '1' then
+											if rx_length <= 4 and rx_length >= 1 then
+												if cnt_i < rx_length - OF_num then
+													data_set(client_num)((data_len(client_num) - (rx_length - OF_num)) * 3 + 3 * cnt_i + 1) <= data_buffer(3 * cnt_i + 1 + 2);
+													data_set(client_num)((data_len(client_num) - (rx_length - OF_num)) * 3 + 3 * cnt_i + 2) <= data_buffer(3 * cnt_i + 2 + 2);
+													data_set(client_num)((data_len(client_num) - (rx_length - OF_num)) * 3 + 3 * cnt_i + 3) <= data_buffer(3 * cnt_i + 3 + 2);
 												end if;
 											end if;
+
 										end if;
 										if cnt_i < 3 then
 											cnt_i := cnt_i + 1;
@@ -592,6 +626,34 @@ begin
 											mode_2 <= IO_change;
 										end if;
 
+										-- if OF_flag = '0' then
+										-- 	if rx_length <= 4 and rx_length >= 1 then
+										-- 		for i in 0 to 3 loop
+										-- 			if i < rx_length then
+										-- 				data_set(client_num)((data_len(client_num) - rx_length) * 3 + 3 * i + 1) <= data_buffer(3 * i + 1 + 2);
+										-- 				data_set(client_num)((data_len(client_num) - rx_length) * 3 + 3 * i + 2) <= data_buffer(3 * i + 2 + 2);
+										-- 				data_set(client_num)((data_len(client_num) - rx_length) * 3 + 3 * i + 3) <= data_buffer(3 * i + 3 + 2);
+										-- 			end if;
+
+										-- 		end loop;
+										-- 	end if;
+										-- elsif OF_flag = '1' then
+										-- 	if rx_length <= 4 and rx_length >= 1 then
+										-- 		for i in 0 to 3 loop
+										-- 			if i < rx_length - OF_num then
+										-- 				data_set(client_num)((data_len(client_num) - (rx_length - OF_num)) * 3 + 3 * i + 1) <= data_buffer(3 * i + 1 + 2);
+										-- 				data_set(client_num)((data_len(client_num) - (rx_length - OF_num)) * 3 + 3 * i + 2) <= data_buffer(3 * i + 2 + 2);
+										-- 				data_set(client_num)((data_len(client_num) - (rx_length - OF_num)) * 3 + 3 * i + 3) <= data_buffer(3 * i + 3 + 2);
+										-- 			end if;
+										-- 		end loop;
+										-- 	end if;
+										-- end if;
+										-- ena_tim <= '1';
+										-- if msec > 50 then
+										-- 	ena_tim <= '0';
+										-- 	mode_2 <= IO_change;
+
+										-- end if;
 									when IO_change =>
 										seg_data <= "CLT" & character'val(client_num + 49) & ".00" & character'val(data_len(client_num) + 48);
 										data_g <= (others => (others => '1'));
@@ -610,9 +672,80 @@ begin
 											else
 												cnt_i := 0;
 												cnt_j := 0;
-												mode_2 <= lcd_change;
+												mode_2 <= show_rx_data;
 												msec_flag <= '1';
 											end if;
+										end if;
+
+									when show_rx_data =>
+										if msec_flag = '1' then
+											ena_tim <= '1';
+											ena_tim_lcd <= '1';
+											msec_flag <= '0';
+										end if;
+										if msec > 20 then
+											l_clear <= '0';
+											font_start <= '1';
+										end if;
+										if txt_cnt = 0 then
+											x <= 0;
+											y <= 53 * 0;
+											font_mode <= 2;
+											text_data(1 to 4) <= "RX " & to_string(rx_length, rx_length'high, 10, 1);
+										end if;
+										if txt_cnt = 1 then
+											x <= 0;
+											y <= 53 * 1;
+											font_mode <= 2;
+											if lcd_cnt = 0 then
+												text_data(1 to 2) <= data_buffer(3 to 4);
+											elsif lcd_cnt = 1 then
+												text_data(1 to 2) <= data_buffer(6 to 7);
+											elsif lcd_cnt = 2 then
+												text_data(1 to 2) <= data_buffer(9 to 10);
+											elsif lcd_cnt = 3 then
+												text_data(1 to 2) <= data_buffer(12 to 13);
+											end if;
+											text_data(3 to 4) <= "  ";
+											font_start <= '1';
+										end if;
+										if txt_cnt = 2 then
+											x <= 0;
+											y <= 53 * 2;
+											font_mode <= 2;
+											if OF_flag = '1' then
+												text_data(1 to 4) <= " OF1";
+											elsif OF_flag = '0' then
+												text_data(1 to 4) <= " OF ";
+											end if;
+											font_start <= '1';
+										end if;
+										if (msec_lcd/500)mod 2 = 0 then
+											lcd_flag <= '1';
+										else
+											lcd_flag <= '0';
+											if lcd_flag = '1' then
+												if lcd_cnt + 1 >= rx_length then
+													init_flag <= '1';
+													lcd_cnt <= 0;
+												else
+													lcd_cnt <= lcd_cnt + 1;
+												end if;
+											end if;
+										end if;
+										if font_busy = '1' then
+											font_start <= '0';
+											if txt_cnt <= 2 then
+												txt_cnt <= txt_cnt + 1;
+											else
+												txt_cnt <= 0;
+											end if;
+											ena_tim <= '1';
+										end if;
+										if init_flag = '1' then
+											mode_2 <= lcd_txt;
+											lcd_cnt <= 0;
+											init_flag <= '0';
 										end if;
 									when lcd_change =>
 										if msec_flag = '1' then
@@ -621,23 +754,25 @@ begin
 										end if;
 										if msec > 20 then
 											l_clear <= '0';
-											font_mode <= 2;
 											font_start <= '1';
 										end if;
 										if txt_cnt = 0 then
 											x <= 0;
 											y <= 53 * 0;
-											text_data(1 to 4) <= "  RX";
+											font_mode <= 2;
+											text_data(1 to 4) <= "RX " & to_string(rx_length, rx_length'high, 10, 1);
 										end if;
 										if txt_cnt = 1 then
 											x <= 0;
 											y <= 53 * 1;
+											font_mode <= 0;
 											text_data(1 to rx_len) <= data_buffer(1 to rx_len);
 											font_start <= '1';
 										end if;
 										if txt_cnt = 2 then
 											x <= 0;
 											y <= 53 * 2;
+											font_mode <= 2;
 											if OF_flag = '1' then
 												text_data(1 to 4) <= " OF1";
 											elsif OF_flag = '0' then
@@ -655,13 +790,12 @@ begin
 											end if;
 											ena_tim <= '1';
 										end if;
-										ena_tim <= '1';
-										if msec > 1000 then
-											ena_tim <= '0';
-											l_clear <= '1';
-											bg_color <= white;
-											mode_2 <= lcd_txt;
-											msec_flag <= '1';
+										if pressed = '1' then
+											case key is
+												when 15 =>
+													mode_2 <= IO_init;
+												when others => null;
+											end case;
 										end if;
 									when lcd_txt =>
 										if msec_flag = '1' then
@@ -678,76 +812,69 @@ begin
 											x <= 0;
 											y <= 0;
 											text_size <= 1;
-											text_data(1 to 8) <= data_set(0);
-											text_data(9 to 12) <= (others => character'val(32));
+											text_data <= data_set(0)(1 to 2) & data_set(0)(4 to 5) & data_set(0)(7 to 8) &
+												data_set(0)(10 to 11) & data_set(0)(13 to 14) & data_set(0)(16 to 17);
 										end if;
 										if txt_cnt = 1 then
 											x <= 0;
 											y <= 16;
 											text_size <= 1;
-											text_data(1 to 8) <= data_set(1);
-											text_data(9 to 12) <= (others => character'val(32));
+											text_data <= data_set(1)(1 to 2) & data_set(1)(4 to 5) & data_set(1)(7 to 8) &
+												data_set(1)(10 to 11) & data_set(1)(13 to 14) & data_set(1)(16 to 17);
 											font_start <= '1';
 										end if;
 										if txt_cnt = 2 then
 											x <= 0;
 											y <= 32;
 											text_size <= 1;
-											text_data(1 to 8) <= data_set(2);
-											text_data(9 to 12) <= (others => character'val(32));
+											text_data <= data_set(2)(1 to 2) & data_set(2)(4 to 5) & data_set(2)(7 to 8) &
+												data_set(2)(10 to 11) & data_set(2)(13 to 14) & data_set(2)(16 to 17);
 											font_start <= '1';
 										end if;
 										if txt_cnt = 3 then
 											x <= 0;
 											y <= 48;
 											text_size <= 1;
-											text_data(1 to 8) <= data_set(3);
-											text_data(9 to 12) <= (others => character'val(32));
+											text_data <= data_set(3)(1 to 2) & data_set(3)(4 to 5) & data_set(3)(7 to 8) &
+												data_set(3)(10 to 11) & data_set(3)(13 to 14) & data_set(3)(16 to 17);
 											font_start <= '1';
 										end if;
 										if txt_cnt = 4 then
 											x <= 0;
 											y <= 64;
 											text_size <= 1;
-											text_data(1 to 8) <= data_set(4);
-											text_data(9 to 12) <= (others => character'val(32));
+											text_data <= data_set(4)(1 to 2) & data_set(4)(4 to 5) & data_set(4)(7 to 8) &
+												data_set(4)(10 to 11) & data_set(4)(13 to 14) & data_set(4)(16 to 17);
 											font_start <= '1';
 										end if;
 										if txt_cnt = 5 then
 											x <= 0;
 											y <= 80;
 											text_size <= 1;
-											text_data(1 to 8) <= data_set(5);
-											text_data(9 to 12) <= (others => character'val(32));
+											text_data <= data_set(5)(1 to 2) & data_set(5)(4 to 5) & data_set(5)(7 to 8) &
+												data_set(5)(10 to 11) & data_set(5)(13 to 14) & data_set(5)(16 to 17);
 											font_start <= '1';
 										end if;
 										if txt_cnt = 6 then
 											x <= 0;
 											y <= 96;
 											text_size <= 1;
-											text_data(1 to 8) <= data_set(6);
-											text_data(9 to 12) <= (others => character'val(32));
+											text_data <= data_set(6)(1 to 2) & data_set(6)(4 to 5) & data_set(6)(7 to 8) &
+												data_set(6)(10 to 11) & data_set(6)(13 to 14) & data_set(6)(16 to 17);
 											font_start <= '1';
 										end if;
 										if txt_cnt = 7 then
 											x <= 0;
 											y <= 112;
 											text_size <= 1;
-											text_data(1 to 8) <= data_set(7);
-											text_data(9 to 12) <= (others => character'val(32));
+											text_data <= data_set(7)(1 to 2) & data_set(7)(4 to 5) & data_set(7)(7 to 8) &
+												data_set(7)(10 to 11) & data_set(7)(13 to 14) & data_set(7)(16 to 17);
 											font_start <= '1';
 										end if;
-										if txt_cnt = 8 then
-											x <= 0;
-											y <= 128;
-											text_size <= 1;
-											text_data(1 to 8) <= data_buffer;
-											text_data(9 to 12) <= (others => character'val(32));
-											font_start <= '1';
-										end if;
+
 										if font_busy = '1' then
 											font_start <= '0';
-											if txt_cnt <= 8 then
+											if txt_cnt <= 7 then
 												txt_cnt <= txt_cnt + 1;
 											else
 												txt_cnt <= 0;
@@ -761,10 +888,9 @@ begin
 												when others => null;
 											end case;
 										end if;
-									when others => null;
+									when others => mode_2 <= init;
 								end case;
-
-							when "10" =>
+							when mode10 =>
 								case mode_3 is
 									when init =>
 										led_r <= '0';
@@ -807,7 +933,6 @@ begin
 										else
 											data_r(cnt_j)(cnt_i) <= '0';
 										end if;
-
 										if cnt_j < 7 then
 											cnt_j := cnt_j + 1;
 										else
@@ -826,7 +951,7 @@ begin
 										else
 											data_r(cnt_j)(cnt_i) <= '0';
 										end if;
-
+										
 										if cnt_j < 7 then
 											cnt_j := cnt_j + 1;
 										else
@@ -840,7 +965,6 @@ begin
 												mode_dot <= init;
 											end if;
 										end if;
-
 									when del_sel =>
 										case mode_dot is
 											when init =>
@@ -888,6 +1012,7 @@ begin
 														when 14 => mode_3 <= del_esc;
 														when 15 => mode_3 <= del_data;
 															cnt_i := 0;
+															cnt_j := 0;
 														when others => null;
 													end case;
 												end if;
@@ -923,13 +1048,17 @@ begin
 									when del_esc =>
 										mode_3 <= ensure;
 									when del_data =>
-										if orange_dot = '1' then --現在(dot_y,dot_x)的點如果有資料	
+										if orange_dot = '1' then --現在(dot_y,dot_x)的點如果有資料
+											-- data_set(dot_x)(3 * cnt_i + 1) <= data_set(dot_x)(3 * cnt_i + 1);
 
 											if cnt_i >= dot_y and cnt_i < 7 then--從後往前補資料
-												data_set(dot_x)(cnt_i + 1) <= data_set(dot_x)(cnt_i + 2);
-
+												data_set(dot_x)(3 * cnt_i + 1) <= data_set(dot_x)(3 * (cnt_i + 1) + 1);
+												data_set(dot_x)(3 * cnt_i + 2) <= data_set(dot_x)(3 * (cnt_i + 1) + 2);
+												data_set(dot_x)(3 * cnt_i + 3) <= data_set(dot_x)(3 * (cnt_i + 1) + 3);
 											elsif cnt_i = 7 then --最後一位補空格
-												data_set(dot_x)(cnt_i + 1) <= ' ';
+												data_set(dot_x)(3 * cnt_i + 1) <= ' ';
+												data_set(dot_x)(3 * cnt_i + 2) <= ' ';
+												data_set(dot_x)(3 * cnt_i + 3) <= ' ';
 											end if;
 
 											if cnt_i < 7 then
@@ -942,18 +1071,6 @@ begin
 												mode_3 <= del_sel;
 											end if;
 
-											-- for i in 1 to 8 loop
-											-- 	if i = 8 then --最後一位補空格
-											-- 		data_set(dot_x)(i) <= ' ';
-											-- 	elsif i > dot_y and i < 8 then--從後往前補資料
-											-- 		data_set(dot_x)(i) <= data_set(dot_x)(i + 1);
-											-- 	end if;
-											-- end loop;
-											-- data_len(dot_x) <= data_len(dot_x) - 1;--長度-1
-											-- orange_dot <= '0';--狀態改變=> 當再次移開時會變綠色
-											-- mode_dot <= move;
-											-- mode_3 <= del_sel;
-											
 										elsif orange_dot = '0' then--如果沒有資料 =>甚麼都不做回歸原地del_sel狀態
 											mode_dot <= move;
 											mode_3 <= del_sel;
@@ -962,7 +1079,7 @@ begin
 									when IO_change =>
 									when lcd_txt =>
 								end case;
-							when "11" =>
+							when mode11 =>
 								case mode_4 is
 									when init =>
 										--I/O init
@@ -991,91 +1108,12 @@ begin
 												end case;
 											end if;
 										end if;
-										ena_tim <= '1';
-										if msec >= 20 then
-											ena_tim <= '0';
-											l_clear <= '0';
-											font_start <= '1';
-											font_mode <= 0;
-										end if;
-										if txt_cnt = 0 then
-											x <= 0;
-											y <= 0;
-											text_size <= 1;
-											text_data(1 to 8) <= data_set(0);
-											text_data(9 to 12) <= (others => character'val(32));
-										end if;
-										if txt_cnt = 1 then
-											x <= 0;
-											y <= 16;
-											text_size <= 1;
-											text_data(1 to 8) <= data_set(1);
-											text_data(9 to 12) <= (others => character'val(32));
-											font_start <= '1';
-										end if;
-										if txt_cnt = 2 then
-											x <= 0;
-											y <= 32;
-											text_size <= 1;
-											text_data(1 to 8) <= data_set(2);
-											text_data(9 to 12) <= (others => character'val(32));
-											font_start <= '1';
-										end if;
-										if txt_cnt = 3 then
-											x <= 0;
-											y <= 48;
-											text_size <= 1;
-											text_data(1 to 8) <= data_set(3);
-											text_data(9 to 12) <= (others => character'val(32));
-											font_start <= '1';
-										end if;
-										if txt_cnt = 4 then
-											x <= 0;
-											y <= 64;
-											text_size <= 1;
-											text_data(1 to 8) <= data_set(4);
-											text_data(9 to 12) <= (others => character'val(32));
-											font_start <= '1';
-										end if;
-										if txt_cnt = 5 then
-											x <= 0;
-											y <= 80;
-											text_size <= 1;
-											text_data(1 to 8) <= data_set(5);
-											text_data(9 to 12) <= (others => character'val(32));
-											font_start <= '1';
-										end if;
-										if txt_cnt = 6 then
-											x <= 0;
-											y <= 96;
-											text_size <= 1;
-											text_data(1 to 8) <= data_set(6);
-											text_data(9 to 12) <= (others => character'val(32));
-											font_start <= '1';
-										end if;
-										if txt_cnt = 7 then
-											x <= 0;
-											y <= 112;
-											text_size <= 1;
-											text_data(1 to 8) <= data_set(7);
-											text_data(9 to 12) <= (others => character'val(32));
-											font_start <= '1';
-										end if;
-										if font_busy = '1' then
-											font_start <= '0';
-											if txt_cnt <= 7 then
-												txt_cnt <= txt_cnt + 1;
-											else
-												txt_cnt <= 0;
-											end if;
-											ena_tim <= '1';
-										end if;
 									when txi_data => --傳資料的狀態機
 										case mode_tx is
 											when idle =>
 												if tx_busy = '0' then
-													tx_data(1 to 8) <= data_set(client_num)(1 to 8);
-													tx_len <= 8;
+													tx_data(1 to txt_len_max) <= data_set(client_num)(1 to txt_len_max);
+													tx_len <= txt_len_max;
 													tx_mode <= '0';
 													tx_ena <= '1';
 													mode_tx <= send;

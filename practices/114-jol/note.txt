@@ -1,0 +1,35 @@
+
+< tts.py >
+e.g.
+輸入：
+3
+goodbye
+再見
+hello
+你好
+seeyou
+下次見
+
+輸出：
+constant max_len : integer := 6;
+
+-- "再見", 4
+-- tts_data(0 to 3) <= goodbye;
+-- tts_len <= 4;
+constant goodbye : u8_arr_t(0 to 3) := (
+        x"a6", x"41", x"a8", x"a3"
+);
+
+-- "你好", 4
+-- tts_data(0 to 3) <= hello;
+-- tts_len <= 4;
+constant hello : u8_arr_t(0 to 3) := (
+        x"a7", x"41", x"a6", x"6e"
+);
+
+-- "下次見", 6
+-- tts_data(0 to 5) <= seeyou;
+-- tts_len <= 6;
+constant seeyou : u8_arr_t(0 to 5) := (
+        x"a4", x"55", x"a6", x"b8", x"a8", x"a3"
+);

@@ -53,7 +53,7 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY v20_114_2
+	set_global_assignment -name TOP_LEVEL_ENTITY v11_114_2
 	
 	# testfile
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_rotate.vhd
@@ -72,8 +72,8 @@ if {$make_assignments} {
 
 	# 第二題
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v10_114_2.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v11_114_2.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v2/board/v20_114_2.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v11_114_2.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v2/board/v20_114_2.vhd
 	
 	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n0.qip
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/n0.vhd
@@ -109,9 +109,10 @@ if {$make_assignments} {
 	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/aK.qip
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aK.vhd
 
-	# # # 第一題
-	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v2/board_1/v2_114_1_a.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_1/v1_114_1_a.vhd
+	# # # # 第一題
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_1/v10_114_1_a.vhd
+	# # set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v3/board_1/v30_114_1_a.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v2/board_1/v21_114_1_a.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_2/v1_114_1_b.vhd
 
 	# set_global_assignment -name QIP_FILE practices/114-jol/114_1_v1/pic/n1.qip
