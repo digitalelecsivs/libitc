@@ -1,10 +1,20 @@
     元件名稱         修改時間    註解                                                                         
 lcd_mix_copy1       114/11/26  原稿
-lcd_mix_copy2       114/11/26  lcd_mix第一次修改
-lcd_mix_copy3       114/11/26  將不需要的腳位移除了=>con、pic_data、pic_addr、text_count 
+lcd_mix_copy2       114/11/26  lcd_mix第一次修改 => 更改字型的邊界切割函數
+lcd_mix_copy3       114/11/26  將不需要的腳位移除了=>con、pic_data、pic_addr、text_count
+lcd_mix_ascii       114/11/2-  原稿的減法整理最終版 11*20 font.mif 
 lcd_mix_num_3_3     114/11/26  測試用 將原本的字模移除，使用3*3排版 字模大小32*53 font_num
 lcd_mix_num_4_3     114/11/26  測試用 將原本的字模移除，使用4*3排版 字模大小32*53 font_num
-lcd_mix_integerate  114/11/26  結合font_ascii和font_num
-font_num            114/11/26  320*53 => 0~9 的數字字模
-font_num_aph        114/11/28  2016*53 => 0~9 a~z A~Z 的字模 012345789 ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
-lcd_mix_num_aph     114/12/01  單獨測試font_num_aph的字模
+lcd_mix_num_aph     114/12/01  測試用 字模大小32*53 font_num_aph的字模
+font.mif            ---/--/--  1056*20  => perchar 11*20 => ascii 32 ~ 127 
+font_num.mif        114/11/26  352*53   => perchar 32*53 => 0~9 + 空白  012345789_ (底線為空白)
+font_num_aph.mif    114/11/28  2016*53  => perchar 32*53 => 0~9 a~z A~Z 012345789 ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+lcd_mix_intgr_aph   114/12/--  font + font_num_aph 的整合
+lcd_mix_intgr_num   114/12/--  font + font_num 的整合
+
+可用
+lcd_mix_ascii       114/11/2-  font 
+lcd_mix_intgr_aph   114/12/--  font + font_num_aph 的整合
+lcd_mix_intgr_num   114/12/--  font + font_num 的整合
+
+

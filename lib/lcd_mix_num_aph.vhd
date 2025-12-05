@@ -5,8 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
--- 模組名稱：lcd_mix (Advanced Numeric Display)
--- 移除了 text_size
+--	font_num_aph
 entity lcd_mix is
 	port (
 		-- system
@@ -75,13 +74,6 @@ begin
 			data       => l_data
 		);
 
-	-- 實體化您的 Font_Numeric ROM (16960 x 1 bit)
-	-- Font_Numeric_inst : entity work.Font_numeric(syn)
-	-- 	port map(
-	-- 		address => std_logic_vector(to_unsigned(l_addr_p, 15)),
-	-- 		clock   => clk,
-	-- 		q       => q
-	-- 	);
 	Font_Num_Aph_inst : entity work.Font_aph_num(syn)
 		port map(
 			address => std_logic_vector(to_unsigned(l_addr_mix, 17)),

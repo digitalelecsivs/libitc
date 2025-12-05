@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity txt_lcd_mix_font_num is
+entity txt_test2 is
 	port (
 		clk                                                     : in std_logic;
 		rst_n                                                   : in std_logic;
@@ -14,9 +14,9 @@ entity txt_lcd_mix_font_num is
 		key_row : in u4r_t;
 		key_col : out u4r_t
 	);
-end txt_lcd_mix_font_num;
+end txt_test2;
 
-architecture arch of txt_lcd_mix_font_num is
+architecture arch of txt_test2 is
 	signal l_addr, msi_addr : l_addr_t;
 	signal l_data : l_px_t;
 	signal msi_data_i : std_logic_vector(23 downto 0);
@@ -26,6 +26,7 @@ architecture arch of txt_lcd_mix_font_num is
 	signal font_mode : integer range 0 to 2;
 	signal text_size : integer range 1 to 12;
 	signal bg_color : l_px_t;
+	signal text_color_array : l_px_arr_t(1 to 12);
 	-- signal 
 
 	type state is (font_1, font_2, font_3, init);
@@ -44,8 +45,18 @@ architecture arch of txt_lcd_mix_font_num is
 	signal txt_cnt : integer range 0 to 15;
 	signal trigger_i : std_logic;
 	signal trigger : std_logic;
-	signal cnt : integer range 0 to 999 := 0;
+	signal cnt : integer range 0 to 9999 := 0;
 	signal mode_state : std_logic_vector(0 to 2);
+	signal n0_addr, n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr : l_addr_t;
+	signal n0_data, n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data : l_px_t;
+	signal n0_data_i, n1_data_i, n2_data_i, n3_data_i, n4_data_i, n5_data_i, n6_data_i, n7_data_i, n8_data_i, n9_data_i : std_logic_vector(23 downto 0);
+	signal R_addr, X_addr, O_addr, F_addr, T_addr, OF_addr, K_addr : l_addr_t;
+	signal R_data, X_data, O_data, F_data, T_data, OF_data, K_data : l_px_t;
+	signal R_data_i, X_data_i, O_data_i, F_data_i, T_data_i, OF_data_i, K_data_i : std_logic_vector(23 downto 0);
+	type addr_array_t is array (integer range <>) of l_addr_t;
+	type data_array_t is array (integer range <>) of l_px_t;
+	signal data_array : data_array_t(0 to 9) := (n0_data, n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data);
+	signal addr_array : addr_array_t(0 to 9) := (n0_addr, n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr);
 begin
 	clk_inst : entity work.clk(arch)
 		generic map(
@@ -110,7 +121,7 @@ begin
 			font_mode        => font_mode,
 			addr             => l_addr,
 			bg_color         => bg_color,
-			text_color_array => (others => blue),
+			text_color_array => text_color_array,
 			clear            => l_clear,
 
 			lcd_sclk  => lcd_sclk,
@@ -120,13 +131,7 @@ begin
 			lcd_bl    => lcd_bl,
 			lcd_rst_n => lcd_rst_n
 		);
-	Num1 : entity work.msi_icon(syn)
-		port map(
-			address => std_logic_vector(to_unsigned(msi_addr, 15)),
-			clock   => clk,
-			q       => msi_data_i
-		);
-	msi_data <= unsigned(msi_data_i);
+
 	process (clk, rst_n)
 	begin
 		if rst_n = '0' then
@@ -138,14 +143,9 @@ begin
 			ena_tim <= '1';
 			text_data <= (others => character'val(32));
 			cnt <= 0;
+			mode <= font_1;
 		elsif rising_edge(clk) then
-			if trigger = '1' then
-				if cnt = cnt'high then
-					cnt <= 0;
-				else
-					cnt <= cnt + 1;
-				end if;
-			end if;
+
 			case mode is
 				when init =>
 					l_clear <= '1';
@@ -161,52 +161,34 @@ begin
 							mode <= font_1;
 						end if;
 					end if;
+					cnt <= 0;
 				when font_1 =>
+					if trigger = '1' then
+						if cnt = cnt'high then
+							cnt <= 0;
+						else
+							cnt <= cnt + 1;
+						end if;
+					end if;
 					font_mode <= 0;
 					if msec >= 20 then
 						ena_tim <= '0';
 						l_clear <= '0';
 						font_start <= '1';
 					end if;
-					-- bg_color <= to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
-					-- msi_addr <= to_addr(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
-					for i in 0 to 4 loop
-						if i >= 0 and i < 2 then
-							if txt_cnt = i then
-								x <= 0;
-								y <= 16 * i;
-								text_data(1 to 3) <= to_string(cnt, cnt'high, 10, 3);
-								text_data(4 to 12) <= (others => character'val(32));
-								text_size <= 1;
-								font_start <= '1';
-							end if;
-						elsif i <= 2 and i < 3 then
-							if txt_cnt = i then
-								x <= 0;
-								y <= 32 * i - 16 * 2;
-								text_data(1 to 3) <= to_string(cnt, cnt'high, 10, 3);
-								text_data(4 to 12) <= (others => character'val(32));
 
-								text_size <= 2;
-								font_start <= '1';
-							end if;
-						elsif i <= 3 and i < 5 then
-							if txt_cnt = i then
-								x <= 0;
-								y <= 64 * i - 32 * 3 - 16 * 2;
-								text_data(1 to 3) <= to_string(cnt, cnt'high, 10, 3);
-								text_data(4 to 12) <= (others => character'val(32));
-
-								text_size <= 3;
-								font_start <= '1';
-							end if;
-
+					for i in 0 to 2 loop
+						if txt_cnt = i then
+							x <= 0;
+							y <= 53 * i;
+							text_data(1 to 4) <= to_string(cnt, cnt'high, 10, 4);
+							font_start <= '1';
 						end if;
 					end loop;
 
 					if font_busy = '1' then
 						font_start <= '0';
-						if txt_cnt <= 4 then
+						if txt_cnt <= 2 then
 							txt_cnt <= txt_cnt + 1;
 						else
 							txt_cnt <= 0;
@@ -218,20 +200,25 @@ begin
 						mode <= init;
 					end if;
 				when font_2 =>
+					if trigger = '1' then
+						if cnt = 30 then
+							cnt <= 0;
+						else
+							cnt <= cnt + 1;
+						end if;
+					end if;
 					font_mode <= 1;
 					if msec >= 20 then
 						ena_tim <= '0';
 						l_clear <= '0';
 						font_start <= '1';
 					end if;
-					-- bg_color <= to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
-					-- msi_addr <= to_addr(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
 
 					for i in 0 to 2 loop
 						if txt_cnt = i then
 							x <= 8;
 							y <= 53 * i;
-							text_data(1 to 3) <= to_string(cnt, cnt'high, 10, 3);
+							text_data(1 to 3) <= character'val(cnt + 48) & to_string(cnt, 30, 10, 2);
 							font_start <= '1';
 						end if;
 					end loop;
@@ -250,20 +237,25 @@ begin
 						mode <= init;
 					end if;
 				when font_3 =>
+					if trigger = '1' then
+						if cnt = 30 then
+							cnt <= 0;
+						else
+							cnt <= cnt + 1;
+						end if;
+					end if;
 					font_mode <= 2;
 					if msec >= 20 then
 						ena_tim <= '0';
 						l_clear <= '0';
 						font_start <= '1';
 					end if;
-					bg_color <= to_data(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
-					msi_addr <= to_addr(l_paste(l_addr, white, msi_data, (0, 0), 128, 160));
 
 					for i in 0 to 2 loop
 						if txt_cnt = i then
 							x <= 0;
 							y <= 53 * i;
-							text_data(1 to 4) <= to_string(cnt, cnt'high, 10, 4);
+							text_data(1 to 4) <= ' ' & character'val(cnt + 48) & to_string(cnt, 30, 10, 2);
 							font_start <= '1';
 						end if;
 					end loop;

@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity lcd_mix is
+entity lcd_mix_intgr_aph is
 	port (
 		-- system
 		clk, rst_n : in std_logic;
@@ -24,9 +24,9 @@ entity lcd_mix is
 		-- lcd
 		lcd_sclk, lcd_mosi, lcd_ss_n, lcd_dc, lcd_bl, lcd_rst_n : out std_logic-- 實際輸出實體化的腳位
 	);
-end lcd_mix;
+end lcd_mix_intgr_aph;
 
-architecture arch of lcd_mix is
+architecture arch of lcd_mix_intgr_aph is
 	signal color : l_px_t;
 	signal wr_ena : std_logic;
 	signal start_draw : std_logic;

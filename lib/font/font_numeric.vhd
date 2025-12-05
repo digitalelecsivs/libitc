@@ -4,7 +4,7 @@
 -- MODULE: altsyncram 
 
 -- ============================================================
--- File Name: font_numeric.vhd
+-- File Name: Font_numeric.vhd
 -- Megafunction Name(s):
 -- 			altsyncram
 --
@@ -39,14 +39,14 @@ USE ieee.std_logic_1164.all;
 LIBRARY altera_mf;
 USE altera_mf.altera_mf_components.all;
 
-ENTITY font_numeric IS
+ENTITY Font_numeric IS
 	PORT
 	(
 		address		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
 		q		: OUT STD_LOGIC_VECTOR (0 DOWNTO 0)
 	);
-END font_numeric;
+END Font_numeric;
 
 
 ARCHITECTURE SYN OF font_numeric IS
@@ -65,7 +65,7 @@ BEGIN
 		intended_device_family => "Cyclone III",
 		lpm_hint => "ENABLE_RUNTIME_MOD=NO",
 		lpm_type => "altsyncram",
-		numwords_a => 16960,
+		numwords_a => 18656,
 		operation_mode => "ROM",
 		outdata_aclr_a => "NONE",
 		outdata_reg_a => "CLOCK0",
@@ -103,8 +103,8 @@ END SYN;
 -- Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 -- Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
 -- Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
--- Retrieval info: PRIVATE: MIFfilename STRING "Font_numeric.mif"
--- Retrieval info: PRIVATE: NUMWORDS_A NUMERIC "16960"
+-- Retrieval info: PRIVATE: MIFfilename STRING "../../Users/user/Desktop/libitc/lib/font/Font_numeric.mif"
+-- Retrieval info: PRIVATE: NUMWORDS_A NUMERIC "18656"
 -- Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "0"
 -- Retrieval info: PRIVATE: RegAddr NUMERIC "1"
 -- Retrieval info: PRIVATE: RegOutput NUMERIC "1"
@@ -118,11 +118,11 @@ END SYN;
 -- Retrieval info: CONSTANT: ADDRESS_ACLR_A STRING "NONE"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_INPUT_A STRING "BYPASS"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
--- Retrieval info: CONSTANT: INIT_FILE STRING "Font_numeric.mif"
+-- Retrieval info: CONSTANT: INIT_FILE STRING "../../Users/user/Desktop/libitc/lib/font/Font_numeric.mif"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone III"
 -- Retrieval info: CONSTANT: LPM_HINT STRING "ENABLE_RUNTIME_MOD=NO"
 -- Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
--- Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "16960"
+-- Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "18656"
 -- Retrieval info: CONSTANT: OPERATION_MODE STRING "ROM"
 -- Retrieval info: CONSTANT: OUTDATA_ACLR_A STRING "NONE"
 -- Retrieval info: CONSTANT: OUTDATA_REG_A STRING "CLOCK0"
@@ -135,9 +135,9 @@ END SYN;
 -- Retrieval info: CONNECT: @address_a 0 0 15 0 address 0 0 15 0
 -- Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: q 0 0 1 0 @q_a 0 0 1 0
--- Retrieval info: GEN_FILE: TYPE_NORMAL font_numeric.vhd TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL font_numeric.inc FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL font_numeric.cmp TRUE
--- Retrieval info: GEN_FILE: TYPE_NORMAL font_numeric.bsf FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL font_numeric_inst.vhd FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Font_numeric.vhd TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Font_numeric.inc FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Font_numeric.cmp TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Font_numeric.bsf FALSE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL Font_numeric_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: altera_mf

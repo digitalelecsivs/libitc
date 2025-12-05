@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity v11_114_2 is
+entity v12_114_2 is
 	port (
 		-- sys
 		clk   : in std_logic;
@@ -26,9 +26,9 @@ entity v11_114_2 is
 		dbg_b : out u8r_t; -- dbg
 		dbg_a : out u8r_t
 	);
-end v11_114_2;
+end v12_114_2;
 
-architecture arch of v11_114_2 is
+architecture arch of v12_114_2 is
 	--state machine
 	type state_t is (init, Main);--總狀態機
 	type state_m is (mode00, mode01, mode10, mode11);--第一層=>總狀態機的Main
@@ -114,6 +114,8 @@ architecture arch of v11_114_2 is
 	signal txt_OF : string(1 to 4) := " OF ";
 	signal txt_OF1 : string(1 to 4) := " OF1";
 	signal txt_OK : string(1 to 4) := " OK ";
+	signal del_cnt : i4_arr_t(0 to 3) := (others => 0);
+	signal del_state : u8_arr_t(0 to 7) := (others => (others => '0'));
 	-- signal cnt_i : integer range 0 to 8;
 	-- signal cnt_j : integer range 0 to 8;
 
@@ -783,6 +785,8 @@ begin
 												when others => null;
 											end case;
 										end if;
+										del_cnt <= (others => '0');
+										del_state <= (others => (others => '0'));
 									when ensure =>
 										--當按下確認鍵後會進到ensure，在按下清除建會進到刪除模式
 										--會先洗一遍dot，就不會再洗
@@ -886,8 +890,9 @@ begin
 																mode_dot <= data_state;
 															end if;
 														when 14 => mode_3 <= del_esc;
-														when 15 => mode_3 <= del_data;
 															cnt_i := 0;
+														when 15 => mode_3 <= del_data;
+
 														when others => null;
 													end case;
 												end if;
@@ -921,26 +926,44 @@ begin
 												mode_dot <= move;
 										end case;
 									when del_esc =>
-										mode_3 <= ensure;
-									when del_data =>
-										if orange_dot = '1' then --現在(dot_y,dot_x)的點如果有資料	
-
+										-- 未完成
+										if del_state(cnt_i)(cnt_j) = '1' then
 											if cnt_i >= dot_y and cnt_i < 7 then--從後往前補資料
 												data_set(dot_x)(cnt_i + 1) <= data_set(dot_x)(cnt_i + 2);
-
 											elsif cnt_i = 7 then --最後一位補空格
 												data_set(dot_x)(cnt_i + 1) <= ' ';
 											end if;
+										end if;
 
+										if cnt_j < data_len(cnt_i) then
+											data_r(cnt_j)(cnt_i) <= '1';
+										else
+											data_r(cnt_j)(cnt_i) <= '0';
+										end if;
+
+										if cnt_j < 7 then
+											cnt_j := cnt_j + 1;
+										else
+											cnt_j := 0;
 											if cnt_i < 7 then
 												cnt_i := cnt_i + 1;
 											else
 												cnt_i := 0;
-												data_len(dot_x) <= data_len(dot_x) - 1;--長度-1
-												orange_dot <= '0';--狀態改變=> 當再次移開時會變綠色
-												mode_dot <= move;
+												cnt_j := 0;
+												mode_dot <= ensure;
 												mode_3 <= del_sel;
 											end if;
+										end if;
+										-- 未完成
+										-- mode_3 <= ensure;
+									when del_data =>
+										if orange_dot = '1' then --現在(dot_y,dot_x)的點如果有資料	
+											del_state(dot_x)(dot_y) <= '1';
+											del_cnt(dot_x) <= del_cnt(dot_x) + 1;
+											data_len(dot_x) <= data_len(dot_x) - 1;--長度-1
+											orange_dot <= '0';--狀態改變=> 當再次移開時會變綠色
+											mode_dot <= move;
+											mode_3 <= del_sel;
 											-- for i in 1 to 8 loop
 											-- 	if i = 8 then --最後一位補空格
 											-- 		data_set(dot_x)(i) <= ' ';
@@ -952,7 +975,7 @@ begin
 											-- orange_dot <= '0';--狀態改變=> 當再次移開時會變綠色
 											-- mode_dot <= move;
 											-- mode_3 <= del_sel;
-											
+
 										elsif orange_dot = '0' then--如果沒有資料 =>甚麼都不做回歸原地del_sel狀態
 											mode_dot <= move;
 											mode_3 <= del_sel;

@@ -59,7 +59,8 @@ if {$make_assignments} {
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_rotate.vhd
 	# # set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_test.vhd
 	# # set_global_assignment -name VHDL_FILE practices/114-jol/test/dot_try.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/txt_test.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/txt_test1.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/txt_test2.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/txtest_font_aph_num.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_paste.vhd
 	# # set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_rotate.vhd
@@ -110,8 +111,8 @@ if {$make_assignments} {
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/pic1/aK.vhd
 
 	# # # # 第一題
-	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_1/v10_114_1_a.vhd
-	# # set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v3/board_1/v30_114_1_a.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_1/v11_114_1_a.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v3/board_1/v31_114_1_a.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v2/board_1/v21_114_1_a.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_2/v1_114_1_b.vhd
 
@@ -135,9 +136,10 @@ if {$make_assignments} {
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/pic/n9.vhd
 
 	## Components
-	set_global_assignment -name VHDL_FILE lib/lcd_mix.vhd
-	# set_global_assignment -name VHDL_FILE lib/lcd_mix_num_3_3.vhd
-	# set_global_assignment -name VHDL_FILE lib/lcd_mix_num_4_3.vhd
+	# set_global_assignment -name VHDL_FILE lib/lcd_mix.vhd
+	# set_global_assignment -name VHDL_FILE lib/lcd_mix_intgr_num.vhd
+	# set_global_assignment -name VHDL_FILE lib/lcd_mix_ascii.vhd
+	set_global_assignment -name VHDL_FILE lib/lcd_mix_intgr_aph.vhd
 	set_global_assignment -name VHDL_FILE lib/font/Font.vhd
 	set_global_assignment -name QIP_FILE lib/font/Font.qip
 	# set_global_assignment -name VHDL_FILE lib/font/Font_numeric.vhd

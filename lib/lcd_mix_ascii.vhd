@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity lcd_mix is
+entity lcd_mix_ascii is
 	port (
 		-- system
 		clk, rst_n : in std_logic;
@@ -17,16 +17,16 @@ entity lcd_mix is
 		text_size        : in integer range 1 to 12;     --選擇字型大小 --text_size
 		text_data        : in string(1 to 12);           --文字資料 --text_data 
 		addr             : out l_addr_t;                 --現在lcd掃描到的位置 --l_addr
-		text_color       : in l_px_t;                    --
+		-- text_color       : in l_px_t;                    --
 		bg_color         : in l_px_t;                    --背景顏色或圖片資料
 		text_color_array : in l_px_arr_t(1 to 12);
 		clear            : in std_logic; -- 模式控制: '0'=文字, '1'=圖片/清除
 		-- lcd
 		lcd_sclk, lcd_mosi, lcd_ss_n, lcd_dc, lcd_bl, lcd_rst_n : out std_logic-- 實際輸出實體化的腳位
 	);
-end lcd_mix;
+end lcd_mix_ascii;
 
-architecture arch of lcd_mix is
+architecture arch of lcd_mix_ascii is
 	signal color : l_px_t;
 	signal wr_ena : std_logic;
 	signal start_draw : std_logic;
@@ -35,7 +35,7 @@ architecture arch of lcd_mix is
 	signal q : std_logic_vector(0 downto 0);
 
 	-- 狀態機： 'draw_picture' 狀態已被移除
-	type status_t is (idle, draw_txt_txt, clear_screen);
+	type status_t is (idle, draw_txt, clear_screen);
 	signal status : status_t;
 
 	signal p_count : integer range 0 to 20;

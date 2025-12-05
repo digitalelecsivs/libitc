@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity lcd_mix is
+entity lcd_mix_intgr_num is
 	port (
 		-- system
 		clk, rst_n : in std_logic;
@@ -24,9 +24,9 @@ entity lcd_mix is
 		-- lcd
 		lcd_sclk, lcd_mosi, lcd_ss_n, lcd_dc, lcd_bl, lcd_rst_n : out std_logic-- 實際輸出實體化的腳位
 	);
-end lcd_mix;
+end lcd_mix_intgr_num;
 
-architecture arch of lcd_mix is
+architecture arch of lcd_mix_intgr_num is
 	signal color : l_px_t;
 	signal wr_ena : std_logic;
 	signal start_draw : std_logic;
@@ -80,9 +80,9 @@ begin
 			clock   => clk,
 			q       => q_1
 		);
-	Font_Num_Aph_inst : entity work.Font_aph_num(syn)
+	Font_Numeric_inst : entity work.Font_numeric(syn)
 		port map(
-			address => std_logic_vector(to_unsigned(l_addr_mix, 17)),
+			address => std_logic_vector(to_unsigned(l_addr_n, 15)),
 			clock   => clk,
 			q       => q_n
 		);
@@ -285,11 +285,8 @@ begin
 	end process;
 	q <= q_1 when font_mode = 0 else q_n;
 	l_addr_1 <= 1056 * data_y + data_x + first_px_1 when font_mode = 0 else 0;
-	l_addr_n <= 2016 * data_y + data_x + first_px_N when font_mode = 1 or font_mode = 2 else 0;
+	l_addr_n <= 352 * data_y + data_x + first_px_N when font_mode = 1 or font_mode = 2 else 0;
 	first_px_1 <= 950 when (text_data(count + 1) = 'd') and (text_data(count + 2) = 'C') else (character'pos(text_data(count + 1)) - 32) * 10 + lcd_x;
-	first_px <= 129 when character'pos(text_data(count + 1)) = 52 else
-		(character'pos(text_data(count + 1)) - 48) * 32 when (character'pos(text_data(count + 1)) >= 48) and (character'pos(text_data(count + 1)) <= 57) else
-		(character'pos(text_data(count + 1)) - 56) * 32 when (character'pos(text_data(count + 1)) >= 6) and (character'pos(text_data(count + 1)) <= 92) else
-		(character'pos(text_data(count + 1)) - 60) * 32 when (character'pos(text_data(count + 1)) >= 97) and (character'pos(text_data(count + 1)) <= 122)else 32 * 10;
-
+	first_px_N <= 95 when character'pos(text_data(count + 1)) - 48 = 3 else
+		(character'pos(text_data(count + 1)) - 48) * 32 when character'pos(text_data(count + 1)) >= 48 and character'pos(text_data(count + 1)) <= 57 else 320;
 end arch;

@@ -304,17 +304,17 @@ begin
 				rising  => pressed,
 				falling => pressed_f
 			);
-		lcd_mix_inst : entity work.lcd_mix(arch)
+		lcd_mix_inst : entity work.lcd_mix_ascii(arch)
 			port map(
-				clk              => clk,
-				rst_n            => rst_n,
-				x                => x,
-				y                => y,
-				font_start       => font_start,
-				font_busy        => font_busy_i,
-				text_size        => text_size,
-				text_data        => text_data,
-				font_mode        => 0,
+				clk        => clk,
+				rst_n      => rst_n,
+				x          => x,
+				y          => y,
+				font_start => font_start,
+				font_busy  => font_busy_i,
+				text_size  => text_size,
+				text_data  => text_data,
+				-- font_mode        => 0,
 				addr             => l_addr,
 				bg_color         => bg_color,
 				text_color_array => text_color_array,
@@ -562,23 +562,78 @@ begin
 										when others => null;
 									end case;
 								end if;
-								for i in 0 to 8 loop
-									if i = 0 then
-										if key_state(i + 1) = '0' then
-											pic(i) := white;
-										elsif key_state(i + 1) = '1' then
-											pic(i) := to_data(l_paste(l_addr, white, data_array(i), map_coord(i), 42, 53));
-											addr_array(i) <= to_addr(l_paste(l_addr, white, data_array(i), map_coord(i), 42, 53));
-										end if;
-									elsif i > 0 then
-										if key_state(i + 1) = '0' then
-											pic(i) := pic(i - 1);
-										elsif key_state(i + 1) = '1' then
-											pic(i) := to_data(l_paste(l_addr, pic(i - 1), data_array(i), map_coord(i), 42, 53));
-											addr_array(i) <= to_addr(l_paste(l_addr, pic(i - 1), data_array(i), map_coord(i), 42, 53));
-										end if;
-									end if;
-								end loop;
+								if key_state(1) = '0' then
+									pic(0) := white;
+								elsif key_state(1) = '1' then
+									pic(0) := to_data(l_paste(l_addr, white, data_array(0), map_coord(0), 42, 53));
+									addr_array(0) <= to_addr(l_paste(l_addr, white, data_array(0), map_coord(0), 42, 53));
+								end if;
+								if key_state(2) = '0' then
+									pic(1) := pic(0);
+								elsif key_state(2) = '1' then
+									pic(1) := to_data(l_paste(l_addr, pic(0), data_array(1), map_coord(1), 42, 53));
+									addr_array(1) <= to_addr(l_paste(l_addr, pic(0), data_array(1), map_coord(1), 42, 53));
+								end if;
+								if key_state(3) = '0' then
+									pic(2) := pic(1);
+								elsif key_state(3) = '1' then
+									pic(2) := to_data(l_paste(l_addr, pic(1), data_array(2), map_coord(2), 42, 53));
+									addr_array(2) <= to_addr(l_paste(l_addr, pic(1), data_array(2), map_coord(2), 42, 53));
+								end if;
+								if key_state(4) = '0' then
+									pic(3) := pic(2);
+								elsif key_state(4) = '1' then
+									pic(3) := to_data(l_paste(l_addr, pic(2), data_array(3), map_coord(3), 42, 53));
+									addr_array(3) <= to_addr(l_paste(l_addr, pic(2), data_array(3), map_coord(3), 42, 53));
+								end if;
+								if key_state(5) = '0' then
+									pic(4) := pic(3);
+								elsif key_state(5) = '1' then
+									pic(4) := to_data(l_paste(l_addr, pic(3), data_array(4), map_coord(4), 42, 53));
+									addr_array(4) <= to_addr(l_paste(l_addr, pic(3), data_array(4), map_coord(4), 42, 53));
+								end if;
+								if key_state(6) = '0' then
+									pic(5) := pic(4);
+								elsif key_state(6) = '1' then
+									pic(5) := to_data(l_paste(l_addr, pic(4), data_array(5), map_coord(5), 42, 53));
+									addr_array(5) <= to_addr(l_paste(l_addr, pic(4), data_array(5), map_coord(5), 42, 53));
+								end if;
+								if key_state(7) = '0' then
+									pic(6) := pic(5);
+								elsif key_state(7) = '1' then
+									pic(6) := to_data(l_paste(l_addr, pic(5), data_array(6), map_coord(6), 42, 53));
+									addr_array(6) <= to_addr(l_paste(l_addr, pic(5), data_array(6), map_coord(6), 42, 53));
+								end if;
+								if key_state(8) = '0' then
+									pic(7) := pic(6);
+								elsif key_state(8) = '1' then
+									pic(7) := to_data(l_paste(l_addr, pic(6), data_array(7), map_coord(7), 42, 53));
+									addr_array(7) <= to_addr(l_paste(l_addr, pic(6), data_array(7), map_coord(7), 42, 53));
+								end if;
+								if key_state(9) = '0' then
+									pic(8) := pic(7);
+								elsif key_state(9) = '1' then
+									pic(8) := to_data(l_paste(l_addr, pic(7), data_array(8), map_coord(8), 42, 53));
+									addr_array(8) <= to_addr(l_paste(l_addr, pic(7), data_array(8), map_coord(8), 42, 53));
+								end if;
+
+								-- for i in 0 to 8 loop
+								-- 	if i = 0 then
+								-- 		if key_state(i + 1) = '0' then
+								-- 			pic(i) := white;
+								-- 		elsif key_state(i + 1) = '1' then
+								-- 			pic(i) := to_data(l_paste(l_addr, white, data_array(i), map_coord(i), 42, 53));
+								-- 			addr_array(i) <= to_addr(l_paste(l_addr, white, data_array(i), map_coord(i), 42, 53));
+								-- 		end if;
+								-- 	elsif i > 0 then
+								-- 		if key_state(i + 1) = '0' then
+								-- 			pic(i) := pic(i - 1);
+								-- 		elsif key_state(i + 1) = '1' then
+								-- 			pic(i) := to_data(l_paste(l_addr, pic(i - 1), data_array(i), map_coord(i), 42, 53));
+								-- 			addr_array(i) <= to_addr(l_paste(l_addr, pic(i - 1), data_array(i), map_coord(i), 42, 53));
+								-- 		end if;
+								-- 	end if;
+								-- end loop;
 							when txt_mode =>
 								if pressed = '1' then
 									case key is

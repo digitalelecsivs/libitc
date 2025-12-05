@@ -5,8 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
--- 模組名稱：lcd_mix (Advanced Numeric Display)
--- 移除了 text_size
+--	font_num 3*3排版
 entity lcd_mix_num_3_3 is
 	port (
 		-- system
@@ -195,7 +194,7 @@ begin
 
 	-- ROM 位址公式：Row-Major 佈局
 	-- (10 個數字 * 32 像素寬 = 320 像素的 "大橫排" 寬度)
-	l_addr_p <= 320 * data_y + data_x + first_px;
+	l_addr_p <= 352 * data_y + data_x + first_px;
 
 	-- 字元偏移公式：
 	-- (ASCII '0' 是 48)
@@ -203,13 +202,15 @@ begin
 	-- 1 -> (49-48)*32 = 32
 	-- ...
 	-- 9 -> (57-48)*32 = 288
-	first_px <= 95 when character'pos(text_data(count + 1)) - 48 = 3 else (character'pos(text_data(count + 1)) - 48) * 32;
+	first_px <= 95 when character'pos(text_data(count + 1)) - 48 = 3 else
+		320 when character'pos(text_data(count + 1)) = 32 else
+		(character'pos(text_data(count + 1)) - 48) * 32;
 
 	-- *** 新增：錯誤處理邏輯 ***
 	-- 檢查當前 'count' 指向的字元
 	-- ASCII '0' = 48
 	-- ASCII '9' = 57
-	is_invisible <= '1' when (character'pos(text_data(count + 1)) < 48) or (character'pos(text_data(count + 1)) > 57) else
+	is_invisible <= '1' when (character'pos(text_data(count + 1)) < 48) or (character'pos(text_data(count + 1)) > 57) or (character'pos(text_data(count + 1)) = 32) else
 		'0';
 
 end arch;

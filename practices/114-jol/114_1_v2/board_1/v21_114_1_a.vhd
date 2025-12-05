@@ -53,7 +53,7 @@ architecture arch of v21_114_1_a is
 	signal l_clear : std_logic := '1'; --11
 
 	signal font_busy : std_logic := '0';
-	signal txt_cnt : integer range 0 to 3; --lcd輸出的文本行數
+	signal txt_cnt : integer range 0 to 10; --lcd輸出的文本行數
 	--tts
 	constant max_len : integer := 34;
 	signal tts_ena : std_logic := '0';
@@ -304,7 +304,7 @@ begin
 				rising  => pressed,
 				falling => pressed_f
 			);
-		lcd_mix_inst : entity work.lcd_mix(arch)
+		lcd_mix_inst : entity work.lcd_mix_intgr_num(arch)
 			port map(
 				clk              => clk,
 				rst_n            => rst_n,
@@ -493,8 +493,7 @@ begin
 			mode11 when sw_d(6 to 7) = "11";
 	end block Input_def;
 	-- dbg & test ------------------------------------------------------------------------------------------------------------------------
-	dbg_test : block
-	begin
+	dbg_test : block begin
 		process (clk, rst_n) begin
 			if rst_n = '0' then
 			elsif rising_edge(clk) then
@@ -1163,19 +1162,46 @@ begin
 									end if;
 									font_start <= '1';
 								end if;
-								if txt_cnt = 3 then
+								if txt_cnt = 3 then-- 48
 									if m_sel = 0 or m_sel = 3 then
 										x <= 0;
 										y <= 48;
 										text_size <= 1;
 										text_data(1 to 12) <= "            ";
-									elsif m_sel = 1 or m_sel = 2 then
-										x <= x;
-										y <= y;
-										text_data <= text_data;
+										font_start <= '1';
 									end if;
-									font_start <= '1';
+
 								end if;
+
+								if txt_cnt = 4 then-- 96
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 96;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+								end if;
+								if txt_cnt = 5 then-- 112
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 112;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+
+								end if;
+								if txt_cnt = 6 then-- 128
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 128;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+								end if;
+
 								if font_busy = '1' then
 									font_start <= '0';
 									if m_sel = 1 or m_sel = 2 then
@@ -1185,7 +1211,7 @@ begin
 											txt_cnt <= 0;
 										end if;
 									elsif m_sel = 0 or m_sel = 3 then
-										if txt_cnt <= 3 then
+										if txt_cnt <= 6 then
 											txt_cnt <= txt_cnt + 1;
 										else
 											txt_cnt <= 0;
@@ -1305,19 +1331,46 @@ begin
 									end if;
 									font_start <= '1';
 								end if;
-								if txt_cnt = 3 then
+								if txt_cnt = 3 then-- 48
 									if m_sel = 0 or m_sel = 3 then
 										x <= 0;
 										y <= 48;
 										text_size <= 1;
 										text_data(1 to 12) <= "            ";
-									elsif m_sel = 1 or m_sel = 2 then
-										x <= x;
-										y <= y;
-										text_data <= text_data;
+										font_start <= '1';
 									end if;
-									font_start <= '1';
+
 								end if;
+
+								if txt_cnt = 4 then-- 96
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 96;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+								end if;
+								if txt_cnt = 5 then-- 112
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 112;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+
+								end if;
+								if txt_cnt = 6 then-- 128
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 128;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+								end if;
+
 								if font_busy = '1' then
 									font_start <= '0';
 									if m_sel = 1 or m_sel = 2 then
@@ -1327,7 +1380,7 @@ begin
 											txt_cnt <= 0;
 										end if;
 									elsif m_sel = 0 or m_sel = 3 then
-										if txt_cnt <= 3 then
+										if txt_cnt <= 6 then
 											txt_cnt <= txt_cnt + 1;
 										else
 											txt_cnt <= 0;
@@ -1700,19 +1753,46 @@ begin
 									end if;
 									font_start <= '1';
 								end if;
-								if txt_cnt = 3 then
+								if txt_cnt = 3 then-- 48
 									if m_sel = 0 or m_sel = 3 then
 										x <= 0;
 										y <= 48;
 										text_size <= 1;
 										text_data(1 to 12) <= "            ";
-									elsif m_sel = 1 or m_sel = 2 then
-										x <= x;
-										y <= y;
-										text_data <= text_data;
+										font_start <= '1';
 									end if;
-									font_start <= '1';
+
 								end if;
+
+								if txt_cnt = 4 then-- 96
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 96;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+								end if;
+								if txt_cnt = 5 then-- 112
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 112;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+
+								end if;
+								if txt_cnt = 6 then-- 128
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 128;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+								end if;
+
 								if font_busy = '1' then
 									font_start <= '0';
 									if m_sel = 1 or m_sel = 2 then
@@ -1722,7 +1802,7 @@ begin
 											txt_cnt <= 0;
 										end if;
 									elsif m_sel = 0 or m_sel = 3 then
-										if txt_cnt <= 3 then
+										if txt_cnt <= 6 then
 											txt_cnt <= txt_cnt + 1;
 										else
 											txt_cnt <= 0;
@@ -1883,18 +1963,43 @@ begin
 									end if;
 									font_start <= '1';
 								end if;
-								if txt_cnt = 3 then
+								if txt_cnt = 3 then-- 48
 									if m_sel = 0 or m_sel = 3 then
 										x <= 0;
 										y <= 48;
 										text_size <= 1;
 										text_data(1 to 12) <= "            ";
-									elsif m_sel = 1 or m_sel = 2 then
-										x <= x;
-										y <= y;
-										text_data <= text_data;
+										font_start <= '1';
 									end if;
-									font_start <= '1';
+
+								end if;
+								if txt_cnt = 4 then-- 96
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 96;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+								end if;
+								if txt_cnt = 5 then-- 112
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 112;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
+
+								end if;
+								if txt_cnt = 6 then-- 128
+									if m_sel = 0 or m_sel = 3 then
+										x <= 0;
+										y <= 128;
+										text_size <= 1;
+										text_data(1 to 12) <= "            ";
+										font_start <= '1';
+									end if;
 								end if;
 								if font_busy = '1' then
 									font_start <= '0';
@@ -1905,7 +2010,7 @@ begin
 											txt_cnt <= 0;
 										end if;
 									elsif m_sel = 0 or m_sel = 3 then
-										if txt_cnt <= 3 then
+										if txt_cnt <= 6 then
 											txt_cnt <= txt_cnt + 1;
 										else
 											txt_cnt <= 0;

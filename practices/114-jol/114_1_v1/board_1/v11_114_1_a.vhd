@@ -304,7 +304,7 @@ begin
 				rising  => pressed,
 				falling => pressed_f
 			);
-		lcd_mix_inst : entity work.lcd_mix(arch)
+		lcd_mix_inst : entity work.lcd_mix_intgr_num(arch)
 			port map(
 				clk              => clk,
 				rst_n            => rst_n,

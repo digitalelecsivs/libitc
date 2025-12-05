@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity txt_test is
+entity txt_test1 is
 	port (
 		clk                                                     : in std_logic;
 		rst_n                                                   : in std_logic;
@@ -14,9 +14,9 @@ entity txt_test is
 		key_row : in u4r_t;
 		key_col : out u4r_t
 	);
-end txt_test;
+end txt_test1;
 
-architecture arch of txt_test is
+architecture arch of txt_test1 is
 	signal l_addr, msi_addr : l_addr_t;
 	signal l_data : l_px_t;
 	signal msi_data_i : std_logic_vector(23 downto 0);
@@ -57,7 +57,7 @@ architecture arch of txt_test is
 	type data_array_t is array (integer range <>) of l_px_t;
 	signal data_array : data_array_t(0 to 9) := (n0_data, n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data);
 	signal addr_array : addr_array_t(0 to 9) := (n0_addr, n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr);
-	signal key_state : unsigned(1 to 9) := (others => '0');--mode00中數字數是否顯示的旗標
+
 
 begin
 	-- Pictures : block begin--圖片的元件和設定
@@ -231,20 +231,20 @@ begin
 			load  => 0,
 			msec  => msec
 		);
-	lcd_mix_inst : entity work.lcd_mix_num_3_3(arch)
+	lcd_mix_inst : entity work.lcd_mix(arch)
 		port map(
-			clk        => clk,
-			rst_n      => rst_n,
-			x          => x,
-			y          => y,
-			font_start => font_start,
-			font_busy  => font_busy_i,
-			-- text_size        => 1,
-			text_data => text_data,
-			-- font_mode        => 2,
+			clk              => clk,
+			rst_n            => rst_n,
+			x                => x,
+			y                => y,
+			font_start       => font_start,
+			font_busy        => font_busy_i,
+			text_size        => text_size,
+			text_data        => text_data,
+			font_mode        => font_mode,
 			addr             => l_addr,
-			bg_color         => white,
-			text_color_array => (others => black),
+			bg_color         => bg_color,
+			text_color_array => text_color_array,
 			clear            => l_clear,
 
 			lcd_sclk  => lcd_sclk,
@@ -254,13 +254,7 @@ begin
 			lcd_bl    => lcd_bl,
 			lcd_rst_n => lcd_rst_n
 		);
-	-- Num1 : entity work.msi_icon(syn)
-	-- 	port map(
-	-- 		address => std_logic_vector(to_unsigned(msi_addr, 15)),
-	-- 		clock   => clk,
-	-- 		q       => msi_data_i
-	-- 	);
-	-- msi_data <= unsigned(msi_data_i);
+
 	process (clk, rst_n)
 	begin
 		if rst_n = '0' then
@@ -273,88 +267,136 @@ begin
 			text_data <= (others => character'val(32));
 			cnt <= 0;
 			mode <= font_1;
-			ena_tim <= '1';
 		elsif rising_edge(clk) then
-			if pressed = '1' then
-				if key >= 1 and key <= 9 then
-					key_state(key) <= not key_state(key);
-				end if;	
-			end if;
-			if msec >= 20 then
-				ena_tim <= '0';
-				l_clear <= '0';
-				font_mode <= 1;
-				font_start <= '1';
-			end if;
-			if txt_cnt = 0 then
-				x <= 8;
-				y <= 4;
-				if key_state(1) = '1' then
-					text_data(1) <= '1';
-				elsif key_state(1) = '0' then
-					text_data(1) <= ' ';
-				end if;
-				if key_state(2) = '1' then
-					text_data(2) <= '2';
-				elsif key_state(2) = '0' then
-					text_data(2) <= ' ';
-				end if;
-				if key_state(3) = '1' then
-					text_data(3) <= '3';
-				elsif key_state(3) = '0' then
-					text_data(3) <= ' ';
-				end if;
-				text_data(6 to 12) <= (others => character'val(32));
-			end if;
-			if txt_cnt = 1 then
-				x <= 8;
-				y <= 53 * 1 + 4;
-				if key_state(4) = '1' then
-					text_data(1) <= '4';
-				elsif key_state(4) = '0' then
-					text_data(1) <= ' ';
-				end if;
-				if key_state(5) = '1' then
-					text_data(2) <= '5';
-				elsif key_state(5) = '0' then
-					text_data(2) <= ' ';
-				end if;
-				if key_state(6) = '1' then
-					text_data(3) <= '6';
-				elsif key_state(6) = '0' then
-					text_data(3) <= ' ';
-				end if;
-				text_data(6 to 12) <= (others => character'val(32));
-			end if;
-			if txt_cnt = 2 then
-				x <= 8;
-				y <= 53 * 2 + 4;
-				if key_state(7) = '1' then
-					text_data(1) <= '7';
-				elsif key_state(7) = '0' then
-					text_data(1) <= ' ';
-				end if;
-				if key_state(8) = '1' then
-					text_data(2) <= '8';
-				elsif key_state(8) = '0' then
-					text_data(2) <= ' ';
-				end if;
-				if key_state(9) = '1' then
-					text_data(3) <= '9';
-				elsif key_state(9) = '0' then
-					text_data(3) <= ' ';
-				end if;
-				text_data(6 to 12) <= (others => character'val(32));
-			end if;
-			if font_busy = '1' then
-				font_start <= '0';
-				if txt_cnt <= 2 then
-					txt_cnt <= txt_cnt + 1;
-				else
-					txt_cnt <= 0;
-				end if;
-				ena_tim <= '1';
-			end if;
+
+			case mode is
+				when init =>
+					l_clear <= '1';
+					bg_color <= white;
+					ena_tim <= '1';
+					if msec > 50 then
+						ena_tim <= '0';
+						if mode_state = "100" then
+							mode <= font_2;
+						elsif mode_state = "010" then
+							mode <= font_3;
+						elsif mode_state = "001" then
+							mode <= font_1;
+						end if;
+					end if;
+					cnt <= 0;
+				when font_1 =>
+					if trigger = '1' then
+						if cnt = cnt'high then
+							cnt <= 0;
+						else
+							cnt <= cnt + 1;
+						end if;
+					end if;
+					font_mode <= 0;
+					if msec >= 20 then
+						ena_tim <= '0';
+						l_clear <= '0';
+						font_start <= '1';
+					end if;
+
+					for i in 0 to 2 loop
+						if txt_cnt = i then
+							x <= 0;
+							y <= 53 * i;
+							text_data(1 to 4) <= to_string(cnt, cnt'high, 10, 4);
+							font_start <= '1';
+						end if;
+					end loop;
+
+					if font_busy = '1' then
+						font_start <= '0';
+						if txt_cnt <= 2 then
+							txt_cnt <= txt_cnt + 1;
+						else
+							txt_cnt <= 0;
+						end if;
+						ena_tim <= '1';
+					end if;
+					if pressed = '1' then
+						mode_state <= "100";
+						mode <= init;
+					end if;
+				when font_2 =>
+					if trigger = '1' then
+						if cnt = cnt'high then
+							cnt <= 0;
+						else
+							cnt <= cnt + 1;
+						end if;
+					end if;
+					font_mode <= 1;
+					if msec >= 20 then
+						ena_tim <= '0';
+						l_clear <= '0';
+						font_start <= '1';
+					end if;
+
+					for i in 0 to 2 loop
+						if txt_cnt = i then
+							x <= 8;
+							y <= 53 * i;
+							text_data(1 to 3) <= to_string(cnt, 999, 10, 3);
+							font_start <= '1';
+						end if;
+					end loop;
+
+					if font_busy = '1' then
+						font_start <= '0';
+						if txt_cnt <= 2 then
+							txt_cnt <= txt_cnt + 1;
+						else
+							txt_cnt <= 0;
+						end if;
+						ena_tim <= '1';
+					end if;
+					if pressed = '1' then
+						mode_state <= "010";
+						mode <= init;
+					end if;
+				when font_3 =>
+					if trigger = '1' then
+						if cnt = cnt'high then
+							cnt <= 0;
+						else
+							cnt <= cnt + 1;
+						end if;
+					end if;
+					font_mode <= 2;
+					if msec >= 20 then
+						ena_tim <= '0';
+						l_clear <= '0';
+						font_start <= '1';
+					end if;
+
+					for i in 0 to 2 loop
+						if txt_cnt = i then
+							x <= 0;
+							y <= 53 * i;
+							text_data(1 to 4) <= to_string(cnt, cnt'high, 10, 4);
+							font_start <= '1';
+						end if;
+					end loop;
+
+					if font_busy = '1' then
+						font_start <= '0';
+						if txt_cnt <= 2 then
+							txt_cnt <= txt_cnt + 1;
+						else
+							txt_cnt <= 0;
+						end if;
+						ena_tim <= '1';
+					end if;
+					if pressed = '1' then
+						mode_state <= "001";
+						mode <= init;
+					end if;
+			end case;
 
 		end if;
 	end process;
