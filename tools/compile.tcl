@@ -53,11 +53,11 @@ if {$make_assignments} {
 
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY v13_114_2
+	set_global_assignment -name TOP_LEVEL_ENTITY dht_test
 	# testfile
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/pic_rotate.vhd
-	# # set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_test.vhd
-	# # set_global_assignment -name VHDL_FILE practices/114-jol/test/dot_try.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/tts/tts_stop_test.vhd
+	set_global_assignment -name VHDL_FILE practices/114-jol/test/dht_test.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/txt_test1.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/txt_test2.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/txtest_font_aph_num.vhd
@@ -72,7 +72,7 @@ if {$make_assignments} {
 
 	# 第二題
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v10_114_2.vhd
-	set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v13_114_2.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v1/board/v13_114_2.vhd
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_2_v2/board/v20_114_2.vhd
 	
 	# set_global_assignment -name QIP_FILE practices/114-jol/114_2_v1/pic1/n0.qip
@@ -133,7 +133,7 @@ if {$make_assignments} {
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/pic/n8.vhd
 	# set_global_assignment -name QIP_FILE practices/114-jol/114_1_v1/pic/n9.qip
 	# set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/pic/n9.vhd
-
+	set_global_assignment -name VHDL_FILE practices/30-dora/tts_Jay/ser/tts_stop.vhd
 	## Components
 	# set_global_assignment -name VHDL_FILE lib/lcd_mix.vhd
 	# set_global_assignment -name VHDL_FILE lib/lcd_mix_intgr_num.vhd

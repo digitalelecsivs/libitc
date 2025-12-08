@@ -6,13 +6,15 @@ use work.itc.all;
 
 entity tts_stop_test is
 	port (
-		clk              : in std_logic;
-		rst_n            : in std_logic;
+		clk   : in std_logic;
+		rst_n : in std_logic;
 
 		tts_scl, tts_sda : inout std_logic;
-
-		key_row : in u4r_t;
-		key_col : out u4r_t
+		tts_mo           : in unsigned(2 downto 0);
+		seg_led, seg_com : out u8r_t; -- seg
+		key_row          : in u4r_t;
+		key_col          : out u4r_t;
+		dbg_a            : out u8r_t
 	);
 end tts_stop_test;
 
@@ -35,65 +37,63 @@ architecture arch of tts_stop_test is
 	signal txt : u8_arr_t(0 to max_len - 1);
 	signal txt_len : integer range 0 to max_len;
 
--- "測試開始", 8
--- tts_data(0 to 7) <= start;
--- tts_len <= 8;
-constant start : u8_arr_t(0 to 7) := (
-        x"b4", x"fa", x"b8", x"d5", x"b6", x"7d", x"a9", x"6c"
-);
-
--- "正在測試中", 10
--- tts_data(0 to 9) <= testing;
--- tts_len <= 10;
-	constant testing : u8_arr_t(0 to 9) := (
-        x"a5", x"bf", x"a6", x"62", x"b4", x"fa", x"b8", x"d5", x"a4", x"a4"
+	-- "測試開始", 8
+	-- tts_data(0 to 7) <= start;
+	-- tts_len <= 8;
+	constant start : u8_arr_t(0 to 7) := (x"b4", x"fa", x"b8", x"d5", x"b6", x"7d", x"a9", x"6c"
 	);
 
--- "測試結束", 8
--- tts_data(0 to 7) <= end;
--- tts_len <= 8;
-	constant test_end : u8_arr_t(0 to 9) := (
-        x"b4", x"fa", x"b8", x"d5", x"b5", x"b2", x"a7", x"f4", x"00", x"00"
+	-- "正在測試中", 10
+	-- tts_data(0 to 9) <= testing;
+	-- tts_len <= 10;
+	constant testing : u8_arr_t(0 to 9) := (x"a5", x"bf", x"a6", x"62", x"b4", x"fa", x"b8", x"d5", x"a4", x"a4"
 	);
--- "一二三是五六七八九十", 20
--- tts_data(0 to 19) <= tt;
--- tts_len <= 20;
-constant tt : u8_arr_t(0 to 19) := (
-        x"a4", x"40", x"a4", x"47", x"a4", x"54", x"ac", x"4f", x"a4", x"ad", x"a4", x"bb", x"a4", x"43", x"a4", x"4b",
-        x"a4", x"45", x"a4", x"51"
-);
+
+	-- "測試結束", 8
+	-- tts_data(0 to 7) <= end;
+	-- tts_len <= 8;
+	constant test_end : u8_arr_t(0 to 9) := (x"b4", x"fa", x"b8", x"d5", x"b5", x"b2", x"a7", x"f4", x"00", x"00"
+	);
+	-- "一二三是五六七八九十", 20
+	-- tts_data(0 to 19) <= tt;
+	-- tts_len <= 20;
+	constant tt : u8_arr_t(0 to 19) := (x"a4", x"40", x"a4", x"47", x"a4", x"54", x"ac", x"4f", x"a4", x"ad", x"a4", x"bb", x"a4", x"43", x"a4", x"4b",
+	x"a4", x"45", x"a4", x"51"
+	);
 
 begin
-	key_inst: entity work.key(arch)
-	port map (
-		clk     => clk,
-		rst_n   => rst_n,
-		key_row => key_row,
-		key_col => key_col,
-		pressed => pressed,
-		key     => key_data 
-	);
-	edge_inst: entity work.edge(arch)
-	port map (
-		clk     => clk,
-		rst_n   => rst_n,
-		sig_in  => pressed,
-		rising  => key_pressed,
-		falling => open
-	);
+	key_inst : entity work.key(arch)
+		port map(
+			clk     => clk,
+			rst_n   => rst_n,
+			key_row => key_row,
+			key_col => key_col,
+			pressed => pressed,
+			key     => key_data
+		);
+	edge_inst : entity work.edge(arch)
+		port map(
+			clk     => clk,
+			rst_n   => rst_n,
+			sig_in  => pressed,
+			rising  => key_pressed,
+			falling => open
+		);
 	tts_stop_inst : entity work.tts_stop(arch)
 		generic map(
 			txt_len_max => max_len
 		)
 		port map(
-			clk        => clk,
-			rst_n      => rst_n,
-			tts_scl    => tts_scl,
-			tts_sda    => tts_sda,
-			ena        => ena,
-			busy       => busy,
-			txt        => txt,
-			txt_len    => txt_len
+			clk     => clk,
+			rst_n   => rst_n,
+			tts_scl => tts_scl,
+			tts_sda => tts_sda,
+			tts_mo  => tts_mo,
+			ena     => ena,
+			busy    => busy,
+
+			txt     => txt,
+			txt_len => txt_len
 		);
 	edge_tts_inst : entity work.edge(arch)
 		port map(
@@ -103,19 +103,26 @@ begin
 			rising  => open,
 			falling => done
 		);
-	seg_inst: entity work.seg(arch)
-	generic map (
-		common_anode => '1' 
-	)
-	port map (
-		clk     => clk,
-		rst_n   => rst_n,
-		seg_led => seg_led,
-		seg_com => seg_com,
-		data    => seg_data,
-		dot     => seg_dot
-	);
-
+	seg_inst : entity work.seg(arch)
+		generic map(
+			common_anode => '1'
+		)
+		port map(
+			clk     => clk,
+			rst_n   => rst_n,
+			seg_led => seg_led,
+			seg_com => seg_com,
+			data    => seg_data,
+			dot     => seg_dot
+		);
+	dbg_a(0 to 3) <= not("100" & stop_flag) when tts_mode = idle else
+	not("010" & stop_flag) when tts_mode = send else
+	not("001" & stop_flag) when tts_mode = stop else
+	not("000" & stop_flag);
+	dbg_a(4 to 7) <= not("100" & busy) when tts_count = 0 else
+	not("010" & busy) when tts_count = 1 else
+	not("001" & busy) when tts_count = 2 else
+	not("000" & busy)when tts_count = 3 else not("000" & busy);
 	process (clk, rst_n)
 	begin
 		if rst_n = '0' then
@@ -137,12 +144,12 @@ begin
 			end if;
 			case tts_mode is
 				when idle =>
-				seg_data <= "2       ";
+					seg_data <= "2       ";
 					if busy = '0' then
 						tts_mode <= send;
 					end if;
 				when send =>
-					
+
 					case tts_count is
 						when 0 =>
 							txt(0 to 19) <= tt;
@@ -189,9 +196,9 @@ begin
 						ena <= '0';
 						tts_mode <= idle;
 					end if;
-					
+
 			end case;
-			
+
 		end if;
 	end process;
 end arch;
