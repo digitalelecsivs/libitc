@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity v11_114_1_a is
+entity v11_114_1_1 is
 	port (
 
 		clk   : in std_logic; -- sys
@@ -22,15 +22,15 @@ entity v11_114_1_a is
 		dbg_b                                                   : out u8r_t;     -- dbg
 		dbg_a                                                   : out u4r_t
 	);
-end v11_114_1_a;
+end v11_114_1_1;
 
-architecture arch of v11_114_1_a is
+architecture arch of v11_114_1_1 is
 	--state machine
 	type state_t is (mode00, mode01, mode10, mode11, enable_mode);
 	type state_1 is (init, init_mode, txt_mode, set_mode, ensure);
 	type state_2 is (init, sel_mode, set_mode);
-	type state_3 is (init, init_mode, set_mode, UP_mode, DN_mode, PD_mode, ensure);
-	type state_4 is (init, init_mode, set_mode, UP_mode, DN_mode, PD_mode, tts_mode);
+	type state_3 is (init, init_mode, set_mode, UP_mode, DN_mode);
+	type state_4 is (init, init_mode, set_mode, UP_mode, DN_mode, tts_mode);
 	type state_tts is (idle, play, stop);
 	signal mode_t : state_t := enable_mode;
 	signal mode_1 : state_1 := init;
@@ -62,8 +62,6 @@ architecture arch of v11_114_1_a is
 	signal txt_len : integer range 0 to max_len := 0;
 
 	--timer
-	signal ena_tim1 : std_logic := '0';
-	signal msec1 : integer range 0 to 5000 := 0;
 	signal ena_tim : std_logic := '0';
 	signal msec : integer range 0 to 5000 := 0;
 
@@ -89,15 +87,14 @@ architecture arch of v11_114_1_a is
 	type picture is array (0 to 10) of l_px_t;
 	type l_coord_arr is array (0 to 8) of l_coord_t;
 	type cnt_arr is array (0 to 2) of integer range 0 to 999;
-	type PD_arr is array (0 to 3) of integer range 0 to 9;
+
 	--flag
 	signal fin_pro_flag : std_logic := '0'; --程序完成語音旗標
 	signal tts_said : std_logic := '0'; --在mode_4用sw檢查的mode選擇，有沒有講過"modeXX" "modeYY" "modeZZ"：0:沒講過 1:有講過
 	signal tts_mode_flag : std_logic := '0'; --tts要講的話的旗標
 	signal tts_pressed_flag : std_logic := '0'; --tts要講的話的旗標
 	signal init_fin_flag : std_logic := '0'; --mode3、mode的lcd初始化旗標
-	signal blink_flag : std_logic := '0';
-	signal set_flag : std_logic := '0';
+
 	-- signal trig_flag : std_logic := '0'; --當要做讓計數器直接計到最大值 
 
 	--user signal
@@ -107,11 +104,7 @@ architecture arch of v11_114_1_a is
 	signal trigger_i : std_logic := '0'; --計數器的trigger(未微分)
 	signal trigger : std_logic := '0'; --計數器的trigger(微分)
 	signal key_state : unsigned(1 to 9) := (others => '0');--mode00中數字數是否顯示的旗標
-	-- signal PD_num : integer range 0 to 4;
-	-- signal PD : PD_arr := (others => 0);
-	-- signal PD : integer range 0 to 9999 := 0;
 
-	-- signal PD : PD_arr := (others => (others => '0'));
 	--計數旗標 & 暫存器 
 	-- signal cnt_tim : std_logic := '0'; --CNT:0 TIM: 1 
 	-- signal up_dn : std_logic := '0'; --UP:0 DN: 1 
@@ -130,19 +123,15 @@ architecture arch of v11_114_1_a is
 	-- signal map_coord : l_coord_arr := ((0, 0), (0, 43), (0, 85), (53, 0), (53, 43), (53, 85), (106, 0), (106, 43), (106, 85));
 	-- signal data_array : data_arr(0 to 8) := (n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data);
 	-- signal addr_array : addr_arr(0 to 8) := (n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr);
-	constant coin : u8_arr_t(0 to 1) := (x"a4", x"b8");
-	-- "公升為", 6
-	constant Litre : u8_arr_t(0 to 5) := (x"a4", x"bd", x"a4", x"c9", x"ac", x"b0");
-	-- "金額為", 6
-	constant Price : u8_arr_t(0 to 5) := (x"aa", x"f7", x"c3", x"42", x"ac", x"b0");
+
 	--系統連線成功
 	constant link_success : u8_arr_t(0 to 11) := (x"A8", x"74", x"B2", x"CE", x"B3", x"73", x"BD", x"75", x"A6", x"A8", x"A5", x"5C");
 	--選擇XX
-	constant sel_XX : u8_arr_t(0 to 5) := (x"BF", x"EF", x"BE", x"DC", x"39", x"32");
+	constant sel_XX : u8_arr_t(0 to 5) := (x"BF", x"EF", x"BE", x"DC", x"58", x"58");
 	--選擇YY
-	constant sel_YY : u8_arr_t(0 to 5) := (x"BF", x"EF", x"BE", x"DC", x"39", x"35");
+	constant sel_YY : u8_arr_t(0 to 5) := (x"BF", x"EF", x"BE", x"DC", x"59", x"59");
 	--選擇ZZ
-	constant sel_ZZ : u8_arr_t(0 to 5) := (x"BF", x"EF", x"BE", x"DC", x"39", x"38");
+	constant sel_ZZ : u8_arr_t(0 to 5) := (x"BF", x"EF", x"BE", x"DC", x"5A", x"5A");
 	--計數C為
 	constant cnt_cis : u8_arr_t(0 to 6) := (x"AD", x"70", x"BC", x"C6", x"43", x"AC", x"B0");
 	--計數L為
@@ -267,7 +256,7 @@ begin
 			);
 		clk_trigger : entity work.clk(arch)--mode10和mode11計數器trigger的ck產生器
 			generic map(
-				freq => 1
+				freq => 10
 			)
 			port map(
 				clk_in  => clk,
@@ -299,14 +288,6 @@ begin
 				load  => 0,
 				msec  => msec
 			);
-		timer1_inst : entity work.timer(arch)--計時器
-			port map(
-				clk   => clk,
-				rst_n => rst_n,
-				ena   => ena_tim1,
-				load  => 0,
-				msec  => msec1
-			);
 		edge_key_sig : entity work.edge(arch)--整理Board_2的keyboard訊號
 			port map(
 				clk     => clk,
@@ -335,7 +316,7 @@ begin
 				text_data        => text_data,
 				font_mode        => font_mode,
 				addr             => l_addr,
-				bg_color         => black,
+				bg_color         => bg_color,
 				text_color_array => text_color_array,
 				clear            => l_clear,
 				lcd_sclk         => lcd_sclk,
@@ -392,7 +373,72 @@ begin
 				falling => rx_done
 			);
 	end block components;
-
+	--  Picture  -------------------------------------------------------------------------------------------------------------------------
+	-- Pictures : block begin--圖片的元件和設定
+	-- 	Num1 : entity work.n1(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(0), 12)),
+	-- 			clock   => clk,
+	-- 			q       => n1_data_i
+	-- 		);
+	-- 	data_array(0) <= unsigned(n1_data_i);
+	-- 	Num2 : entity work.n2(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(1), 12)),
+	-- 			clock   => clk,
+	-- 			q       => n2_data_i
+	-- 		);
+	-- 	data_array(1) <= unsigned(n2_data_i);
+	-- 	Num3 : entity work.n3(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(2), 12)),
+	-- 			clock   => clk,
+	-- 			q       => n3_data_i
+	-- 		);
+	-- 	data_array(2) <= unsigned(n3_data_i);
+	-- 	Num4 : entity work.n4(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(3), 12)),
+	-- 			clock   => clk,
+	-- 			q       => n4_data_i
+	-- 		);
+	-- 	data_array(3) <= unsigned(n4_data_i);
+	-- 	Num5 : entity work.n5(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(4), 12)),
+	-- 			clock   => clk,
+	-- 			q       => n5_data_i
+	-- 		);
+	-- 	data_array(4) <= unsigned(n5_data_i);
+	-- 	Num6 : entity work.n6(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(5), 12)),
+	-- 			clock   => clk,
+	-- 			q       => n6_data_i
+	-- 		);
+	-- 	data_array(5) <= unsigned(n6_data_i);
+	-- 	Num7 : entity work.n7(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(6), 12)),
+	-- 			clock   => clk,
+	-- 			q       => n7_data_i
+	-- 		);
+	-- 	data_array(6) <= unsigned(n7_data_i);
+	-- 	Num8 : entity work.n8(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(7), 12)),
+	-- 			clock   => clk,
+	-- 			q       => n8_data_i
+	-- 		);
+	-- 	data_array(7) <= unsigned(n8_data_i);
+	-- 	Num9 : entity work.n9(syn)
+	-- 		port map(
+	-- 			address => std_logic_vector(to_unsigned(addr_array(8), 12)),
+	-- 			clock   => clk,
+	-- 			q       => n9_data_i
+	-- 		);
+	-- 	data_array(8) <= unsigned(n9_data_i);
+	-- end block Pictures;
 	-- Key wifi --------------------------------------------------------------------------------------------------------------------------
 	key_block : block begin--wifi keyboard的訊號整合
 		process (clk, rst_n)
@@ -447,38 +493,37 @@ begin
 			mode11 when sw_d(6 to 7) = "11";
 	end block Input_def;
 	-- dbg & test ------------------------------------------------------------------------------------------------------------------------
-	dbg_test : block
-		signal pressed_check : std_logic := '0';
-		signal rx_done_sig : std_logic;
-	begin
-		process (clk, rst_n) begin
-			if rst_n = '0' then
-			elsif rising_edge(clk) then
+	-- dbg_test : block
+	-- 	signal pressed_check : std_logic := '0';
+	-- 	signal rx_done_sig : std_logic;
+	-- begin
+	-- 	process (clk, rst_n) begin
+	-- 		if rst_n = '0' then
+	-- 		elsif rising_edge(clk) then
+	-- 			if pressed = '1' then
+	-- 				pressed_check <= not pressed_check;
+	-- 			end if;
+	-- 			case mode_4 is
+	-- 				when init_mode => dbg_b(0 to 3) <= not("100" & pressed_i);
+	-- 				when set_mode => dbg_b(0 to 3) <= not("010" & pressed_i);
+	-- 				when tts_mode => dbg_b(0 to 3) <= not("001" & pressed_i);
+	-- 				when init => dbg_b(0 to 3) <= not("111" & pressed_i);
 
-				case mode_1 is
-					when init_mode => dbg_b(0 to 3) <= not("100" & pressed_i);
-					when txt_mode => dbg_b(0 to 3) <= not("010" & pressed_i);
-					when ensure => dbg_b(0 to 3) <= not("001" & pressed_i);
-					when init => dbg_b(0 to 3) <= not("111" & pressed_i);
-					when others => dbg_b(0 to 3) <= not("111" & pressed_i);
-				end case;
-				case mode_tts is
-					when idle => dbg_b(4 to 7) <= not("100" & pressed_check);
-					when play => dbg_b(4 to 7) <= not("010" & pressed_check);
-					when stop => dbg_b(4 to 7) <= not("001" & pressed_check);
-				end case;
-			end if;
-		end process;
-	end block dbg_test;
+	-- 			end case;
+	-- 			case mode_tts is
+	-- 				when idle => dbg_b(4 to 7) <= not("100" & pressed_check);
+	-- 				when play => dbg_b(4 to 7) <= not("010" & pressed_check);
+	-- 				when stop => dbg_b(4 to 7) <= not("001" & pressed_check);
+	-- 			end case;
+	-- 		end if;
+	-- 	end process;
+	-- end block dbg_test;
 	-- Main Process ----------------------------------------------------------------------------------------------------------------------
 	Main_Process : block begin
 		process (clk, rst_n)
 			variable cnt_c : cnt_arr;
 			variable cnt_l : cnt_arr;
 			variable pic : picture;
-			variable PD_used : integer range 0 to 9999;
-			variable PD_num : integer range 0 to 4;
-			variable PD : integer range 0 to 9999 := 0;
 		begin
 			-- type state_1 is (init, init_mode, txt_mode, set_mode, ensure);
 			-- type state_2 is (init, sel_mode, set_mode);
@@ -492,59 +537,52 @@ begin
 					when mode00 =>
 						case mode_1 is
 							when init =>
-								key_state <= (others => '1');
+								key_state <= (others => '0');
 								font_mode <= 2;
-								l_clear <= '1';
+								l_clear <= '0';
 								font_start <= '0';
 								text_data <= (others => character'val(32));
 								txt_cnt <= 0;
+								mode_1 <= init_mode;
 								ena_tim <= '1';
-								if msec > 20 then
-									mode_1 <= init_mode;
-									ena_tim <= '0';
-								end if;
 							when init_mode =>
 								if pressed = '1' then
 									if key >= 1 and key <= 9 then
 										key_state(key) <= not key_state(key);
 									end if;
 									case key is
+										when 11 => mode_1 <= init;
 										when 12 =>
-											if key_state = "00000000" then
-												ena_tim <= '1';--for txt_lcd
-												ena_tim1 <= '1'; --for blinking
+											if key_state = "000000000" then
+												font_mode <= 0;
 												mode_1 <= txt_mode;
-												l_clear <= '1';
-												font_start <= '0';
 											end if;
-										when 15 => mode_1 <= init;
 										when others => null;
 									end case;
 								end if;
-								ena_tim <= '1';
 								if msec >= 20 then
 									ena_tim <= '0';
 									l_clear <= '0';
 									font_mode <= 1;
 									font_start <= '1';
-									text_color_array <= (others => green);
+									text_color_array <= (others => blue);
 								end if;
 								if txt_cnt = 0 then
 									x <= 8;
 									y <= 4;
-									if key_state(9) = '0' then
-										text_data(1) <= '9';
-									elsif key_state(9) = '1' then
+									if key_state(1) = '1' then
+										text_data(1) <= '1';
+									elsif key_state(1) = '0' then
 										text_data(1) <= ' ';
 									end if;
-									if key_state(7) = '0' then
-										text_data(2) <= '7';
-									elsif key_state(7) = '1' then
+									if key_state(2) = '1' then
+										text_data(2) <= '2';
+									elsif key_state(2) = '0' then
 										text_data(2) <= ' ';
 									end if;
-									if key_state(8) = '0' then
-										text_data(3) <= '8';
-									elsif key_state(8) = '1' then
+									if key_state(3) = '1' then
+										text_data(3) <= '3';
+									elsif key_state(3) = '0' then
 										text_data(3) <= ' ';
 									end if;
 									text_data(6 to 12) <= (others => character'val(32));
@@ -552,19 +590,19 @@ begin
 								if txt_cnt = 1 then
 									x <= 8;
 									y <= 53 * 1 + 4;
-									if key_state(6) = '0' then
-										text_data(1) <= '6';
-									elsif key_state(6) = '1' then
+									if key_state(4) = '1' then
+										text_data(1) <= '4';
+									elsif key_state(4) = '0' then
 										text_data(1) <= ' ';
 									end if;
-									if key_state(5) = '0' then
+									if key_state(5) = '1' then
 										text_data(2) <= '5';
-									elsif key_state(5) = '1' then
+									elsif key_state(5) = '0' then
 										text_data(2) <= ' ';
 									end if;
-									if key_state(4) = '0' then
-										text_data(3) <= '4';
-									elsif key_state(4) = '1' then
+									if key_state(6) = '1' then
+										text_data(3) <= '6';
+									elsif key_state(6) = '0' then
 										text_data(3) <= ' ';
 									end if;
 									text_data(6 to 12) <= (others => character'val(32));
@@ -572,19 +610,19 @@ begin
 								if txt_cnt = 2 then
 									x <= 8;
 									y <= 53 * 2 + 4;
-									if key_state(3) = '0' then
-										text_data(1) <= '3';
-									elsif key_state(3) = '1' then
+									if key_state(7) = '1' then
+										text_data(1) <= '7';
+									elsif key_state(7) = '0' then
 										text_data(1) <= ' ';
 									end if;
-									if key_state(2) = '0' then
-										text_data(2) <= '2';
-									elsif key_state(2) = '1' then
+									if key_state(8) = '1' then
+										text_data(2) <= '8';
+									elsif key_state(8) = '0' then
 										text_data(2) <= ' ';
 									end if;
-									if key_state(1) = '0' then
-										text_data(3) <= '1';
-									elsif key_state(1) = '1' then
+									if key_state(9) = '1' then
+										text_data(3) <= '9';
+									elsif key_state(9) = '0' then
 										text_data(3) <= ' ';
 									end if;
 									text_data(6 to 12) <= (others => character'val(32));
@@ -601,9 +639,8 @@ begin
 							when txt_mode =>
 								if pressed = '1' then
 									case key is
-										when 13 => mode_1 <= ensure;
-											text_color_array <= (others => red);
-										when 15 => mode_1 <= init;
+										when 11 => mode_1 <= init;
+										when 14 => text_color_array <= (others => red);
 										when others => null;
 									end case;
 								end if;
@@ -611,14 +648,6 @@ begin
 									ena_tim <= '0';
 									l_clear <= '0';
 									font_start <= '1';
-									font_mode <= 0;
-									text_color_array <= (others => blue);
-								end if;
-
-								if (msec1/500)mod 2 = 0 then
-									blink_flag <= '0';
-								elsif (msec1/500)mod 2 = 1 then
-									blink_flag <= '1';
 								end if;
 								if txt_cnt = 0 then
 									x <= 0;
@@ -631,11 +660,7 @@ begin
 									x <= 0;
 									y <= 40;
 									text_size <= 1;
-									if blink_flag = '1' then
-										text_data(1 to 4) <= "MODE";
-									elsif blink_flag = '0' then
-										text_data(1 to 4) <= "    ";
-									end if;
+									text_data(1 to 4) <= "MODE";
 									text_data(5 to 12) <= (others => character'val(32));
 									font_start <= '1';
 								end if;
@@ -656,127 +681,58 @@ begin
 									end if;
 									ena_tim <= '1';
 								end if;
-							when ensure =>
-								if pressed = '1' then
-									case key is
-										when 15 => mode_1 <= init;
-										when others => null;
-									end case;
-								end if;
-								ena_tim <= '1';
-								if msec >= 20 then
-									l_clear <= '0';
-									font_start <= '1';
-									font_mode <= 0;
-									text_color_array <= (others => red);
-									ena_tim <= '0';
-								end if;
-								if txt_cnt = 0 then
-									x <= 0;
-									y <= 0;
-									text_size <= 1;
-									text_data(1 to 7) <= "CPLD ID";
-									text_data(8 to 12) <= (others => character'val(32));
-									text_color_array <= (others => red);
-
-								end if;
-								-- text_color_array <= (others => red);
-
-								if txt_cnt = 1 then
-									x <= 0;
-									y <= 40;
-									text_size <= 1;
-									-- if blink_flag = '1' then
-									text_data(1 to 4) <= "MODE";
-									-- else
-									-- 	text_data(1 to 4) <= "    ";
-									-- end if;
-									text_data(5 to 12) <= (others => character'val(32));
-									text_color_array <= (others => red);
-
-									font_start <= '1';
-								end if;
-								if txt_cnt = 2 then
-									x <= 0;
-									y <= 80;
-									text_size <= 1;
-									text_data(1 to 7) <= "trieso:";
-									text_data(8 to 12) <= (others => character'val(32));
-									text_color_array <= (others => red);
-
-									font_start <= '1';
-								end if;
-								if font_busy = '1' then
-									font_start <= '0';
-									if txt_cnt <= 2 then
-										txt_cnt <= txt_cnt + 1;
-									else
-										txt_cnt <= 0;
-									end if;
-									ena_tim1 <= '1';
-								end if;
-
 							when set_mode =>
+							when ensure =>
 						end case;
 					when mode01 =>
 						case mode_2 is
 							when init =>
 								ena_tim <= '1';
 								seg_data <= (others => character'val(32));
+
 								--重置其他I/O 			
 								l_clear <= '1';
 								bg_color <= white;
 								mode_2 <= sel_mode;
 							when sel_mode =>
 								case sw_d(2 to 4) is
-									when "001" =>
-										if set_flag = '1' then
-											seg_data <= "MoDE. 92";
-										end if;
-									when "010" =>
-										if set_flag = '1' then
-											seg_data <= "MoDE. 95";
-										end if;
-									when "100" =>
-										if set_flag = '1' then
-											seg_data <= "MoDE. 98";
-										end if;
-									when "000" => seg_data <= "MoDE.PAY";
-										set_flag <= '0';
-									when others => seg_data <= "MoDE.PAY";
+									when "001" => seg_data <= "MoDE1.XX";
+									when "010" => seg_data <= "MoDE2.YY";
+									when "100" => seg_data <= "MoDE3.ZZ";
+									when "000" => seg_data <= "SET.    ";
+										mode_2 <= set_mode;
+									when others => seg_data <= (others => character'val(32));
 								end case;
 								if pressed = '1' then
 									case key is
-										when 13 => set_flag <= '1';
-										when others => null;
+										when 11 => mode_2 <= init;
+										when others => seg_data <= (others => character'val(32));
 									end case;
 								end if;
 							when set_mode =>
-								-- if sw_d(2 to 4) /= "000" then
-								-- 	mode_2 <= sel_mode;
-								-- 	seg_data <= "        ";
-								-- end if;
-								-- if sw_d(1) = '1' then
-								-- 	seg_data(1 to 4) <= "SET.";
-								-- 	if pressed = '1' then
-								-- 		seg_data(5 to 8) <= to_string(key, key'high, 10, 4);
-								-- 	end if;
-								-- else seg_data <= "SET.    ";
-								-- end if;
+								if sw_d(2 to 4) /= "000" then
+									mode_2 <= sel_mode;
+									seg_data <= "        ";
+								end if;
+								if sw_d(1) = '1' then
+									seg_data(1 to 4) <= "SET.";
+									if pressed = '1' then
+										seg_data(5 to 8) <= to_string(key, key'high, 10, 4);
+									end if;
+								else seg_data <= "SET.    ";
+								end if;
 
 						end case;
 					when mode10 =>
 						case mode_3 is
 							when init =>
 								ena_tim <= '1';
-								ena_tim1 <= '1';
 								txt_cnt <= 0;
 								x <= 0;
 								y <= 5;
 								l_clear <= '1';
 								bg_color <= white;
 								font_start <= '0';
-								font_mode <= 0;
 								text_size <= 1;
 								text_data <= (others => character'val(32));
 								text_color_array <= (others => blue);
@@ -785,157 +741,35 @@ begin
 								cnt_c := (others => 0);
 								cnt_l := (others => 0);
 								mode_3 <= init_mode;
-								PD_num := 0;
-								PD := 0;
-								-- PD <= (others => 0);
-								-- PD <= (others => (others => '0'));
-								PD_used := 0;
 							when init_mode =>
-								if pressed = '1' then
-									case key is
-										when 13 => mode_3 <= PD_mode;
-											PD_num := 0;
-										when others => null;
-									end case;
-								end if;
 								if msec >= 20 then
 									ena_tim <= '0';
 									l_clear <= '0';
 									font_start <= '1';
-									font_mode <= 0;
-									text_color_array <= (others => cyan);
-								end if;
-								if (msec1/500)mod 2 = 0 then
-									blink_flag <= '0';
-								elsif (msec1/500)mod 2 = 1 then
-									blink_flag <= '1';
 								end if;
 								if txt_cnt = 0 then
 									x <= 0;
 									y <= 0;
 									text_size <= 1;
-									if blink_flag = '1' then
-										text_data(1 to 8) <= "MODE:PAY";
-									elsif blink_flag = '0' then
-										text_data(1 to 8) <= "        ";
-									end if;
-									text_data(9 to 12) <= (others => character'val(32));
+									text_data(1 to 7) <= "MODE:  ";
+									text_data(8 to 12) <= (others => character'val(32));
 								end if;
 								if txt_cnt = 1 then
 									x <= 0;
-									y <= 40;
+									y <= 32;
 									text_size <= 1;
-									text_data(1 to 8) <= "Cost:000";
-									text_data(9 to 12) <= (others => character'val(32));
-									font_start <= '1';
-								end if;
-								if txt_cnt = 2 then
-									x <= 0;
-									y <= 80;
-									text_size <= 1;
-									text_data(1 to 9) <= "Litre: 00";
-									text_data(10 to 12) <= (others => character'val(32));
-									font_start <= '1';
-								end if;
-								if font_busy = '1' then
-									font_start <= '0';
-									if txt_cnt <= 2 then
-										txt_cnt <= txt_cnt + 1;
-									else
-										txt_cnt <= 0;
-									end if;
-									ena_tim <= '1';
-								end if;
-							when PD_mode =>
-								if pressed = '1' then
-									if key >= 1 and key <= 9 then
-										if PD_num < PD_num'high then
-											PD_num := PD_num + 1;
-										else
-											PD_num := 0;
-										end if;
-										if PD_num = 1 then
-											PD := key * 1000;
-										elsif PD_num = 2 then
-											PD := PD + key * 100;
-										elsif PD_num = 3 then
-											PD := PD + key * 10;
-										elsif PD_num = 4 then
-											PD := PD + key;
-										end if;
-										PD_used := PD;
-										-- PD_used := PD(0) * 1000 + PD(1) * 100 + PD(2) * 10 + PD(3);
-									end if;
-									case key is
-										when 13 =>
-											if PD_used = 1324 then
-												case m_sel is
-													when 0 =>
-														mode_3 <= set_mode;
-													when 1 =>
-														mode_3 <= set_mode;
-													when 2 =>
-														mode_3 <= set_mode;
-													when others => null;
-												end case;
-											end if;
-										when others => null;
-									end case;
-								end if;
-								case sw_d(2 to 4) is
-									when "001" => m_sel <= 0;
-									when "010" => m_sel <= 1;
-									when "100" => m_sel <= 2;
-									when others => m_sel <= 3;
-								end case;
-								if msec >= 20 then
-									ena_tim <= '0';
-									l_clear <= '0';
-									font_start <= '1';
-									font_mode <= 0;
-									text_color_array <= (others => cyan);
-								end if;
-								if txt_cnt = 0 then
-									x <= 0;
-									y <= 0;
-									text_size <= 1;
-									text_data(1 to 8) <= "MODE:PAY";
-									text_data(9 to 12) <= (others => character'val(32));
-								end if;
-								if txt_cnt = 1 then
-									x <= 0;
-									y <= 40;
-									text_size <= 1;
-									text_data(1 to 3) <= "PD:";
-									-- text_data(4 to 7) <= to_string((PD_used), PD_used'high, 10, 4);
-
-									if PD_num = 0 then
-										text_data(4 to 7) <= "    ";
-									elsif PD_num = 1 then
-										text_data(4 to 5) <= to_string((PD_used/100), PD_used'high, 10, 2);
-										text_data(5 to 7) <= "   ";
-									elsif PD_num = 2 then
-										text_data(4 to 5) <= to_string((PD_used/100), PD_used'high, 10, 2);
-										text_data(5) <= '*';
-										text_data(6 to 7) <= "  ";
-									elsif PD_num = 3 then
-										text_data(4 to 6) <= to_string((PD_used/10), PD_used'high, 10, 3);
-										text_data(5) <= '*';
-										text_data(7) <= ' ';
-									elsif PD_num = 4 then
-										text_data(4 to 7) <= to_string((PD_used), PD_used'high, 10, 4);
-										text_data(5) <= '*';
-									end if;
+									text_data(1 to 7) <= "C  :000";
 									text_data(8 to 12) <= (others => character'val(32));
 									font_start <= '1';
 								end if;
 								if txt_cnt = 2 then
 									x <= 0;
-									y <= 80;
+									y <= 64;
 									text_size <= 1;
-									text_data(1 to 9) <= "         ";
-									text_data(10 to 12) <= (others => character'val(32));
+									text_data(1 to 7) <= "L  : 00";
+									text_data(8 to 12) <= (others => character'val(32));
 									font_start <= '1';
+									init_fin_flag <= '1';
 								end if;
 								if font_busy = '1' then
 									font_start <= '0';
@@ -946,26 +780,39 @@ begin
 									end if;
 									ena_tim <= '1';
 								end if;
+								if init_fin_flag = '1' then
+									ena_tim <= '1';
+									mode_3 <= set_mode;
+								end if;
 							when set_mode =>
+								case sw_d(2 to 4) is
+									when "001" => seg_data <= "MoDE1.XX";
+										m_sel <= 0;
+									when "010" => seg_data <= "MoDE2.YY";
+										m_sel <= 1;
+									when "100" => seg_data <= "MoDE3.ZZ";
+										m_sel <= 2;
+									when others => seg_data <= (others => character'val(32));
+										m_sel <= 3;
+								end case;
 								if pressed = '1' then
 									case key is
-										when 15 => mode_3 <= ensure;
-											ena_tim <= '1';
+										when 11 => mode_3 <= init;
 										when others =>
 									end case;
 								end if;
 								if pressed_i = '1' then
 									case key is
-										when 0 =>
+										when 14 =>
 											if m_sel /= 3 then
 												cnt_c(m_sel) := 0;
 												cnt_l(m_sel) := 0;
 											end if;
-										when 14 =>
+										when 15 =>
 											if trigger = '1' and m_sel /= 3 then
-												if cnt_l(m_sel) + 1 < cnt_l(m_sel)'high then
-													cnt_l(m_sel) := cnt_l(m_sel) + 1;
-													cnt_c(m_sel) := cnt_l(m_sel) * 27;
+												if cnt_c(m_sel) + 1 < cnt_c(m_sel)'high then
+													cnt_c(m_sel) := cnt_c(m_sel) + 1;
+													cnt_l(m_sel) := cnt_c(m_sel)/30;
 												else
 													cnt_c(m_sel) := 0;
 													cnt_l(m_sel) := 0;
@@ -978,44 +825,42 @@ begin
 									ena_tim <= '0';
 									l_clear <= '0';
 									font_start <= '1';
-									text_color_array <= (others => cyan);
-
 								end if;
 								if txt_cnt = 0 then
 									x <= 0;
 									y <= 0;
 									text_size <= 1;
-									text_data(1 to 6) <= "MODE: ";
-									case m_sel is
-										when 0 => text_data(7 to 8) <= "92";
-										when 1 => text_data(7 to 8) <= "95";
-										when 2 => text_data(7 to 8) <= "98";
-										when others => text_data(7 to 8) <= "  ";
+									text_data(1 to 5) <= "MODE:";
+									case sw_d(2 to 4) is
+										when "001" => text_data(6 to 7) <= "XX";
+										when "010" => text_data(6 to 7) <= "YY";
+										when "100" => text_data(6 to 7) <= "ZZ";
+										when others => text_data(6 to 7) <= "  ";
 									end case;
-									text_data(9 to 12) <= (others => character'val(32));
+									text_data(8 to 12) <= (others => character'val(32));
 								end if;
 								if txt_cnt = 1 then
 									x <= 0;
-									y <= 40;
+									y <= 32;
 									text_size <= 1;
-									text_data(1 to 5) <= "Cost:";
+									text_data(1 to 4) <= "C  :";
 									if m_sel /= 3 then
-										text_data(6 to 8) <= to_string(cnt_c(m_sel), cnt_c(m_sel)'high, 10, 3);
-									else text_data(6 to 8) <= "000";
+										text_data(5 to 7) <= to_string(cnt_c(m_sel), cnt_c(m_sel)'high, 10, 3);
+									else text_data(5 to 7) <= "000";
 									end if;
-									text_data(9 to 12) <= (others => character'val(32));
+									text_data(8 to 12) <= (others => character'val(32));
 									font_start <= '1';
 								end if;
 								if txt_cnt = 2 then
 									x <= 0;
-									y <= 80;
+									y <= 64;
 									text_size <= 1;
-									text_data(1 to 7) <= "Litre: ";
+									text_data(1 to 5) <= "L  : ";
 									if m_sel /= 3 then
-										text_data(8 to 9) <= to_string(cnt_l(m_sel), cnt_l(m_sel)'high, 10, 2);
-									else text_data(8 to 9) <= "00";
+										text_data(6 to 7) <= to_string(cnt_l(m_sel), cnt_l(m_sel)'high, 10, 2);
+									else text_data(6 to 7) <= "00";
 									end if;
-									text_data(10 to 12) <= (others => character'val(32));
+									text_data(8 to 12) <= (others => character'val(32));
 									font_start <= '1';
 								end if;
 								if font_busy = '1' then
@@ -1029,75 +874,12 @@ begin
 								end if;
 							when UP_mode => null;
 							when DN_mode => null;
-							when ensure =>
-								if msec >= 20 then
-									ena_tim <= '0';
-									l_clear <= '0';
-									font_start <= '1';
-									text_color_array <= (others => cyan);
-
-								end if;
-								if txt_cnt = 0 then
-									x <= 0;
-									y <= 0;
-									text_size <= 1;
-									text_data(1 to 6) <= "MODE: ";
-									case m_sel is
-										when 0 => text_data(7 to 8) <= "92";
-										when 1 => text_data(7 to 8) <= "95";
-										when 2 => text_data(7 to 8) <= "98";
-										when others => text_data(7 to 8) <= "  ";
-									end case;
-									text_data(9 to 12) <= (others => character'val(32));
-								end if;
-								if txt_cnt = 1 then
-									x <= 0;
-									y <= 40;
-									text_size <= 1;
-									text_data(1 to 5) <= "Cost:";
-									if m_sel /= 3 then
-										text_data(6 to 8) <= to_string(cnt_c(m_sel), cnt_c(m_sel)'high, 10, 3);
-									else text_data(6 to 8) <= "000";
-									end if;
-									text_data(9 to 12) <= (others => character'val(32));
-									font_start <= '1';
-								end if;
-								if txt_cnt = 2 then
-									x <= 0;
-									y <= 80;
-									text_size <= 1;
-									text_data(1 to 7) <= "Litre: ";
-									if m_sel /= 3 then
-										text_data(8 to 9) <= to_string(cnt_l(m_sel), cnt_l(m_sel)'high, 10, 2);
-									else text_data(8 to 9) <= "00";
-									end if;
-									text_data(10 to 12) <= (others => character'val(32));
-									font_start <= '1';
-								end if;
-
-								if txt_cnt = 3 then
-									x <= 0;
-									y <= 140;
-									text_size <= 1;
-									text_data(1 to 12) <= "    Done    ";
-									font_start <= '1';
-								end if;
-								if font_busy = '1' then
-									font_start <= '0';
-									if txt_cnt <= 3 then
-										txt_cnt <= txt_cnt + 1;
-									else
-										txt_cnt <= 0;
-									end if;
-									ena_tim <= '1';
-								end if;
 						end case;
 					when mode11 =>
 						case mode_4 is
 							when init =>
 								mode_tts <= idle;
 								ena_tim <= '1';
-								ena_tim1 <= '1';
 								txt_cnt <= 0;
 								x <= 0;
 								y <= 5;
@@ -1117,55 +899,35 @@ begin
 								cnt_l := (others => 0);
 								mode_4 <= init_mode;
 								fin_pro_flag <= '0';
-								PD_num := 0;
-								PD := 0;
-								PD_used := 0;
 							when init_mode =>
-								if pressed = '1' then
-									case key is
-										when 13 =>
-											init_fin_flag <= '1';
-										when others => null;
-									end case;
-								end if;
 								if msec >= 20 then
 									ena_tim <= '0';
 									l_clear <= '0';
 									font_start <= '1';
-									font_mode <= 0;
-									text_color_array <= (others => cyan);
-								end if;
-								if (msec1/500)mod 2 = 0 then
-									blink_flag <= '0';
-								elsif (msec1/500)mod 2 = 1 then
-									blink_flag <= '1';
 								end if;
 								if txt_cnt = 0 then
 									x <= 0;
 									y <= 0;
 									text_size <= 1;
-									if blink_flag = '1' then
-										text_data(1 to 8) <= "MODE:PAY";
-									elsif blink_flag = '0' then
-										text_data(1 to 8) <= "        ";
-									end if;
-									text_data(9 to 12) <= (others => character'val(32));
+									text_data(1 to 7) <= "MODE:  ";
+									text_data(8 to 12) <= (others => character'val(32));
 								end if;
 								if txt_cnt = 1 then
 									x <= 0;
-									y <= 40;
+									y <= 32;
 									text_size <= 1;
-									text_data(1 to 8) <= "Cost:000";
-									text_data(9 to 12) <= (others => character'val(32));
+									text_data(1 to 7) <= "C  :000";
+									text_data(8 to 12) <= (others => character'val(32));
 									font_start <= '1';
 								end if;
 								if txt_cnt = 2 then
 									x <= 0;
-									y <= 80;
+									y <= 64;
 									text_size <= 1;
-									text_data(1 to 9) <= "Litre: 00";
-									text_data(10 to 12) <= (others => character'val(32));
+									text_data(1 to 7) <= "L  : 00";
+									text_data(8 to 12) <= (others => character'val(32));
 									font_start <= '1';
+									init_fin_flag <= '1';
 								end if;
 								if font_busy = '1' then
 									font_start <= '0';
@@ -1194,66 +956,34 @@ begin
 											mode_tts <= idle;
 											ena_tim <= '1';
 											init_fin_flag <= '0';
-											mode_4 <= PD_mode;
+											mode_4 <= set_mode;
 										end if;
 								end case;
-							when PD_mode =>
-								if pressed = '1' then
-									if key >= 1 and key <= 9 then
-										if PD_num < PD_num'high then
-											PD_num := PD_num + 1;
-										else
-											PD_num := 0;
-										end if;
-										if PD_num = 1 then
-											PD := key * 1000;
-										elsif PD_num = 2 then
-											PD := PD + key * 100;
-										elsif PD_num = 3 then
-											PD := PD + key * 10;
-										elsif PD_num = 4 then
-											PD := PD + key;
-										end if;
-										PD_used := PD;
-										-- PD_used := PD(0) * 1000 + PD(1) * 100 + PD(2) * 10 + PD(3);
-									end if;
-									case key is
-										when 13 =>
-											if PD_used = 1234 then
-												case m_sel is
-													when 0 =>
-														mode_4 <= tts_mode;
-														mode_tts <= idle;
-													when 1 =>
-														mode_4 <= tts_mode;
-														mode_tts <= idle;
-													when 2 =>
-														mode_4 <= tts_mode;
-														mode_tts <= idle;
-													when others => null;
-												end case;
-											end if;
-										when others => null;
-									end case;
-								end if;
+							when set_mode =>
 								case sw_d(2 to 4) is
-									when "001" =>
+									when "001" => seg_data <= "MoDE1.XX";
 										m_sel <= 0;
 										if tts_said <= '0' then
 											tts_mode_flag <= '1';
 											tts_pressed_flag <= '0';
+											mode_4 <= tts_mode;
+											mode_tts <= idle;
 										end if;
-									when "010" =>
+									when "010" => seg_data <= "MoDE2.YY";
 										m_sel <= 1;
 										if tts_said <= '0' then
 											tts_mode_flag <= '1';
 											tts_pressed_flag <= '0';
+											mode_4 <= tts_mode;
+											mode_tts <= idle;
 										end if;
-									when "100" =>
+									when "100" => seg_data <= "MoDE3.ZZ";
 										m_sel <= 2;
 										if tts_said <= '0' then
 											tts_mode_flag <= '1';
 											tts_pressed_flag <= '0';
+											mode_4 <= tts_mode;
+											mode_tts <= idle;
 										end if;
 									when others => seg_data <= (others => character'val(32));
 										m_sel <= 3;
@@ -1262,69 +992,9 @@ begin
 										mode_tts <= idle;
 										tts_said <= '0';
 								end case;
-								if msec >= 20 then
-									ena_tim <= '0';
-									l_clear <= '0';
-									font_start <= '1';
-									font_mode <= 0;
-									text_color_array <= (others => cyan);
-								end if;
-								if txt_cnt = 0 then
-									x <= 0;
-									y <= 0;
-									text_size <= 1;
-									text_data(1 to 8) <= "MODE:PAY";
-									text_data(9 to 12) <= (others => character'val(32));
-								end if;
-								if txt_cnt = 1 then
-									x <= 0;
-									y <= 40;
-									text_size <= 1;
-									text_data(1 to 3) <= "PD:";
-									-- text_data(4 to 7) <= to_string((PD_used), PD_used'high, 10, 4);
-
-									if PD_num = 0 then
-										text_data(4 to 7) <= "    ";
-									elsif PD_num = 1 then
-										text_data(4 to 5) <= to_string((PD_used/100), PD_used'high, 10, 2);
-										text_data(5 to 7) <= "   ";
-									elsif PD_num = 2 then
-										text_data(4 to 5) <= to_string((PD_used/100), PD_used'high, 10, 2);
-										text_data(5) <= '*';
-										text_data(6 to 7) <= "  ";
-									elsif PD_num = 3 then
-										text_data(4 to 6) <= to_string((PD_used/10), PD_used'high, 10, 3);
-										text_data(5) <= '*';
-										text_data(7) <= ' ';
-									elsif PD_num = 4 then
-										text_data(4 to 7) <= to_string((PD_used), PD_used'high, 10, 4);
-										text_data(5) <= '*';
-									end if;
-									text_data(8 to 12) <= (others => character'val(32));
-									font_start <= '1';
-								end if;
-								if txt_cnt = 2 then
-									x <= 0;
-									y <= 80;
-									text_size <= 1;
-									text_data(1 to 9) <= "         ";
-									text_data(10 to 12) <= (others => character'val(32));
-									font_start <= '1';
-								end if;
-								if font_busy = '1' then
-									font_start <= '0';
-									if txt_cnt <= 2 then
-										txt_cnt <= txt_cnt + 1;
-									else
-										txt_cnt <= 0;
-									end if;
-									ena_tim <= '1';
-								end if;
-
-							when set_mode =>
 								if pressed = '1' then
 									case key is
-										when 15 =>
+										when 11 =>
 											mode_4 <= tts_mode;
 											fin_pro_flag <= '1';
 										when others => null;
@@ -1332,16 +1002,16 @@ begin
 								end if;
 								if pressed_i = '1' then
 									case key is
-										when 0 =>
+										when 14 =>
 											if m_sel /= 3 then
 												cnt_c(m_sel) := 0;
 												cnt_l(m_sel) := 0;
 											end if;
-										when 14 =>
+										when 15 =>
 											if trigger = '1' and m_sel /= 3 then
-												if cnt_l(m_sel) + 1 < cnt_l(m_sel)'high then
-													cnt_l(m_sel) := cnt_l(m_sel) + 1;
-													cnt_c(m_sel) := cnt_l(m_sel) * 28;
+												if cnt_c(m_sel) + 1 < cnt_c(m_sel)'high then
+													cnt_c(m_sel) := cnt_c(m_sel) + 1;
+													cnt_l(m_sel) := cnt_c(m_sel)/30;
 												else
 													cnt_c(m_sel) := 0;
 													cnt_l(m_sel) := 0;
@@ -1352,7 +1022,7 @@ begin
 								end if;
 								if pressed_f = '1' and m_sel /= 3 then
 									case key is
-										when 14 =>
+										when 15 =>
 											tts_mode_flag <= '0';
 											tts_pressed_flag <= '1';
 											mode_4 <= tts_mode;
@@ -1365,44 +1035,42 @@ begin
 									ena_tim <= '0';
 									l_clear <= '0';
 									font_start <= '1';
-									text_color_array <= (others => cyan);
-
 								end if;
 								if txt_cnt = 0 then
 									x <= 0;
 									y <= 0;
 									text_size <= 1;
-									text_data(1 to 6) <= "MODE: ";
-									case m_sel is
-										when 0 => text_data(7 to 8) <= "92";
-										when 1 => text_data(7 to 8) <= "95";
-										when 2 => text_data(7 to 8) <= "98";
-										when others => text_data(7 to 8) <= "  ";
+									text_data(1 to 5) <= "MODE:";
+									case sw_d(2 to 4) is
+										when "001" => text_data(6 to 7) <= "XX";
+										when "010" => text_data(6 to 7) <= "YY";
+										when "100" => text_data(6 to 7) <= "ZZ";
+										when others => text_data(6 to 7) <= "  ";
 									end case;
-									text_data(9 to 12) <= (others => character'val(32));
+									text_data(8 to 12) <= (others => character'val(32));
 								end if;
 								if txt_cnt = 1 then
 									x <= 0;
-									y <= 40;
+									y <= 32;
 									text_size <= 1;
-									text_data(1 to 5) <= "Cost:";
+									text_data(1 to 4) <= "C  :";
 									if m_sel /= 3 then
-										text_data(6 to 8) <= to_string(cnt_c(m_sel), cnt_c(m_sel)'high, 10, 3);
-									else text_data(6 to 8) <= "000";
+										text_data(5 to 7) <= to_string(cnt_c(m_sel), cnt_c(m_sel)'high, 10, 3);
+									else text_data(5 to 7) <= "000";
 									end if;
-									text_data(9 to 12) <= (others => character'val(32));
+									text_data(8 to 12) <= (others => character'val(32));
 									font_start <= '1';
 								end if;
 								if txt_cnt = 2 then
 									x <= 0;
-									y <= 80;
+									y <= 64;
 									text_size <= 1;
-									text_data(1 to 7) <= "Litre: ";
+									text_data(1 to 5) <= "L  : ";
 									if m_sel /= 3 then
-										text_data(8 to 9) <= to_string(cnt_l(m_sel), cnt_l(m_sel)'high, 10, 2);
-									else text_data(8 to 9) <= "00";
+										text_data(6 to 7) <= to_string(cnt_l(m_sel), cnt_l(m_sel)'high, 10, 2);
+									else text_data(6 to 7) <= "00";
 									end if;
-									text_data(10 to 12) <= (others => character'val(32));
+									text_data(8 to 12) <= (others => character'val(32));
 									font_start <= '1';
 								end if;
 								if font_busy = '1' then
@@ -1414,7 +1082,6 @@ begin
 									end if;
 									ena_tim <= '1';
 								end if;
-
 							when tts_mode =>
 								case mode_tts is
 									when idle =>
@@ -1441,7 +1108,7 @@ begin
 											txt_len <= 6;
 											tts_ena <= '1';
 										elsif tts_mode_flag = '0' and tts_pressed_flag = '1' then
-											tts_txt(0 to 27) <= Litre & to_big(cnt_l(m_sel)) & Price & to_big(cnt_c(m_sel)) & coin;
+											tts_txt(0 to 27) <= cnt_cis & to_big(cnt_c(m_sel)) & cnt_lis & to_big(cnt_l(m_sel));
 											txt_len <= 28;
 											tts_ena <= '1';
 										end if;
@@ -1450,57 +1117,57 @@ begin
 											ena_tim <= '1';
 										end if;
 									when stop =>
-										-- if msec >= 20 then
-										-- 	ena_tim <= '0';
-										-- 	l_clear <= '0';
-										-- 	font_start <= '1';
-										-- end if;
-										-- if txt_cnt = 0 then
-										-- 	x <= 0;
-										-- 	y <= 0;
-										-- 	text_size <= 1;
-										-- 	text_data(1 to 5) <= "MODE:";
-										-- 	case sw_d(2 to 4) is
-										-- 		when "001" => text_data(6 to 7) <= "XX";
-										-- 		when "010" => text_data(6 to 7) <= "YY";
-										-- 		when "100" => text_data(6 to 7) <= "ZZ";
-										-- 		when others => text_data(6 to 7) <= "  ";
-										-- 	end case;
-										-- 	text_data(8 to 12) <= (others => character'val(32));
-										-- end if;
-										-- if txt_cnt = 1 then
-										-- 	x <= 0;
-										-- 	y <= 32;
-										-- 	text_size <= 1;
-										-- 	text_data(1 to 4) <= "C  :";
-										-- 	if m_sel /= 3 then
-										-- 		text_data(5 to 7) <= to_string(cnt_c(m_sel), cnt_c(m_sel)'high, 10, 3);
-										-- 	else text_data(5 to 7) <= "000";
-										-- 	end if;
-										-- 	text_data(8 to 12) <= (others => character'val(32));
-										-- 	font_start <= '1';
-										-- end if;
-										-- if txt_cnt = 2 then
-										-- 	x <= 0;
-										-- 	y <= 64;
-										-- 	text_size <= 1;
-										-- 	text_data(1 to 5) <= "L  : ";
-										-- 	if m_sel /= 3 then
-										-- 		text_data(6 to 7) <= to_string(cnt_l(m_sel), cnt_l(m_sel)'high, 10, 2);
-										-- 	else text_data(6 to 7) <= "00";
-										-- 	end if;
-										-- 	text_data(8 to 12) <= (others => character'val(32));
-										-- 	font_start <= '1';
-										-- end if;
-										-- if font_busy = '1' then
-										-- 	font_start <= '0';
-										-- 	if txt_cnt <= 2 then
-										-- 		txt_cnt <= txt_cnt + 1;
-										-- 	else
-										-- 		txt_cnt <= 0;
-										-- 	end if;
-										-- 	ena_tim <= '1';
-										-- end if;
+										if msec >= 20 then
+											ena_tim <= '0';
+											l_clear <= '0';
+											font_start <= '1';
+										end if;
+										if txt_cnt = 0 then
+											x <= 0;
+											y <= 0;
+											text_size <= 1;
+											text_data(1 to 5) <= "MODE:";
+											case sw_d(2 to 4) is
+												when "001" => text_data(6 to 7) <= "XX";
+												when "010" => text_data(6 to 7) <= "YY";
+												when "100" => text_data(6 to 7) <= "ZZ";
+												when others => text_data(6 to 7) <= "  ";
+											end case;
+											text_data(8 to 12) <= (others => character'val(32));
+										end if;
+										if txt_cnt = 1 then
+											x <= 0;
+											y <= 32;
+											text_size <= 1;
+											text_data(1 to 4) <= "C  :";
+											if m_sel /= 3 then
+												text_data(5 to 7) <= to_string(cnt_c(m_sel), cnt_c(m_sel)'high, 10, 3);
+											else text_data(5 to 7) <= "000";
+											end if;
+											text_data(8 to 12) <= (others => character'val(32));
+											font_start <= '1';
+										end if;
+										if txt_cnt = 2 then
+											x <= 0;
+											y <= 64;
+											text_size <= 1;
+											text_data(1 to 5) <= "L  : ";
+											if m_sel /= 3 then
+												text_data(6 to 7) <= to_string(cnt_l(m_sel), cnt_l(m_sel)'high, 10, 2);
+											else text_data(6 to 7) <= "00";
+											end if;
+											text_data(8 to 12) <= (others => character'val(32));
+											font_start <= '1';
+										end if;
+										if font_busy = '1' then
+											font_start <= '0';
+											if txt_cnt <= 2 then
+												txt_cnt <= txt_cnt + 1;
+											else
+												txt_cnt <= 0;
+											end if;
+											ena_tim <= '1';
+										end if;
 										if tts_busy = '0' then
 											tts_ena <= '0';
 											mode_tts <= idle;
@@ -1509,13 +1176,6 @@ begin
 											tts_pressed_flag <= '0';
 											tts_said <= '1';
 											init_fin_flag <= '0';
-											if tts_mode_flag = '1' and tts_pressed_flag = '0' then
-												mode_4 <= set_mode;
-											end if;
-											if tts_mode_flag = '0' and tts_pressed_flag = '1' then
-												mode_4 <= set_mode;
-											end if;
-
 											if fin_pro_flag = '1' then
 												mode_4 <= init;
 											end if;

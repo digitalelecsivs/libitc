@@ -14,7 +14,7 @@ class SerialTool:
         self.ui = QUiLoader().load("practices/114-jol/114_2_v1/software/ui.ui")
 
         self.serial = QSerialPort()
-        self.serial.setPortName("COM4")
+        self.serial.setPortName("COM10")
         self.serial.setBaudRate(115200)
         self.serial.setDataBits(QSerialPort.Data8)
         self.serial.setParity(QSerialPort.NoParity)

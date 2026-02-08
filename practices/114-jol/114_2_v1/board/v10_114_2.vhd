@@ -717,7 +717,6 @@ begin
 										end if;
 										for i in 1 to 4 loop
 											if OF_flag <= '1' then
-
 												data_num := character'pos(data_set(client_num)(data_len(client_num) - rx_len + OF_num + i));
 												if i <= rx_len - OF_num then
 													pic(4 + i) := to_data(l_paste(l_addr, pic(3 + i), data_array(data_num), map_coord(3 + i), 32, 32));
