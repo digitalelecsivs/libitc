@@ -1,3 +1,4 @@
+import os
 import sys
 
 from PySide6 import QtGui
@@ -11,7 +12,9 @@ class SerialTool:
 
     def __init__(self):
         # 引入.ui
-        self.ui = QUiLoader().load("practices/114-jol/114_2_v1/software/ui.ui")
+        self.ui = QUiLoader().load(
+            "C:/libitc/practices/114-jol/114_2_v1/software/ui.ui"
+        )
 
         self.serial = QSerialPort()
         self.serial.setPortName("COM4")
@@ -59,6 +62,7 @@ class SerialTool:
     def clear_text(self):
         """清除傳送框"""
         self.ui.text2.clear()
+        os.system("cls" if os.name == "nt" else "clear")
 
     def backspace(self):
         """刪除最後一個字"""
@@ -124,7 +128,7 @@ class SerialTool:
         if filtered.strip() != "" and len(filtered) < 9:
             self.ui.text3.append(filtered)
             self.ui.text3.moveCursor(QtGui.QTextCursor.End)
-            print(filtered)
+            print(f"{filtered}")
 
 
 if __name__ == "__main__":
