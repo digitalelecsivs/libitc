@@ -85,11 +85,12 @@ architecture arch of v20_114_1_a is
 	signal tx_ena, tx_busy, rx_busy, rx_err, tx_ena_e : std_logic;
 	signal tx_data, rx_data : string(1 to 12);
 	signal tx_len, rx_len : integer range 1 to 12;
-
 	--seg
 	signal seg_data : string(1 to 8) := (others => ' ');
 	signal dot : u8r_t := (others => '0');
 
+	signal test : u8_t := (others => '0');
+	
 	--user signal
 	signal data_array : data_arr(0 to 8) := (n1_data, n2_data, n3_data, n4_data, n5_data, n6_data, n7_data, n8_data, n9_data);
 	signal addr_array : addr_arr(0 to 8) := (n1_addr, n2_addr, n3_addr, n4_addr, n5_addr, n6_addr, n7_addr, n8_addr, n9_addr);
