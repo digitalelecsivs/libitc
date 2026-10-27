@@ -26,45 +26,50 @@ if {$make_assignments} {
 	
 	set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS REGULAR IO"
 
+	# System
 	# OSC1, nRST
 	set_location_assignment PIN_149 -to clk
 	set_location_assignment PIN_145 -to rst_n
-# 第二題board_a 腳位分配
+# 第一題board_b 腳位分配
 	# I/O裝置： 
-	# 		SW、keyboard、seg、dot、lcd、buzzer、led_rgy、rgb_led、uart
-
+	# 		keyboard、uart
+	
 	set_global_assignment -name DEVICE EP3C16Q240C8
-	
-	
-	set_location_assignment PIN_127 -to D_out
-	
-	set_location_assignment PIN_131 -to dbg_a[0]
-	set_location_assignment PIN_132 -to dbg_a[1]
-	set_location_assignment PIN_133 -to dbg_a[2]
-	set_location_assignment PIN_134 -to dbg_a[3]
-	set_location_assignment PIN_135 -to dbg_a[4]
-	set_location_assignment PIN_137 -to dbg_a[5]
-	set_location_assignment PIN_139 -to dbg_a[6]
-	set_location_assignment PIN_142 -to dbg_a[7]
 
-	set_location_assignment PIN_146 -to dbg_b[0]
-	set_location_assignment PIN_147 -to dbg_b[1]
-	set_location_assignment PIN_148 -to dbg_b[2]
-	set_location_assignment PIN_159 -to dbg_b[3]
+	# pinlist 39 43 45 49 , 51 55 57 68
+	# KEY_COL{1..4} 
+	set_location_assignment PIN_127 -to key_row[0] 
+	set_location_assignment PIN_120 -to key_row[1]
+	set_location_assignment PIN_118 -to key_row[2]
+	# KEY_ROW{1..4}
+	set_location_assignment PIN_114 -to key_col[0]
+	set_location_assignment PIN_112 -to key_col[1]
+	set_location_assignment PIN_110 -to key_col[2]
 
-	set_location_assignment PIN_101 -to sw[0]
-	set_location_assignment PIN_103 -to sw[1]
-	set_location_assignment PIN_107 -to sw[2]
-	set_location_assignment PIN_109 -to sw[3]
-	set_location_assignment PIN_111 -to sw[4]
-	set_location_assignment PIN_113 -to sw[5]
-	set_location_assignment PIN_117 -to sw[6]
-	set_location_assignment PIN_119 -to sw[7]
-	set_location_assignment PIN_126 -to button
-	# set_location_assignment PIN_126 -to ena
-	# set_location_assignment PIN_128 -to busy 		
-	# set_instance_assignment -name CURRENT_STRENGTH_NEW 4MA -to PWM
-    # set_instance_assignment -name SLEW_RATE 0 -to PWM
+	set_location_assignment PIN_68 -to seg_led[0]
+	set_location_assignment PIN_64 -to seg_led[1]
+	set_location_assignment PIN_57 -to seg_led[2]
+	set_location_assignment PIN_55 -to seg_led[3]
+	set_location_assignment PIN_51 -to seg_led[4]
+	set_location_assignment PIN_49 -to seg_led[5]
+	set_location_assignment PIN_45 -to seg_led[6]
+	set_location_assignment PIN_43 -to seg_led[7]
+
+	set_location_assignment PIN_39 -to seg_com[0]
+	set_location_assignment PIN_37 -to seg_com[1]
+	set_location_assignment PIN_21 -to seg_com[2]
+	set_location_assignment PIN_19 -to seg_com[3]
+	# I/O版上的絲印是反的 The silkscreen on I/O board is reversed 
+
+	# Debug Port
+	#set_location_assignment PIN_168 -to dbg_a[0]
+	#set_location_assignment PIN_171 -to dbg_a[1]
+	#set_location_assignment PIN_174 -to dbg_a[2]
+	#set_location_assignment PIN_176 -to dbg_a[3]
+	
+	# # UART_{TX,RX} (green, white)
+	#set_location_assignment PIN_231 -to uart_rx
+	#set_location_assignment PIN_232 -to uart_tx
 	# Commit assignments
 	export_assignments
 	# Close project

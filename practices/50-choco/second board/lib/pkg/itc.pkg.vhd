@@ -14,6 +14,8 @@ package itc is
 
 	subtype u4_t is unsigned(3 downto 0);
 	subtype u4r_t is unsigned(0 to 3); -- big endian nibble
+
+	
 	type u4_arr_t is array (integer range <>) of u4_t;
 	type u4r_arr_t is array (integer range <>) of u4r_t;
 
@@ -28,6 +30,8 @@ package itc is
 	type u16r_arr_t is array (integer range <>) of u16r_t;
 
 	subtype i4_t is integer range 0 to 2 ** 4 - 1;
+
+	subtype i3_t is integer range 0 to 2 ** 3 + 1;
 	type i4_arr_t is array (integer range <>) of i4_t;
 
 	subtype i8_t is integer range 0 to 2 ** 8 - 1;

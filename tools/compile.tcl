@@ -54,7 +54,6 @@ if {$make_assignments} {
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
 	
-
 	
 	# pkg
 	set_global_assignment -name VHDL_FILE lib/pkg/itc.pkg.vhd
@@ -91,12 +90,29 @@ if {$make_assignments} {
 	set_global_assignment -name VHDL_FILE lib/tts.vhd
 	set_global_assignment -name VHDL_FILE lib/WS2812B.vhd
 	set_global_assignment -name VHDL_FILE lib/lcd_mix_intgr_aph.vhd
-	set_global_assignment -name VHDL_FILE lib/key_2x2_1.vhd
+	set_global_assignment -name VHDL_FILE lib/lcd_mix.vhd
+		# lcd_mix_inst : entity work.lcd_mix_intgr_aph(arch)
+
+	# set_global_assignment -name VHDL_FILE lib/key_2x2_1.vhd
 
 	
 	set_global_assignment -name VHDL_FILE tests/WS2812_test1.vhd
 	
-	set_global_assignment -name TOP_LEVEL_ENTITY WS2812_test1
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/ox/O.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/ox/O.qip
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/ox/X.vhd
+	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/ox/X.qip
+	set_global_assignment -name VHDL_FILE practices/114-jol/xilinx.vhd
+	set_global_assignment -name QIP_FILE practices/114-jol/xilinx.qip
+	# src\itc114_2\board\v13_114_a.vhd
+	# set_global_assignment -name VHDL_FILE C:/Users/user/Desktop/libitc/src/itc114_2/board/v13_114_a.vhd
+	# set_global_assignment -name VHDL_FILE C:/Users/user/Desktop/libitc/practices/114-jol/test_0819.vhd
+	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/circle_cross_2.vhd
+
+	set_global_assignment -name VHDL_FILE practices/311104/key_t.vhd
+	# practices\114-jol\test_0819.vhd
+	set_global_assignment -name TOP_LEVEL_ENTITY key_t
+	# set_global_assignment -name TOP_LEVEL_ENTITY test_0819
 	
 
 	

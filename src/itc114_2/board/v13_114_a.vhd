@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.itc.all;
 use work.itc_lcd.all;
 
-entity v13_114_A is
+entity v13_114_a is
 	port (
 		-- sys
 		clk   : in std_logic;
@@ -26,9 +26,9 @@ entity v13_114_A is
 		dbg_b : out u8r_t; -- dbg
 		dbg_a : out u8r_t
 	);
-end v13_114_A;
+end v13_114_a;
 
-architecture arch of v13_114_A is
+architecture arch of v13_114_a is
 	--state machine
 	type state_t is (init, Main);--總狀態機
 	type state_m is (mode00, mode01, mode10, mode11);--第一層=>總狀態機的Main
