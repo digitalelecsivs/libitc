@@ -59,6 +59,10 @@ if {$make_assignments} {
 	set_location_assignment PIN_37 -to seg_com[1]
 	set_location_assignment PIN_21 -to seg_com[2]
 	set_location_assignment PIN_19 -to seg_com[3]
+	set_location_assignment PIN_13 -to seg_com[4]
+	set_location_assignment PIN_6 -to seg_com[5]
+	set_location_assignment PIN_4 -to seg_com[6]
+	set_location_assignment PIN_239 -to seg_com[7]
 	# I/O版上的絲印是反的 The silkscreen on I/O board is reversed 
 
 	# Debug Port
