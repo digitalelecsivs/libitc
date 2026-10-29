@@ -1,120 +1,83 @@
+----------------------------------------------------------------------------
+--測試七段顯示器與按鍵與DIP SW
+--(1)使用seg_ch.vhd元件時，只能固定顯示0~9的數字，按任一鍵即顯示，由左而右。
+--(2)使用seg.vhd元件時，可顯示鍵盤數字01、02 一直到08，由左而右串聯顯示。
+--	 顯示的數字由鍵盤數字決定，2X2鍵盤0~3，按鍵0顯示0，按鍵1顯示1，按鍵2顯示2，按鍵3顯示3。
+--   3X3鍵盤0~8，按鍵0顯示0，按鍵1顯示1，按鍵2顯示2，按鍵3顯示3，按鍵4顯示4，按鍵5顯示5，按鍵6顯示6，按鍵7顯示7，按鍵8顯示8。
+--(3)dbg_a(0 to 7)顯示key值，dbg_b(0 to 7)顯示SW值，按鍵按下時才更新。
+--115.10.12  by chaosoyu
+----------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.itc.all;
+use work.itc_lcd.all;
 
 entity key_t is
-    port (
-        clk, rst_n       : in std_logic;
-        key_row          : in std_logic_vector(2 downto 0);
-        key_col          : out std_logic_vector(2 downto 0);
-        seg_led, seg_com : out u8r_t;
-        dbg_a, dbg_b     : out u8r_t
-    );
+	port (
+		clk              : in std_logic;
+		rst_n            : in std_logic;
+		key_row          : in unsigned(0 to 2);
+		key_col          : out unsigned(0 to 2);
+		sw               : in u8r_t;
+		seg_led, seg_com : out u8r_t; -- seg
+		dbg_a            : out u8r_t;
+		dbg_b            : out u8r_t
+	);
 end key_t;
 
 architecture arch of key_t is
-
-    constant SCAN_TICK : integer := 50000;
-    constant DEB : integer := 10;
-    constant SEG_ACTIVE : std_logic := '0';
-    constant COM_SEL : std_logic := '1';
-
-    signal pressed : std_logic;
-    signal key : i4_t;
-
-    signal scan_cnt : integer range 0 to SCAN_TICK;
-    signal current_col : integer range 0 to 2;
-    signal debounce_cnt : integer range 0 to DEB;
-    signal held : std_logic;
-
-    signal rows_s1, rows_s2 : std_logic_vector(2 downto 0);
-
-    signal seg_data : std_logic_vector(7 downto 0); -- a b c d e f g dp, '0'=亮
-
+	-- key board
+	signal pressed_i : std_logic;
+	signal pressed : std_logic;
+	signal key : integer range 0 to 9;
+	signal seg_data : string(1 to 8) := (others => ' ');
 begin
+	seg_inst : entity work.seg(arch) -- 8bit七段顯示器元件
+		generic map(
+			common_anode => '0' -- 在這裡明確指明為共陰極 '0'
+		)
+		port map(
+			clk     => clk,
+			rst_n   => rst_n,
+			seg_led => seg_led,
+			seg_com => seg_com,
+			data    => seg_data,
+			dot => (others => '0') -- '0'小數點不亮 , '1'亮
+		);
 
-    dbg_a <= (0 => pressed, others => '0');
-    dbg_b(0 to 3) <= reverse(to_unsigned(key, 4));
-    dbg_b(4 to 7) <= (others => '0');
+	key_inst : entity work.key_3x3(arch)
+		port map(
+			clk     => clk,
+			rst_n   => rst_n,
+			key_row => key_row,
+			key_col => key_col,
+			pressed => pressed_i,
+			key     => key
+		);
 
-    scan_proc : process (clk, rst_n)
-        variable r : integer range 0 to 2;
-    begin
-        if rst_n = '0' then
-            scan_cnt <= 0;
-            current_col <= 0;
-            key_col <= "110";
-            rows_s1 <= (others => '1');
-            rows_s2 <= (others => '1');
-            pressed <= '0';
-            held <= '0';
-            key <= 0;
-            debounce_cnt <= 0;
-        elsif rising_edge(clk) then
-            rows_s1 <= key_row;
-            rows_s2 <= rows_s1;
-            pressed <= '0';
+	key_edge : entity work.edge(arch)
+		port map(
+			clk     => clk,
+			rst_n   => rst_n,
+			sig_in  => pressed_i,
+			rising  => pressed,
+			falling => open
+		);
 
-            if scan_cnt = SCAN_TICK then
-                scan_cnt <= 0;
-
-                if rows_s2 /= "111" then
-                    if rows_s2(0) = '0' then
-                        r := 2;
-                    elsif rows_s2(1) = '0' then
-                        r := 1;
-                    else r := 0;
-                    end if;
-
-                    if debounce_cnt = DEB then
-                        if held = '0' then
-                            key <= r * 3 + current_col + 1;
-                            pressed <= '1';
-                            held <= '1';
-                        end if;
-                    else
-                        debounce_cnt <= debounce_cnt + 1;
-                    end if;
-                else
-                    debounce_cnt <= 0;
-                    held <= '0';
-                    case current_col is
-                        when 0 => current_col <= 1;
-                            key_col <= "101";
-                        when 1 => current_col <= 2;
-                            key_col <= "011";
-                        when 2 => current_col <= 0;
-                            key_col <= "110";
-                    end case;
-                end if;
-            else
-                scan_cnt <= scan_cnt + 1;
-            end if;
-        end if;
-    end process;
-
-
-    with key select
-        seg_data <= "11000000" when 0,
-        "11111001" when 1,
-        "10100100" when 2,
-        "10110000" when 3,
-        "10011001" when 4,
-        "10010010" when 5,
-        "10000010" when 6,
-        "11111000" when 7,
-        "10000000" when 8,
-        "10011000" when 9,
-        "00000010" when others;
-    gen_seg : for i in 0 to 7 generate
-        seg_led(i) <= seg_data(i) when SEG_ACTIVE = '1' else not seg_data(i);
-    end generate;
-
-
-    gen_com : for i in 0 to 7 generate
-        seg_com(i) <= COM_SEL when i = 8 else not COM_SEL;
-    end generate;
+	process (clk, rst_n) begin
+		if rst_n = '0' then
+			dbg_a <= (others => '1');
+			dbg_b <= (others => '1');
+			seg_data <= (others => ' ');
+		elsif rising_edge(clk) then
+			if pressed = '1' then
+				dbg_a(0 to 2) <= not (to_unsigned(key, 3));
+				dbg_b <= sw;
+				seg_data <= seg_data(2 to 8) & to_string(key, key'high, 10, 1);
+			end if;
+		end if;
+	end process;
 
 end arch;

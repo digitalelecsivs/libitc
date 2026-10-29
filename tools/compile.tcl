@@ -50,34 +50,23 @@ if {$make_assignments} {
 
 	# Disable unused pins
 	set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED"
-
+	
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	
-	
-	# pkg
-	set_global_assignment -name VHDL_FILE lib/pkg/itc.pkg.vhd
-	set_global_assignment -name VHDL_FILE lib/pkg/lcd.pkg.vhd
+	set_global_assignment -name TOP_LEVEL_ENTITY key_t
 
-	# bottom
-	set_global_assignment -name VHDL_FILE lib/util/clk.vhd
-	set_global_assignment -name VHDL_FILE lib/util/debounce.vhd
-	set_global_assignment -name VHDL_FILE lib/util/edge.vhd
-	set_global_assignment -name VHDL_FILE lib/util/pwm.vhd
-	set_global_assignment -name VHDL_FILE lib/util/i2c.vhd
-	set_global_assignment -name VHDL_FILE lib/util/timer.vhd
-	set_global_assignment -name VHDL_FILE lib/util/uart.vhd
-	set_global_assignment -name VHDL_FILE lib/util/uart_txt.vhd
+	# Unit tests
 
-	# second
+	set_global_assignment -name VHDL_FILE practices/311104/key_t.vhd
+	#set_global_assignment -name VHDL_FILE practices/chaosoyu/Board_115/Board1_115_top.vhd
+	#set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_1/v10_114_1_a.vhd
+
+	## Components
+	set_global_assignment -name VHDL_FILE lib/font/font_aph_num.vhd
+	set_global_assignment -name VHDL_FILE lib/lcd_mix.vhd
+	set_global_assignment -name VHDL_FILE lib/lcd_mix_ascii.vhd
 	set_global_assignment -name VHDL_FILE lib/font/Font.vhd
 	set_global_assignment -name QIP_FILE lib/font/Font.qip
-	# set_global_assignment -name VHDL_FILE lib/font/Font_numeric.vhd
-	# set_global_assignment -name QIP_FILE lib/font/Font_numeric.qip
-	set_global_assignment -name VHDL_FILE lib/font/Font_aph_num.vhd
-	set_global_assignment -name QIP_FILE lib/font/Font_aph_num.qip
-	set_global_assignment -name QIP_FILE lib/ip/framebuffer.qip
-
 	set_global_assignment -name VHDL_FILE lib/dht.vhd
 	set_global_assignment -name VHDL_FILE lib/dot.vhd
 	set_global_assignment -name VHDL_FILE lib/key.vhd
@@ -85,37 +74,26 @@ if {$make_assignments} {
 	set_global_assignment -name VHDL_FILE lib/mot.vhd
 	set_global_assignment -name VHDL_FILE lib/rgb.vhd
 	set_global_assignment -name VHDL_FILE lib/seg.vhd
+	set_global_assignment -name VHDL_FILE lib/seg_ch.vhd
 	set_global_assignment -name VHDL_FILE lib/sw.vhd
 	set_global_assignment -name VHDL_FILE lib/tsl.vhd
 	set_global_assignment -name VHDL_FILE lib/tts.vhd
-	set_global_assignment -name VHDL_FILE lib/WS2812B.vhd
-	set_global_assignment -name VHDL_FILE lib/lcd_mix_intgr_aph.vhd
-	set_global_assignment -name VHDL_FILE lib/lcd_mix.vhd
-		# lcd_mix_inst : entity work.lcd_mix_intgr_aph(arch)
-
-	# set_global_assignment -name VHDL_FILE lib/key_2x2_1.vhd
-
-	
-	set_global_assignment -name VHDL_FILE tests/WS2812_test1.vhd
-	
-	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/ox/O.vhd
-	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/ox/O.qip
-	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/ox/X.vhd
-	# set_global_assignment -name QIP_FILE practices/114-jol/lcd/ox/X.qip
-	set_global_assignment -name VHDL_FILE practices/114-jol/xilinx.vhd
-	set_global_assignment -name QIP_FILE practices/114-jol/xilinx.qip
-	# src\itc114_2\board\v13_114_a.vhd
-	# set_global_assignment -name VHDL_FILE C:/Users/user/Desktop/libitc/src/itc114_2/board/v13_114_a.vhd
-	# set_global_assignment -name VHDL_FILE C:/Users/user/Desktop/libitc/practices/114-jol/test_0819.vhd
-	# set_global_assignment -name VHDL_FILE practices/114-jol/lcd/circle_cross_2.vhd
-
-	set_global_assignment -name VHDL_FILE practices/311104/key_t.vhd
-	# practices\114-jol\test_0819.vhd
-	set_global_assignment -name TOP_LEVEL_ENTITY key_t
-	# set_global_assignment -name TOP_LEVEL_ENTITY test_0819
-	
-
-	
+	set_global_assignment -name VHDL_FILE lib/pkg/itc.pkg.vhd
+	set_global_assignment -name VHDL_FILE lib/pkg/lcd.pkg.vhd
+	set_global_assignment -name VHDL_FILE lib/util/clk.vhd
+	set_global_assignment -name VHDL_FILE lib/util/debounce.vhd
+	set_global_assignment -name VHDL_FILE lib/util/edge.vhd
+	set_global_assignment -name VHDL_FILE lib/util/pwm.vhd
+	set_global_assignment -name VHDL_FILE lib/util/i2c.vhd
+	set_global_assignment -name VHDL_FILE lib/util/timer.vhd
+	set_global_assignment -name VHDL_FILE lib/util/uart.vhd
+	set_global_assignment -name VHDL_FILE lib/util/uart.vhd
+	set_global_assignment -name VHDL_FILE lib/util/uart_txt.vhd
+	set_global_assignment -name QIP_FILE lib/ip/framebuffer.qip
+	set_global_assignment -name VHDL_FILE lib/key_2x2_1.vhd
+	set_global_assignment -name VHDL_FILE lib/key_3x3.vhd
+	set_global_assignment -name VHDL_FILE lib/WS2812_ch.vhd
+	set_global_assignment -name VHDL_FILE lib/ads_js_ctrl.vhd
 	
 	# Commit assignments
 	export_assignments

@@ -106,15 +106,18 @@ begin
 				data_out <= (others => '0'); -- clear data output
 			elsif rising_edge(clk) then
 				case state is
+						-- 原本的 code：
+						-- elsif err = '1' then
+						--     err <= '0';
+						--     state <= start;
+						-- 改為：發生錯誤時，釋放 busy，回歸 idle，讓上層 FSM 知道傳輸已結束/失敗 115.10.17修改
 					when idle =>
 						if ena = '1' then -- start
 							command <= cmd;
 							busy <= '1';
 							state <= start;
-						elsif err = '1' then
+						else -- -- done or error clear
 							err <= '0';
-							state <= start;
-						else -- done
 							busy <= '0';
 						end if;
 
