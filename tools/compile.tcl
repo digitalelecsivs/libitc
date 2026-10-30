@@ -53,11 +53,11 @@ if {$make_assignments} {
 	
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY key_t
+	set_global_assignment -name TOP_LEVEL_ENTITY lcdtest	
 
 	# Unit tests
-
-	set_global_assignment -name VHDL_FILE practices/311104/key_t.vhd
+	
+	set_global_assignment -name VHDL_FILE practices/311104/lcdtest.vhd
 	#set_global_assignment -name VHDL_FILE practices/chaosoyu/Board_115/Board1_115_top.vhd
 	#set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_1/v10_114_1_a.vhd
 
@@ -74,7 +74,7 @@ if {$make_assignments} {
 	set_global_assignment -name VHDL_FILE lib/mot.vhd
 	set_global_assignment -name VHDL_FILE lib/rgb.vhd
 	set_global_assignment -name VHDL_FILE lib/seg.vhd
-	set_global_assignment -name VHDL_FILE lib/seg_ch.vhd
+	#set_global_assignment -name VHDL_FILE lib/seg_ch.vhd
 	set_global_assignment -name VHDL_FILE lib/sw.vhd
 	set_global_assignment -name VHDL_FILE lib/tsl.vhd
 	set_global_assignment -name VHDL_FILE lib/tts.vhd
