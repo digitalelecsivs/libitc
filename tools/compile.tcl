@@ -53,14 +53,14 @@ if {$make_assignments} {
 	
 	# Source files
 	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
-	set_global_assignment -name TOP_LEVEL_ENTITY lcdtest	
+	set_global_assignment -name TOP_LEVEL_ENTITY No2_115_top
 
 	# Unit tests
 	
-	set_global_assignment -name VHDL_FILE practices/311104/lcdtest.vhd
-	#set_global_assignment -name VHDL_FILE practices/chaosoyu/Board_115/Board1_115_top.vhd
+	set_global_assignment -name VHDL_FILE practices/chaosoyu/NO2_Board_115/No2_115_top.vhd
+	#set_global_assignment -name VHDL_FILE practices/chaosoyu/NO2_Board_115/No2_115_top.vhd
 	#set_global_assignment -name VHDL_FILE practices/114-jol/114_1_v1/board_1/v10_114_1_a.vhd
-
+	
 	## Components
 	set_global_assignment -name VHDL_FILE lib/font/font_aph_num.vhd
 	set_global_assignment -name VHDL_FILE lib/lcd_mix.vhd
@@ -94,7 +94,11 @@ if {$make_assignments} {
 	set_global_assignment -name VHDL_FILE lib/key_3x3.vhd
 	set_global_assignment -name VHDL_FILE lib/WS2812_ch.vhd
 	set_global_assignment -name VHDL_FILE lib/ads_js_ctrl.vhd
-	
+	set_global_assignment -name VHDL_FILE practices/chaosoyu/NO2_Board_115/led_matrix_decoder.vhd
+	#set_global_assignment -name VHDL_FILE practices/311104/picture/bb.vhd
+	#set_global_assignment -name QIP_FILE practices/311104/picture/bb.qip
+	#set_global_assignment -name VHDL_FILE practices/311104/picture/ii.vhd
+	#set_global_assignment -name QIP_FILE practices/311104/picture/ii.qip
 	# Commit assignments
 	export_assignments
 

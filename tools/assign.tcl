@@ -1,8 +1,8 @@
 ######################################################################
 ### 115學年度數位電子術科參考試題     試題名稱：資訊顯示與座標控制系統  ###
-### 試題一 	實作方塊2 	晶片 : EP3C40Q240C8N                        ###
+### 試題二 	  	晶片 : EP3C40Q240C8N                               ###
 ### 請不要在這裡修改成其他板子的設定，請直接COPY到assign.tcl並覆蓋     ###
-### 115.10.19  by chaosoyu										  ###
+### 115.10.29  by chaosoyu										  ###
 ######################################################################
 
 # Load Quartus II Tcl Project package
@@ -41,36 +41,36 @@ if {$make_assignments} {
 	set_location_assignment PIN_145 -to rst_n
 
 	# # BUZZER
-	set_location_assignment PIN_226 -to buz
+	#set_location_assignment PIN_226 -to buz
 
 	# # LED_{R,G,Y}
-	set_location_assignment PIN_81 -to led_r
+	set_location_assignment PIN_81 -to led_y
 	set_location_assignment PIN_78 -to led_g
-	set_location_assignment PIN_73 -to led_y
+	set_location_assignment PIN_73 -to led_r
 
 	# WS2812B
 	set_location_assignment PIN_84 -to D_out
 
 	# ADS1115
-	set_location_assignment PIN_95 -to js_scl
-	set_location_assignment PIN_94 -to js_sda
-	set_location_assignment PIN_99 -to js_sw
-	set_location_assignment PIN_98 -to js_alrt
+	#set_location_assignment PIN_95 -to js_scl
+	#set_location_assignment PIN_94 -to js_sda
+	#set_location_assignment PIN_99 -to js_sw
+	#set_location_assignment PIN_98 -to js_alrt
 
 	# 1. 開啟開漏極輸出 (Open-Drain Output)
 	#set_instance_assignment -name AUTO_OPEN_DRAIN_PINS ON -to js_scl
 	#set_instance_assignment -name AUTO_OPEN_DRAIN_PINS ON -to js_sda
 
 	# 2. 開啟內部弱上拉電阻 (Weak Pull-Up Resistor)
-	set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to js_scl
-	set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to js_sda
+	#set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to js_scl
+	#set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to js_sda
 
 	# 3. 指定 3.3V I/O 電平標準 (確保準位匹配)
 	#set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to js_scl
 	#set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to js_sda
 
 	# SEG{1,2}_{A..DOT}
-	set_location_assignment PIN_230 -to seg_led[0]
+	set_location_assignment PIN_230 -to seg_led[0]   
 	set_location_assignment PIN_224 -to seg_led[1]
 	set_location_assignment PIN_221 -to seg_led[2]
 	set_location_assignment PIN_218 -to seg_led[3]
@@ -90,12 +90,12 @@ if {$make_assignments} {
 	set_location_assignment PIN_6 -to sw[7]
  
 	# PB_ROW & COL
-	set_location_assignment PIN_70 -to PB_row[0]
-	set_location_assignment PIN_76 -to PB_row[1]
-	set_location_assignment PIN_80 -to PB_col[0]
-	set_location_assignment PIN_82 -to PB_col[1]
+	#set_location_assignment PIN_70 -to PB_row[0]
+	#set_location_assignment PIN_76 -to PB_row[1]
+	#set_location_assignment PIN_80 -to PB_col[0]
+	#set_location_assignment PIN_82 -to PB_col[1]
 
-	#board2 3C40 no used
+	# 3C40 
 	# KEY_row{0..2}
 	set_location_assignment PIN_45 -to key_row[0]
 	set_location_assignment PIN_49 -to key_row[1]
@@ -120,10 +120,10 @@ if {$make_assignments} {
 	#1
 	set_location_assignment PIN_166 -to lcd_sclk 
 	set_location_assignment PIN_164 -to lcd_mosi
-	set_location_assignment PIN_162 -to lcd_rst_n
-	set_location_assignment PIN_161 -to lcd_dc 
-	set_location_assignment PIN_160 -to lcd_ss_n
-	set_location_assignment PIN_159 -to lcd_bl
+	set_location_assignment PIN_161 -to lcd_rst_n
+	set_location_assignment PIN_160 -to lcd_dc 
+	set_location_assignment PIN_159 -to lcd_ss_n
+	set_location_assignment PIN_146 -to lcd_bl
 	# DATA
 	#set_location_assignment PIN_146 -to dht_data
 	

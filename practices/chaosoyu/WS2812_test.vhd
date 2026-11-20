@@ -178,10 +178,10 @@ begin
 
 							-- 設定總顆數 (由 SW(7 downto 6) 控制)
 							case sw_d(7 downto 6) is
-								when "00" => led_num <= C_LED_MAX/8;
-								when "01" => led_num <= C_LED_MAX/4;
-								when "10" => led_num <= C_LED_MAX/2;
-								when others => led_num <= C_LED_MAX;
+								when "00" => led_num <= C_LED_MAX/8; --(7,8) == ('0','0')
+								when "01" => led_num <= C_LED_MAX/4; --(7,8) == ('1','0')
+								when "10" => led_num <= C_LED_MAX/2; --(7,8) == ('0','1')
+								when others => led_num <= C_LED_MAX; --(7,8) == ('1','1')
 							end case;
 
 							-- 更新跑馬燈位置 (0 ~ led_num - 1 循環移動)

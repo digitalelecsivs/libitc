@@ -7,7 +7,7 @@ use work.itc.all;
 entity uart_txt is
 	generic (
 		txt_len_max : integer := 16;
-		baud        : integer := 9_600 -- data link baud rate in bits/second
+		baud        : integer := 115200 -- data link baud rate in bits/second
 	);
 
 	port (
@@ -23,7 +23,6 @@ entity uart_txt is
 		tx_len  : in integer range tx_data'range;
 		rx_busy : out std_logic;                -- data reception in progress
 		rx_data : out string(1 to txt_len_max); -- data received
-		tx_mode : in std_logic;                 --是否移除stx 和 etx ('1'移除 '0' 保留)
 		rx_len  : out integer range rx_data'range
 	);
 end uart_txt;
@@ -88,71 +87,37 @@ begin
 			tx_cnt <= 0;
 			rx_cnt <= 0;
 		elsif rising_edge(clk) then
-			if tx_mode = '0'then
-				case tx_state is
-					when idle =>
-						if tx_ena = '1' then
-							tx_busy <= '1';
-							uart_tx_data <= stx;
-							uart_tx_ena <= '1';
-							tx_cnt <= 1;
-							tx_state <= execute;
-						else
-							tx_busy <= '0';
-						end if;
+			case tx_state is
+				when idle =>
+					if tx_ena = '1' then
+						tx_busy <= '1';
+						uart_tx_data <= stx;
+						uart_tx_ena <= '1';
+						tx_cnt <= 1;
+						tx_state <= execute;
+					else
+						tx_busy <= '0';
+					end if;
 
-					when execute =>
-						if uart_tx_done = '1' then
-							uart_tx_ena <= '1';
-							if tx_cnt <= tx_len then
-								uart_tx_data <= tx_data(tx_cnt);
-								tx_cnt <= tx_cnt + 1;
-							elsif tx_cnt = tx_len + 1 then
-								uart_tx_data <= etx;
-								tx_cnt <= tx_cnt + 1;
-							elsif tx_cnt = tx_len + 2 then
-								uart_tx_ena <= '0';
-								tx_busy <= '0';
-								tx_cnt <= 0;
-								tx_state <= idle;
-							end if;
-						else
+				when execute =>
+					if uart_tx_done = '1' then
+						uart_tx_ena <= '1';
+						if tx_cnt <= tx_len then
+							uart_tx_data <= tx_data(tx_cnt);
+							tx_cnt <= tx_cnt + 1;
+						elsif tx_cnt = tx_len + 1 then
+							uart_tx_data <= etx;
+							tx_cnt <= tx_cnt + 1;
+						elsif tx_cnt = tx_len + 2 then
 							uart_tx_ena <= '0';
-						end if;
-				end case;
-			else
-				case tx_state is
-					when idle =>
-						if tx_ena = '1' then
-							tx_busy <= '1';
-							uart_tx_data <= tx_data(1);
-							uart_tx_ena <= '1';
-							tx_cnt <= 2;
-							tx_state <= execute;
-						else
 							tx_busy <= '0';
+							tx_cnt <= 0;
+							tx_state <= idle;
 						end if;
-
-					when execute =>
-						if uart_tx_done = '1' then
-							uart_tx_ena <= '1';
-							if tx_cnt <= tx_len then
-								uart_tx_data <= tx_data(tx_cnt);
-								tx_cnt <= tx_cnt + 1;
-								-- elsif tx_cnt = tx_len + 1 then
-								-- 	uart_tx_data <= etx;
-								-- 	tx_cnt <= tx_cnt + 1;
-							elsif tx_cnt = tx_len + 1 then
-								uart_tx_ena <= '0';
-								tx_busy <= '0';
-								tx_cnt <= 0;
-								tx_state <= idle;
-							end if;
-						else
-							uart_tx_ena <= '0';
-						end if;
-				end case;
-			end if;
+					else
+						uart_tx_ena <= '0';
+					end if;
+			end case;
 
 			if rx_cnt = 0 and uart_rx_done = '1' and uart_rx_data = stx then
 				rx_busy <= '1';
